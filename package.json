@@ -53,8 +53,7 @@
     "gulp-sourcemaps": "^2.6.1",
     "gulp-util": "^3.0.8",
     "nyc": "^11.1.0",
-    "redis-mock": "^0.20.0",
-    "require-dir": "^0.3.2"
+    "redis-mock": "^0.20.0"
   },
   "ava": {
     "require": [
