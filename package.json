@@ -1,5 +1,5 @@
 {
-  "name": "redis-keyman",
+  "name": "aclify",
   "version": "0.1.0",
   "description": "Node API key manager",
   "license": "MIT",
@@ -10,10 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rimiti/redis-keyman.git"
+    "url": "git+https://github.com/rimiti/aclify.git"
   },
   "keywords": [
     "node",
+    "redis",
     "api",
     "apikey",
     "key",
@@ -27,12 +28,12 @@
     "url": "dimsolution.com"
   },
   "bugs": {
-    "url": "https://github.com/rimiti/redis-keyman/issues"
+    "url": "https://github.com/rimiti/aclify/issues"
   },
   "engines": {
     "node": ">=6"
   },
-  "homepage": "https://github.com/rimiti/redis-keyman#readme",
+  "homepage": "https://github.com/rimiti/aclify#readme",
   "dependencies": {
     "async": "^2.1.4",
     "bluebird": "^3.0.2",
