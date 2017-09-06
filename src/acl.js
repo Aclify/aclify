@@ -1,16 +1,17 @@
 import _ from 'lodash'
 import util from 'util'
 import bluebird from 'bluebird'
-import contract from './contract'
+import {Contract} from './class/contract'
 
-contract.debug = true;
+contract.debug = true
 
-class Acl {
+export class Acl {
+
   constructor(backend, logger, options) {
-    contract(arguments)
+    Contract(arguments)
       .params('object')
-      .params('object','object')
-      .params('object','object', 'object')
+      .params('object', 'object')
+      .params('object', 'object', 'object')
       .end();
 
     options = _.extend({
@@ -39,17 +40,15 @@ class Acl {
   }
 
   /**
-   addUserRoles( userId, roles, function(err) )
-   Adds roles to a given user id.
-   @param {String|Number} User id.
-   @param {String|Array} Role(s) to add to the user id.
-   @param {Function} Callback called when finished.
-   @return {Promise} Promise resolved when finished
+   * @description Adds roles to a given user id.
+   * @param userId
+   * @param roles
+   * @param cb
    */
   addUserRoles(userId, roles, cb) {
-    contract(arguments)
-      .params('string|number','string|array','function')
-      .params('string|number','string|array')
+    Contract(arguments)
+      .params('string|number', 'string|array', 'function')
+      .params('string|number', 'string|array')
       .end();
 
     const transaction = this.backend.begin();
@@ -79,9 +78,9 @@ class Acl {
    @return {Promise} Promise resolved when finished
    */
   removeUserRoles(userId, roles, cb) {
-    contract(arguments)
-      .params('string|number','string|array','function')
-      .params('string|number','string|array')
+    Contract(arguments)
+      .params('string|number', 'string|array', 'function')
+      .params('string|number', 'string|array')
       .end();
 
     const transaction = this.backend.begin();
@@ -144,9 +143,9 @@ class Acl {
    @return {Promise} Promise resolved when finished
    */
   addRoleParents(role, parents, cb) {
-    contract(arguments)
-      .params('string|number','string|array','function')
-      .params('string|number','string|array')
+    Contract(arguments)
+      .params('string|number', 'string|array', 'function')
+      .params('string|number', 'string|array')
       .end();
 
     const transaction = this.backend.begin();
@@ -165,7 +164,7 @@ class Acl {
    @return {Promise} Promise resolved when finished.
    */
   removeRoleParents(role, parents, cb) {
-    contract(arguments)
+    Contract(arguments)
       .params('string', 'string|array', 'function')
       .params('string', 'string|array')
       .params('string', 'function')
@@ -193,8 +192,8 @@ class Acl {
    @param {Function} Callback called when finished.
    */
   removeRole(role, cb) {
-    contract(arguments)
-      .params('string','function')
+    Contract(arguments)
+      .params('string', 'function')
       .params('string').end();
 
     const _this = this;
@@ -226,7 +225,7 @@ class Acl {
    @return {Promise} Promise resolved when finished
    */
   removeResource(resource, cb) {
-    contract(arguments)
+    Contract(arguments)
       .params('string', 'function')
       .params('string')
       .end();
@@ -256,16 +255,16 @@ class Acl {
     @return {Promise} Promise resolved when finished
   */
   allow(roles, resources, permissions, cb) {
-    contract(arguments)
-      .params('string|array','string|array','string|array','function')
-      .params('string|array','string|array','string|array')
-      .params('array','function')
+    Contract(arguments)
+      .params('string|array', 'string|array', 'string|array', 'function')
+      .params('string|array', 'string|array', 'string|array')
+      .params('array', 'function')
       .params('array')
       .end();
 
-    if((arguments.length == 1) || ((arguments.length===2)&&_.isObject(roles)&&_.isFunction(resources))){
+    if ((arguments.length == 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
       return this._allowEx(roles).nodeify(resources);
-    }else{
+    } else {
       const _this = this;
 
       roles = makeArray(roles);
@@ -290,17 +289,17 @@ class Acl {
   }
 
   removeAllow(role, resources, permissions, cb) {
-    contract(arguments)
-      .params('string','string|array','string|array','function')
-      .params('string','string|array','string|array')
-      .params('string','string|array','function')
-      .params('string','string|array')
+    Contract(arguments)
+      .params('string', 'string|array', 'string|array', 'function')
+      .params('string', 'string|array', 'string|array')
+      .params('string', 'string|array', 'function')
+      .params('string', 'string|array')
       .end();
 
     resources = makeArray(resources);
-    if(cb || (permissions && !_.isFunction(permissions))){
+    if (cb || (permissions && !_.isFunction(permissions))) {
       permissions = makeArray(permissions);
-    }else {
+    } else {
       cb = permissions;
       permissions = null;
     }
@@ -323,9 +322,9 @@ class Acl {
     const transaction = _this.backend.begin();
     resources.forEach(resource => {
       const bucket = allowsBucket(resource);
-      if(permissions){
+      if (permissions) {
         _this.backend.remove(transaction, bucket, role, permissions);
-      }else{
+      } else {
         _this.backend.del(transaction, bucket, role);
         _this.backend.remove(transaction, _this.options.buckets.resources, role, resource);
       }
@@ -338,7 +337,7 @@ class Acl {
       return bluebird.all(resources.map(resource => {
         const bucket = allowsBucket(resource);
         return _this.backend.getAsync(bucket, role).then(permissions => {
-          if(permissions.length==0){
+          if (permissions.length == 0) {
             _this.backend.remove(transaction, _this.options.buckets.resources, role, resource);
           }
         });
@@ -360,7 +359,7 @@ class Acl {
     if (!userId)
       return cb(null, {});
 
-    contract(arguments)
+    Contract(arguments)
       .params('string|number', 'string|array', 'function')
       .params('string|number', 'string|array')
       .end();
@@ -396,7 +395,7 @@ class Acl {
       return cb(null, {});
     }
 
-    contract(arguments)
+    Contract(arguments)
       .params('string|number', 'string|array', 'function|undefined')
       .params('string|number', 'string|array')
       .end();
@@ -435,7 +434,7 @@ class Acl {
    @param {Function} Callback called wish the result.
    */
   isAllowed(userId, resource, permissions, cb) {
-    contract(arguments)
+    Contract(arguments)
       .params('string|number', 'string', 'string|array', 'function')
       .params('string|number', 'string', 'string|array')
       .end();
@@ -443,9 +442,9 @@ class Acl {
     const _this = this;
 
     return this.backend.getAsync(this.options.buckets.users, userId).then(roles => {
-      if(roles.length){
+      if (roles.length) {
         return _this.areAnyRolesAllowed(roles, resource, permissions);
-      }else{
+      } else {
         return false;
       }
     }).nodeify(cb);
@@ -460,7 +459,7 @@ class Acl {
    @param {Function} Callback called with the result.
    */
   areAnyRolesAllowed(roles, resource, permissions, cb) {
-    contract(arguments)
+    Contract(arguments)
       .params('string|array', 'string', 'string|array', 'function')
       .params('string|array', 'string', 'string|array')
       .end();
@@ -468,9 +467,9 @@ class Acl {
     roles = makeArray(roles);
     permissions = makeArray(permissions);
 
-    if(roles.length===0){
+    if (roles.length === 0) {
       return bluebird.resolve(false).nodeify(cb);
-    }else{
+    } else {
       return this._checkPermissions(roles, resource, permissions).nodeify(cb);
     }
   }
@@ -485,18 +484,18 @@ class Acl {
    @param {Function} Callback called wish the result.
    */
   whatResources(roles, permissions, cb) {
-    contract(arguments)
+    Contract(arguments)
       .params('string|array')
-      .params('string|array','string|array')
-      .params('string|array','function')
-      .params('string|array','string|array','function')
+      .params('string|array', 'string|array')
+      .params('string|array', 'function')
+      .params('string|array', 'string|array', 'function')
       .end();
 
     roles = makeArray(roles);
-    if (_.isFunction(permissions)){
+    if (_.isFunction(permissions)) {
       cb = permissions;
       permissions = undefined;
-    }else if(permissions){
+    } else if (permissions) {
       permissions = makeArray(permissions);
     }
 
@@ -507,12 +506,12 @@ class Acl {
     const _this = this;
     const result = _.isUndefined(permissions) ? {} : [];
     return this._rolesResources(roles).then(resources => bluebird.all(resources.map(resource => _this._resourcePermissions(roles, resource).then(p => {
-      if(permissions){
+      if (permissions) {
         const commonPermissions = _.intersection(permissions, p);
-        if(commonPermissions.length>0){
+        if (commonPermissions.length > 0) {
           result.push(resource);
         }
-      }else{
+      } else {
         result[resource] = p;
       }
     }))).then(() => result)).nodeify(cb);
@@ -523,6 +522,7 @@ class Acl {
    Cleans all the keys with the given prefix from redis.
    Note: this operation is not reversible!.
    */
+
   /*
   Acl.prototype.clean = function(callback){
     var acl = this;
@@ -542,16 +542,16 @@ class Acl {
    Express Middleware
    */
   middleware(numPathComponents, userId, actions) {
-    contract(arguments)
+    Contract(arguments)
       .params()
       .params('number')
-      .params('number','string|number|function')
-      .params('number','string|number|function', 'string|array')
+      .params('number', 'string|number|function')
+      .params('number', 'string|number|function', 'string|array')
       .end();
 
     const acl = this;
 
-    function HttpError(errorCode, msg){
+    function HttpError(errorCode, msg) {
       this.errorCode = errorCode;
       this.message = msg;
       this.name = this.constructor.name;
@@ -567,15 +567,15 @@ class Acl {
       let url;
 
       // call function to fetch userId
-      if(typeof userId === 'function'){
+      if (typeof userId === 'function') {
         _userId = userId(req, res);
       }
       if (!userId) {
-        if((req.session) && (req.session.userId)){
+        if ((req.session) && (req.session.userId)) {
           _userId = req.session.userId;
-        }else if((req.user) && (req.user.id)){
+        } else if ((req.user) && (req.user.id)) {
           _userId = req.user.id;
-        }else{
+        } else {
           next(new HttpError(401, 'User not authenticated'));
           return;
         }
@@ -588,31 +588,31 @@ class Acl {
       }
 
       url = req.originalUrl.split('?')[0];
-      if(!numPathComponents){
+      if (!numPathComponents) {
         resource = url;
-      }else{
-        resource = url.split('/').slice(0,numPathComponents+1).join('/');
+      } else {
+        resource = url.split('/').slice(0, numPathComponents + 1).join('/');
       }
 
-      if(!_actions){
+      if (!_actions) {
         _actions = req.method.toLowerCase();
       }
 
-      acl.logger?acl.logger.debug(`Requesting ${_actions} on ${resource} by user ${_userId}`):null;
+      acl.logger ? acl.logger.debug(`Requesting ${_actions} on ${resource} by user ${_userId}`) : null;
 
       acl.isAllowed(_userId, resource, _actions, (err, allowed) => {
-        if (err){
+        if (err) {
           next(new Error('Error checking permissions to access resource'));
-        }else if(allowed === false){
+        } else if (allowed === false) {
           if (acl.logger) {
             acl.logger.debug(`Not allowed ${_actions} on ${resource} by user ${_userId}`);
             acl.allowedPermissions(_userId, resource, (err, obj) => {
               acl.logger.debug(`Allowed permissions: ${util.inspect(obj)}`);
             });
           }
-          next(new HttpError(403,'Insufficient permissions to access resource'));
-        }else{
-          acl.logger?acl.logger.debug(`Allowed ${_actions} on ${resource} by user ${_userId}`):null;
+          next(new HttpError(403, 'Insufficient permissions to access resource'));
+        } else {
+          acl.logger ? acl.logger.debug(`Allowed ${_actions} on ${resource} by user ${_userId}`) : null;
           next();
         }
       });
@@ -638,8 +638,9 @@ class Acl {
       obj.allows.forEach(allow => {
         demuxed.push({
           roles,
-          resources:allow.resources,
-          permissions:allow.permissions});
+          resources: allow.resources,
+          permissions: allow.permissions
+        });
       });
     });
 
@@ -688,9 +689,9 @@ class Acl {
     const _this = this;
 
     return this._rolesParents(roleNames).then(parents => {
-      if(parents.length > 0){
+      if (parents.length > 0) {
         return _this._allRoles(parents).then(parentRoles => _.union(roleNames, parentRoles));
-      }else{
+      } else {
         return roleNames;
       }
     });
@@ -734,13 +735,13 @@ class Acl {
   _resourcePermissions(roles, resource) {
     const _this = this;
 
-    if(roles.length===0){
+    if (roles.length === 0) {
       return bluebird.resolve([]);
-    }else{
+    } else {
       return this.backend.unionAsync(allowsBucket(resource), roles).then(resourcePermissions => _this._rolesParents(roles).then(parents => {
-        if(parents && parents.length){
+        if (parents && parents.length) {
           return _this._resourcePermissions(parents, resource).then(morePermissions => _.union(resourcePermissions, morePermissions));
-        }else{
+        } else {
           return resourcePermissions;
         }
       }));
@@ -754,18 +755,18 @@ class Acl {
     const _this = this;
 
     return this.backend.unionAsync(allowsBucket(resource), roles).then(resourcePermissions => {
-      if (resourcePermissions.includes('*')){
+      if (resourcePermissions.includes('*')) {
         return true;
-      }else{
+      } else {
         permissions = permissions.filter(p => !resourcePermissions.includes(p));
 
-        if(permissions.length === 0){
+        if (permissions.length === 0) {
           return true;
-        }else{
+        } else {
           return _this.backend.unionAsync(_this.options.buckets.parents, roles).then(parents => {
-            if(parents && parents.length){
+            if (parents && parents.length) {
               return _this._checkPermissions(parents, resource, permissions);
-            }else{
+            } else {
               return false;
             }
           });
@@ -782,15 +783,19 @@ class Acl {
 Acl.prototype.middleware.errorHandler = contentType => {
   let method = 'end';
 
-  if(contentType){
+  if (contentType) {
     switch (contentType) {
-      case 'json': method = 'json'; break;
-      case 'html': method = 'send'; break;
+      case 'json':
+        method = 'json';
+        break;
+      case 'html':
+        method = 'send';
+        break;
     }
   }
 
   return (err, req, res, next) => {
-    if(err.name !== 'HttpError' || !err.errorCode) return next(err);
+    if (err.name !== 'HttpError' || !err.errorCode) return next(err);
     res.status(err.errorCode)[method](err.message);
   };
 };
@@ -802,11 +807,11 @@ Acl.prototype.middleware.errorHandler = contentType => {
 //
 //-----------------------------------------------------------------------------
 
-function makeArray(arr){
+function makeArray(arr) {
   return Array.isArray(arr) ? arr : [arr];
 }
 
-function allowsBucket(role){
+function allowsBucket(role) {
   return `allows_${role}`;
 }
 
@@ -818,4 +823,3 @@ function keyFromAllowsBucket(str) {
 // -----------------------------------------------------------------------------------
 
 
-exports = module.exports = Acl;
