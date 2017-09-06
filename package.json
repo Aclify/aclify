@@ -37,7 +37,6 @@
     "async": "^2.1.4",
     "bluebird": "^3.0.2",
     "lodash": "^4.17.3",
-    "mongodb": "^2.0.47",
     "redis": "^2.2.5",
     "jsonwebtoken": "^7.4.3",
     "source-map-support": "^0.4.17"
