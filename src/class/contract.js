@@ -23,7 +23,7 @@ export class Contract {
    * @param arguments
    * @return {*}
    */
-  static params(...arguments) {
+  static params() {
     this.fulfilled |= this._checkParameters(this.args, _.toArray(arguments))
     if (this.fulfilled) return noop
 
