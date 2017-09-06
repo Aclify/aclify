@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "description": "Node API key manager",
   "license": "MIT",
   "main": "dist/lib/manager.js",
