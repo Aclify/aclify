@@ -20,7 +20,7 @@ interface Store {
   /**
    * @description Get contents from bucket's key
    */
-  get(bucket: string, key: mixed, callback: () => void): any;
+  get(bucket: string, key: string | number, callback: () => void): any;
 
   /**
    * @description Get union of contents of the specified keys in each of the specified buckets and returns a mapping of bucket to union
