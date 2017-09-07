@@ -1,6 +1,7 @@
 # aclify
 
-[![Dependencies][dependencies-badge]][dependencies]
+[![Dependencies][prod-dependencies-badge]][prod-dependencies]
+[![Dependencies][dev-dependencies-badge]][dev-dependencies]
 [![Code Climate score][codeclimate-score-badge]][codeclimate-score]
 [![Code Climate coverage][codeclimate-coverage-badge]][codeclimate-coverage]
 [![Code Climate coverage][codeclimate-issues-badge]][codeclimate-issues]
@@ -37,8 +38,10 @@ Run using npm run <script> command.
 ## License
 MIT © [Dimitri DO BAIRRO](https://github.com/rimiti/aclify/blob/master/LICENSE)
 
-[dependencies-badge]: https://david-dm.org/rimiti/aclify/dev-status.svg?style=flat-square
-[dependencies]: https://david-dm.org/rimiti/aclify?type=dev
+[prod-dependencies-badge]: https://david-dm.org/rimiti/aclify/status.svg?style=flat-square
+[prod-dependencies]: https://david-dm.org/rimiti/aclify
+[dev-dependencies-badge]: https://david-dm.org/rimiti/aclify/dev-status.svg?style=flat-square
+[dev-dependencies]: https://david-dm.org/rimiti/aclify?type=dev
 [codeclimate-score-badge]: https://codeclimate.com/github/rimiti/aclify/badges/gpa.svg
 [codeclimate-score]: https://codeclimate.com/github/rimiti/aclify
 [codeclimate-coverage-badge]: https://codeclimate.com/github/rimiti/aclify/badges/coverage.svg
