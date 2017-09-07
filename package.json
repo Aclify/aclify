@@ -14,8 +14,7 @@
     "test-only": "jest --coverage",
     "test:watch": "jest --watch",
     "build": "babel src/**/*.js -d dist",
-    "build:watch": "babel --watch src/**/*.js -d dist",
-    "prepare": "gulp"
+    "build:watch": "babel --watch src/**/*.js -d dist"
   },
   "repository": {
     "type": "git",
