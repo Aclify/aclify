@@ -21,8 +21,6 @@ $ npm install aclify --save
 
 ## Scripts
 
-Available scripts
-
 Run using npm run <script> command.
 
     clean - remove coverage data, Jest cache and transpiled files,
