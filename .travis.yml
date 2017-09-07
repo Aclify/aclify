@@ -1,7 +1,7 @@
 language: node_js
 node_js:
   - 8
-  - 6
+  - 6.9
 env:
   - FRESH_DEPS=false
   - FRESH_DEPS=true
@@ -18,4 +18,4 @@ before_install:
   - if [[ ${FRESH_DEPS} == "true" ]]; then rm package-lock.json; fi
 install:
   - if [[ ${FRESH_DEPS} == "true" ]]; then npm install --prefer-online; else npm install --prefer-offline; fi
-after_success: ./node_modules/.bin/nyc report --reporter=text-lcov | ./node_modules/.bin/coveralls
+after_success: npm run test
