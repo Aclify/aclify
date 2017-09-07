@@ -1,12 +1,21 @@
 {
   "name": "aclify",
   "version": "0.1.0-alpha",
-  "description": "Node API key manager",
+  "description": "Node Access Control List (ACL)",
   "license": "MIT",
-  "main": "dist/lib/manager.js",
+  "main": "dist/index.js",
   "scripts": {
-    "prepare": "gulp",
-    "test": "NODE_ENV=test nyc ava"
+    "clean": "rm -rf coverage dist tmp",
+    "lint": "eslint .",
+    "postlint": "npm run typecheck",
+    "typecheck": "flow check",
+    "pretest": "npm run lint",
+    "test": "npm run test-only",
+    "test-only": "jest --coverage",
+    "test:watch": "jest --watch",
+    "build": "babel src/**/*.js -d dist",
+    "build:watch": "babel --watch src/**/*.js -d dist",
+    "prepare": "gulp"
   },
   "repository": {
     "type": "git",
@@ -31,34 +40,36 @@
     "url": "https://github.com/rimiti/aclify/issues"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=6.9"
   },
+  "engineStrict": true,
   "homepage": "https://github.com/rimiti/aclify#readme",
   "dependencies": {
-    "async": "^2.1.4",
-    "bluebird": "^3.0.2",
-    "lodash": "^4.17.3",
-    "redis": "^2.2.5",
-    "jsonwebtoken": "^7.4.3",
-    "source-map-support": "^0.4.17"
+    "babel-runtime": "~6.26.0"
   },
   "devDependencies": {
-    "ava": "^0.22.0",
-    "babel-preset-es2015": "^6.24.1",
-    "coveralls": "^2.13.1",
-    "del": "^3.0.0",
-    "gulp": "^3.9.1",
-    "gulp-ava": "^0.18.0",
-    "gulp-babel": "^7.0.0",
-    "gulp-sourcemaps": "^2.6.1",
-    "gulp-util": "^3.0.8",
-    "nyc": "^11.1.0",
-    "redis-mock": "^0.20.0"
+    "babel-core": "~6.26.0",
+    "babel-eslint": "~7.2.2",
+    "babel-jest": "~21.0.0",
+    "babel-plugin-transform-async-to-generator": "~6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "~6.26.0",
+    "babel-plugin-transform-flow-strip-types": "~6.22.0",
+    "babel-plugin-transform-runtime": "~6.23.0",
+    "babel-preset-stage-3": "~6.24.1",
+    "eslint": "~4.6.1",
+    "eslint-config-airbnb-base": "~12.0.0",
+    "eslint-plugin-flowtype": "~2.35.1",
+    "eslint-plugin-import": "~2.7.0",
+    "jest": "~21.0.1"
   },
-  "ava": {
-    "require": [
-      "babel-register"
+  "jest": {
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js"
     ],
-    "babel": "inherit"
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
   }
 }
