@@ -40,7 +40,7 @@ export class Acl {
    * @param roles
    * @param callback
    */
-  addUserRoles(userId: string | number, roles: any, callback: () => void) {
+  addUserRoles(userId: string | number, roles: mixed, callback: () => void) {
     const transaction = this.backend.begin();
     this.backend.add(transaction, this.options.buckets.meta, 'users', userId);
     this.backend.add(transaction, this.options.buckets.users, userId, roles);
@@ -50,8 +50,26 @@ export class Acl {
     } else {
       this.backend.add(transaction, this.options.buckets.roles, roles, userId);
     }
-    return this.backend.endAsync(transaction).nodeify(cb);
+    return this.backend.endAsync(transaction).nodeify(callback);
   }
+
+  /**
+   * @description Remove roles from a given user
+   * @param userId
+   * @param roles
+   * @param callback
+   */
+  removeUserRoles(userId: string | number, roles: mixed, callback: () => void) {
+    const transaction = this.backend.begin();
+    this.backend.remove(transaction, this.options.buckets.users, userId, roles);
+
+    if (Array.isArray(roles)) {
+      roles.forEach(role => this.backend.remove(transaction, this.options.buckets.roles, role, userId));
+    } else {
+      this.backend.remove(transaction, this.options.buckets.roles, roles, userId);
+    }
+    return this.backend.endAsync(transaction).nodeify(callback);
+  };
 
 
 }
