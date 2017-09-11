@@ -1,6 +1,7 @@
 import bluebird from 'bluebird'
+import {Common} from './common'
 
-export class Acl {
+export class Acl extends Common {
 
   logger: {};
   backend: {};
@@ -165,6 +166,33 @@ export class Acl {
         roles.forEach(role => this.backend.remove(transaction, this.options.buckets.resources, role, resource));
         return this.backend.endAsync(transaction);
       }).nodeify(callback)
+  };
+
+  allow(roles: mixed, resources: mixed, permissions: mixed, callback: () => void) {
+    if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
+      return this._allowEx(roles).nodeify(resources);
+    } else {
+      var _this = this;
+
+      roles = makeArray(roles);
+      resources = makeArray(resources);
+
+      var transaction = _this.backend.begin();
+
+      _this.backend.add(transaction, _this.options.buckets.meta, 'roles', roles);
+
+      resources.forEach(function (resource) {
+        roles.forEach(function (role) {
+          _this.backend.add(transaction, allowsBucket(resource), role, permissions);
+        });
+      });
+
+      roles.forEach(function (role) {
+        _this.backend.add(transaction, _this.options.buckets.resources, role, resources);
+      });
+
+      return _this.backend.endAsync(transaction).nodeify(cb);
+    }
   };
 
 }
