@@ -80,5 +80,13 @@ export class Acl {
     return this.backend.getAsync(this.options.buckets.users, userId).nodeify(callback);
   };
 
+  /**
+   * Return all users who has a given role
+   * @param roleName
+   * @param callback
+   */
+  roleUsers(roleName: string | number, callback: () => void) {
+    return this.backend.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
+  };
 
 }
