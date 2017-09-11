@@ -13,7 +13,7 @@ export class Acl {
    * @param options
    */
   constructor(backend: {}, logger: ?{}, options: ?{}) {
-    options = _.extend({
+    this.options = _.extend({
       buckets: {
         meta: 'meta',
         parents: 'parents',
@@ -26,14 +26,32 @@ export class Acl {
 
     this.logger = logger;
     this.backend = backend;
-    this.options = options;
 
-    // Promisify async methods
     backend.endAsync = bluebird.promisify(backend.end);
     backend.getAsync = bluebird.promisify(backend.get);
     backend.cleanAsync = bluebird.promisify(backend.clean);
     backend.unionAsync = bluebird.promisify(backend.union);
     if (backend.unions) backend.unionsAsync = bluebird.promisify(backend.unions);
   }
+
+  /**
+   * @description Adds roles to a given user id
+   * @param userId
+   * @param roles
+   * @param callback
+   */
+  addUserRoles(userId: string | number, roles: any, callback: () => void) {
+    const transaction = this.backend.begin();
+    this.backend.add(transaction, this.options.buckets.meta, 'users', userId);
+    this.backend.add(transaction, this.options.buckets.users, userId, roles);
+
+    if (Array.isArray(roles)) {
+      roles.forEach(role => this.backend.add(transaction, this.options.buckets.roles, role, userId));
+    } else {
+      this.backend.add(transaction, this.options.buckets.roles, roles, userId);
+    }
+    return this.backend.endAsync(transaction).nodeify(cb);
+  }
+
 
 }
