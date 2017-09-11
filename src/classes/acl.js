@@ -71,5 +71,14 @@ export class Acl {
     return this.backend.endAsync(transaction).nodeify(callback);
   };
 
+  /**
+   * @description Return all the roles from a given user
+   * @param userId
+   * @param callback
+   */
+  userRoles(userId: string | number, callback: () => void) {
+    return this.backend.getAsync(this.options.buckets.users, userId).nodeify(callback);
+  };
+
 
 }
