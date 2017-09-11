@@ -130,4 +130,41 @@ export class Acl {
     return this.backend.endAsync(transaction).nodeify(callback);
   };
 
+  /**
+   * @description Removes a role from the system
+   * @param role
+   * @param callback
+   */
+  removeRole(role: string | number, callback: () => void) {
+    return this.backend.getAsync(this.options.buckets.resources, role)
+      .then(resources => {
+        const transaction = _this.backend.begin();
+        resources.forEach(resource => {
+          let bucket = allowsBucket(resource);
+          this.backend.del(transaction, bucket, role);
+        });
+
+        this.backend.del(transaction, this.options.buckets.resources, role);
+        this.backend.del(transaction, this.options.buckets.parents, role);
+        this.backend.del(transaction, this.options.buckets.roles, role);
+        this.backend.remove(transaction, this.options.buckets.meta, 'roles', role);
+        return this.backend.endAsync(transaction);
+      }).nodeify(callback);
+  };
+
+  /**
+   * @description Removes a resource from the system
+   * @param resource
+   * @param callback
+   */
+  removeResource(resource: string, callback: () => void) {
+    return this.backend.getAsync(this.options.buckets.meta, 'roles')
+      .then(roles => {
+        const transaction = this.backend.begin();
+        this.backend.del(transaction, allowsBucket(resource), roles);
+        roles.forEach(role => this.backend.remove(transaction, this.options.buckets.resources, role, resource));
+        return this.backend.endAsync(transaction);
+      }).nodeify(callback)
+  };
+
 }
