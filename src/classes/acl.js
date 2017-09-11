@@ -99,4 +99,17 @@ export class Acl {
     return this.userRoles(userId).then(roles => roles.indexOf(rolename) !== -1).nodeify(callback);
   };
 
+  /**
+   * @description Adds a parent or parent list to role
+   * @param role
+   * @param parents
+   * @param callback
+   */
+  addRoleParents(role: string | number, parents: mixed, callback: () => void){
+    const transaction = this.backend.begin();
+    this.backend.add(transaction, this.options.buckets.meta, 'roles', role);
+    this.backend.add(transaction, this.options.buckets.parents, role, parents);
+    return this.backend.endAsync(transaction).nodeify(callback);
+  };
+
 }
