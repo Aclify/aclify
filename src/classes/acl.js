@@ -81,12 +81,22 @@ export class Acl {
   };
 
   /**
-   * Return all users who has a given role
+   * @description Return all users who has a given role
    * @param roleName
    * @param callback
    */
   roleUsers(roleName: string | number, callback: () => void) {
     return this.backend.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
+  };
+
+  /**
+   * @description Return boolean whether user is in the role
+   * @param userId
+   * @param rolename
+   * @param callback
+   */
+  hasRole(userId: string | number, rolename: string | number, callback: () => void) {
+    return this.userRoles(userId).then(roles => roles.indexOf(rolename) !== -1).nodeify(callback);
   };
 
 }
