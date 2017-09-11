@@ -105,10 +105,28 @@ export class Acl {
    * @param parents
    * @param callback
    */
-  addRoleParents(role: string | number, parents: mixed, callback: () => void){
+  addRoleParents(role: string | number, parents: mixed, callback: () => void) {
     const transaction = this.backend.begin();
     this.backend.add(transaction, this.options.buckets.meta, 'roles', role);
     this.backend.add(transaction, this.options.buckets.parents, role, parents);
+    return this.backend.endAsync(transaction).nodeify(callback);
+  };
+
+  /**
+   * @description Removes a parent or parent list from role. If `parents` is not specified, removes all parents
+   * @param role
+   * @param parents
+   * @param callback
+   */
+  removeRoleParents(role: string | number, parents: mixed, callback: () => void) {
+    if (!callback && _.isFunction(parents)) {
+      callback = parents;
+      parents = null;
+    }
+
+    const transaction = this.backend.begin();
+    if (parents) this.backend.remove(transaction, this.options.buckets.parents, role, parents);
+    else this.backend.del(transaction, this.options.buckets.parents, role);
     return this.backend.endAsync(transaction).nodeify(callback);
   };
 
