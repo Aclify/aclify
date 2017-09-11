@@ -6,6 +6,12 @@ export class Acl {
   backend: {};
   options: {};
 
+  /**
+   * @description Create ACL class and promisify backend methods
+   * @param backend
+   * @param logger
+   * @param options
+   */
   constructor(backend: {}, logger: ?{}, options: ?{}) {
     options = _.extend({
       buckets: {
@@ -29,6 +35,5 @@ export class Acl {
     backend.unionAsync = bluebird.promisify(backend.union);
     if (backend.unions) backend.unionsAsync = bluebird.promisify(backend.unions);
   }
-
 
 }
