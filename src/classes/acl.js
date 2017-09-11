@@ -168,31 +168,57 @@ export class Acl extends Common {
       }).nodeify(callback)
   };
 
+  /**
+   * @description Adds the given permissions to the given roles over the given resources
+   * @param roles
+   * @param resources
+   * @param permissions
+   * @param callback
+   */
   allow(roles: mixed, resources: mixed, permissions: mixed, callback: () => void) {
     if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
       return this._allowEx(roles).nodeify(resources);
     } else {
-      var _this = this;
+      roles = this.makeArray(roles);
+      resources = this.makeArray(resources);
 
-      roles = makeArray(roles);
-      resources = makeArray(resources);
+      const transaction = this.backend.begin();
+      this.backend.add(transaction, this.options.buckets.meta, 'roles', roles);
 
-      var transaction = _this.backend.begin();
-
-      _this.backend.add(transaction, _this.options.buckets.meta, 'roles', roles);
-
-      resources.forEach(function (resource) {
-        roles.forEach(function (role) {
-          _this.backend.add(transaction, allowsBucket(resource), role, permissions);
+      resources.forEach(resource => {
+        roles.forEach(role => {
+          this.backend.add(transaction, this.allowsBucket(resource), role, permissions);
         });
       });
 
       roles.forEach(function (role) {
-        _this.backend.add(transaction, _this.options.buckets.resources, role, resources);
+        this.backend.add(transaction, this.options.buckets.resources, role, resources);
       });
 
-      return _this.backend.endAsync(transaction).nodeify(cb);
+      return this.backend.endAsync(transaction).nodeify(callback);
     }
+  };
+
+  /**
+   * @description Same as allow but accepts a more compact input
+   * @param objs
+   * @return {*}
+   * @private
+   */
+  _allowEx(objs) {
+    objs = this.makeArray(objs);
+
+    let demuxed = [];
+    objs.forEach(obj => {
+      obj.allows.forEach(allow => {
+        demuxed.push({
+          roles: obj.roles,
+          resources: allow.resources,
+          permissions: allow.permissions
+        });
+      });
+    });
+    return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
   };
 
 }
