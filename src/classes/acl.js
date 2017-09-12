@@ -697,7 +697,7 @@ export class Acl extends Common {
   };
 
   /**
-   * @description Same as allow but accepts a more compact input
+   * @description Same as allow but accepts a more compact input.
    * @param objs
    * @return {*}
    * @private
@@ -707,60 +707,17 @@ export class Acl extends Common {
 
     let demuxed = [];
     objs.forEach(obj => {
+      let roles = obj.roles;
       obj.allows.forEach(allow => {
         demuxed.push({
-          roles: obj.roles,
+          roles: roles,
           resources: allow.resources,
           permissions: allow.permissions
         });
       });
     });
-    return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
+
+    return bluebird.reduce(demuxed, (values, obj) => {
+      return this.allow(obj.roles, obj.resources, obj.permissions);
+    }, null);
   };
-
-}
-
-
-areAnyRolesAllowed(roles
-:
-mixed, resource
-:
-string, permissions
-:
-mixed, callback
-:
-() => void
-)
-{
-  roles = this.makeArray(roles);
-  permissions = this.makeArray(permissions);
-  if (!roles.length) return bluebird.resolve(false).nodeify(callback);
-  return this._checkPermissions(roles, resource, permissions).nodeify(callback);
-}
-;
-
-/**
- * @description Same as allow but accepts a more compact input
- * @param objs
- * @return {*}
- * @private
- */
-_allowEx(objs)
-{
-  objs = this.makeArray(objs);
-
-  let demuxed = [];
-  objs.forEach(obj => {
-    obj.allows.forEach(allow => {
-      demuxed.push({
-        roles: obj.roles,
-        resources: allow.resources,
-        permissions: allow.permissions
-      });
-    });
-  });
-  return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
-}
-;
-
-}
