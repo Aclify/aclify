@@ -188,6 +188,39 @@ export class Acl extends Common {
   }
 
   /**
+   * @description Remove permissions from the given roles owned by the given role.
+   * @param role
+   * @param resources
+   * @param permissions
+   * @param callback
+   */
+  removePermissions(role, resources, permissions, callback: () => void) {
+    const transaction = this.backend.begin();
+    resources.forEach(resource => {
+      let bucket = this.allowsBucket(resource);
+      if (permissions) {
+        this.backend.remove(transaction, bucket, role, permissions);
+      } else {
+        this.backend.del(transaction, bucket, role);
+        this.backend.remove(transaction, this.options.buckets.resources, role, resource);
+      }
+    });
+
+    return this.backend.endAsync(transaction)
+      .then(() => {
+        const transaction = this.backend.begin();
+        return bluebird.all(resources.map(resource => {
+          let bucket = this.allowsBucket(resource);
+          return this.backend.getAsync(bucket, role)
+            .then(permissions => {
+              if (!permissions.length) this.backend.remove(transaction, this.options.buckets.resources, role, resource);
+            });
+        }))
+          .then(this.backend.endAsync(transaction));
+      }).nodeify(callback);
+  };
+
+  /**
    * @description Adds the given permissions to the given roles over the given resources
    * @param roles
    * @param resources
