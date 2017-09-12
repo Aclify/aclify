@@ -721,3 +721,116 @@ export class Acl extends Common {
       return this.allow(obj.roles, obj.resources, obj.permissions);
     }, null);
   };
+
+  /**
+   * @description Returns the parents of the given roles.
+   * @param roles
+   * @return {*}
+   * @private
+   */
+  _rolesParents(roles) {
+    return this.backend.unionAsync(this.options.buckets.parents, roles);
+  };
+
+  /**
+   * @description Return all roles in the hierarchy including the given roles.
+   * @param roleNames
+   * @return {Promise.<TResult>}
+   * @private
+   */
+  _allRoles(roleNames) {
+    return this._rolesParents(roleNames)
+      .then(parents => {
+        if (parents.length) {
+          return this._allRoles(parents)
+            .then(parentRoles => {
+              return _.union(roleNames, parentRoles);
+            });
+        }
+        return roleNames;
+      });
+  };
+
+  /**
+   * @description Return all roles in the hierarchy of the given user.
+   * @param userId
+   * @return {Promise.<TResult>}
+   * @private
+   */
+  _allUserRoles(userId) {
+    return this.userRoles(userId)
+      .then(roles => {
+        if (roles && roles.length) return this._allRoles(roles);
+        return [];
+      });
+  };
+
+  /**
+   * @description Returns an array with resources for the given roles.
+   * @param roles
+   * @return {Promise.<TResult>}
+   * @private
+   */
+  _rolesResources(roles) {
+    roles = this.makeArray(roles);
+    return this._allRoles(roles)
+      .then(allRoles => {
+        let result = [];
+        return bluebird.all(allRoles.map(role => {
+          return this.backend.getAsync(this.options.buckets.resources, role)
+            .then(resources => result = result.concat(resources));
+        })).then(() => {
+          return result;
+        });
+      });
+  };
+
+  /**
+   * @description Returns the permissions for the given resource and set of roles.
+   * @param roles
+   * @param resource
+   * @return {*}
+   * @private
+   */
+  _resourcePermissions(roles, resource) {
+    if (!roles.length) return bluebird.resolve([]);
+    return this.backend.unionAsync(this.allowsBucket(resource), roles)
+      .then(resourcePermissions => {
+        return this._rolesParents(roles)
+          .then(parents => {
+            if (parents && parents.length) {
+              return this._resourcePermissions(parents, resource)
+                .then(morePermissions => {
+                  return _.union(resourcePermissions, morePermissions);
+                });
+            }
+            return resourcePermissions;
+          });
+      });
+  };
+
+  /**
+   * @description This function will not handle circular dependencies and result in a crash.
+   * @param roles
+   * @param resource
+   * @param permissions
+   * @return {Promise.<TResult>}
+   * @private
+   */
+  _checkPermissions = function (roles, resource, permissions) {
+    return this.backend.unionAsync(this.allowsBucket(resource), roles)
+      .then(resourcePermissions => {
+        if (resourcePermissions.indexOf('*') !== -1) return true;
+        permissions = permissions.filter(p => {
+          return resourcePermissions.indexOf(p) === -1;
+        });
+
+        if (!permissions.length) return true;
+        return this.backend.unionAsync(this.options.buckets.parents, roles)
+          .then(parents => {
+            return (parents && parents.length) ? this._checkPermissions(parents, resource, permissions) : false;
+          });
+      });
+  };
+
+}
