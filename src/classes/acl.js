@@ -139,7 +139,7 @@ export class Acl extends Common {
   removeRole(role: string | number, callback: () => void) {
     return this.backend.getAsync(this.options.buckets.resources, role)
       .then(resources => {
-        const transaction = _this.backend.begin();
+        const transaction = this.backend.begin();
         resources.forEach(resource => {
           let bucket = this.allowsBucket(resource);
           this.backend.del(transaction, bucket, role);
@@ -476,7 +476,7 @@ export class Acl extends Common {
   removeRole(role: string | number, callback: () => void) {
     return this.backend.getAsync(this.options.buckets.resources, role)
       .then(resources => {
-        const transaction = _this.backend.begin();
+        const transaction = this.backend.begin();
         resources.forEach(resource => {
           let bucket = this.allowsBucket(resource);
           this.backend.del(transaction, bucket, role);
