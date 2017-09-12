@@ -7,16 +7,16 @@ import Memory from '../stores/memory'
 export default class Acl extends Common {
 
   logger: {};
-  backend: {};
+  store: {};
   options: {};
 
   /**
-   * @description Create ACL class and promisify backend methods
-   * @param backend
+   * @description Create ACL class and promisify store methods
+   * @param store
    * @param logger
    * @param options
    */
-  constructor(backend: {} = new Memory(), logger: {} = {}, options: {} = {}) {
+  constructor(store: {} = new Memory(), logger: {} = {}, options: {} = {}) {
     super()
     this.options = _.extend({
       buckets: {
@@ -30,12 +30,12 @@ export default class Acl extends Common {
     }, options);
 
     this.logger = logger;
-    this.backend = backend;
-    this.backend.endAsync = bluebird.promisify(backend.end);
-    this.backend.getAsync = bluebird.promisify(backend.get);
-    this.backend.cleanAsync = bluebird.promisify(backend.clean);
-    this.backend.unionAsync = bluebird.promisify(backend.union);
-    if (backend.unions) this.backend.unionsAsync = bluebird.promisify(backend.unions);
+    this.store = store;
+    this.store.endAsync = bluebird.promisify(store.end);
+    this.store.getAsync = bluebird.promisify(store.get);
+    this.store.cleanAsync = bluebird.promisify(store.clean);
+    this.store.unionAsync = bluebird.promisify(store.union);
+    if (store.unions) this.store.unionsAsync = bluebird.promisify(store.unions);
   }
 
   /**
@@ -45,16 +45,16 @@ export default class Acl extends Common {
    * @param callback
    */
   addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-    const transaction = this.backend.begin();
-    this.backend.add(transaction, this.options.buckets.meta, 'users', userId);
-    this.backend.add(transaction, this.options.buckets.users, userId, roles);
+    const transaction = this.store.begin();
+    this.store.add(transaction, this.options.buckets.meta, 'users', userId);
+    this.store.add(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach(role => this.backend.add(transaction, this.options.buckets.roles, role, userId));
+      roles.forEach(role => this.store.add(transaction, this.options.buckets.roles, role, userId));
     } else {
-      this.backend.add(transaction, this.options.buckets.roles, roles, userId);
+      this.store.add(transaction, this.options.buckets.roles, roles, userId);
     }
-    return this.backend.endAsync(transaction).nodeify(callback);
+    return this.store.endAsync(transaction).nodeify(callback);
   }
 
   /**
@@ -64,15 +64,15 @@ export default class Acl extends Common {
    * @param callback
    */
   removeUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-    const transaction = this.backend.begin();
-    this.backend.remove(transaction, this.options.buckets.users, userId, roles);
+    const transaction = this.store.begin();
+    this.store.remove(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach(role => this.backend.remove(transaction, this.options.buckets.roles, role, userId));
+      roles.forEach(role => this.store.remove(transaction, this.options.buckets.roles, role, userId));
     } else {
-      this.backend.remove(transaction, this.options.buckets.roles, roles, userId);
+      this.store.remove(transaction, this.options.buckets.roles, roles, userId);
     }
-    return this.backend.endAsync(transaction).nodeify(callback);
+    return this.store.endAsync(transaction).nodeify(callback);
   };
 
   /**
@@ -81,7 +81,7 @@ export default class Acl extends Common {
    * @param callback
    */
   userRoles(userId: string | number, callback: ?() => void) {
-    return this.backend.getAsync(this.options.buckets.users, userId).nodeify(callback);
+    return this.store.getAsync(this.options.buckets.users, userId).nodeify(callback);
   };
 
   /**
@@ -90,7 +90,7 @@ export default class Acl extends Common {
    * @param callback
    */
   roleUsers(roleName: string | number, callback: ?() => void) {
-    return this.backend.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
+    return this.store.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
   };
 
   /**
@@ -110,10 +110,10 @@ export default class Acl extends Common {
    * @param callback
    */
   addRoleParents(role: string | number, parents: mixed, callback: ?() => void) {
-    const transaction = this.backend.begin();
-    this.backend.add(transaction, this.options.buckets.meta, 'roles', role);
-    this.backend.add(transaction, this.options.buckets.parents, role, parents);
-    return this.backend.endAsync(transaction).nodeify(callback);
+    const transaction = this.store.begin();
+    this.store.add(transaction, this.options.buckets.meta, 'roles', role);
+    this.store.add(transaction, this.options.buckets.parents, role, parents);
+    return this.store.endAsync(transaction).nodeify(callback);
   };
 
   /**
@@ -128,10 +128,10 @@ export default class Acl extends Common {
       parents = null;
     }
 
-    const transaction = this.backend.begin();
-    if (parents) this.backend.remove(transaction, this.options.buckets.parents, role, parents);
-    else this.backend.del(transaction, this.options.buckets.parents, role);
-    return this.backend.endAsync(transaction).nodeify(callback);
+    const transaction = this.store.begin();
+    if (parents) this.store.remove(transaction, this.options.buckets.parents, role, parents);
+    else this.store.del(transaction, this.options.buckets.parents, role);
+    return this.store.endAsync(transaction).nodeify(callback);
   };
 
   /**
@@ -140,19 +140,19 @@ export default class Acl extends Common {
    * @param callback
    */
   removeRole(role: string, callback: ?() => void) {
-    return this.backend.getAsync(this.options.buckets.resources, role)
+    return this.store.getAsync(this.options.buckets.resources, role)
       .then(resources => {
-        const transaction = this.backend.begin();
+        const transaction = this.store.begin();
         resources.forEach(resource => {
           let bucket = this.allowsBucket(resource);
-          this.backend.del(transaction, bucket, role);
+          this.store.del(transaction, bucket, role);
         });
 
-        this.backend.del(transaction, this.options.buckets.resources, role);
-        this.backend.del(transaction, this.options.buckets.parents, role);
-        this.backend.del(transaction, this.options.buckets.roles, role);
-        this.backend.remove(transaction, this.options.buckets.meta, 'roles', role);
-        return this.backend.endAsync(transaction);
+        this.store.del(transaction, this.options.buckets.resources, role);
+        this.store.del(transaction, this.options.buckets.parents, role);
+        this.store.del(transaction, this.options.buckets.roles, role);
+        this.store.remove(transaction, this.options.buckets.meta, 'roles', role);
+        return this.store.endAsync(transaction);
       }).nodeify(callback);
   };
 
@@ -162,12 +162,12 @@ export default class Acl extends Common {
    * @param callback
    */
   removeResource(resource: string, callback: ?() => void) {
-    return this.backend.getAsync(this.options.buckets.meta, 'roles')
+    return this.store.getAsync(this.options.buckets.meta, 'roles')
       .then(roles => {
-        const transaction = this.backend.begin();
-        this.backend.del(transaction, this.allowsBucket(resource), roles);
-        roles.forEach(role => this.backend.remove(transaction, this.options.buckets.resources, role, resource));
-        return this.backend.endAsync(transaction);
+        const transaction = this.store.begin();
+        this.store.del(transaction, this.allowsBucket(resource), roles);
+        roles.forEach(role => this.store.remove(transaction, this.options.buckets.resources, role, resource));
+        return this.store.endAsync(transaction);
       }).nodeify(callback)
   };
 
@@ -197,29 +197,29 @@ export default class Acl extends Common {
    * @param permissions
    * @param callback
    */
-  removePermissions(role: string, resources: mixed, permissions: mixed, callback: ?() => void) {
-    const transaction = this.backend.begin();
+  removePermissions(role: string, resources: string | Array<any>, permissions: string | Array<any>, callback: ?() => void) {
+    const transaction = this.store.begin();
     resources.forEach(resource => {
       let bucket = this.allowsBucket(resource);
       if (permissions) {
-        this.backend.remove(transaction, bucket, role, permissions);
+        this.store.remove(transaction, bucket, role, permissions);
       } else {
-        this.backend.del(transaction, bucket, role);
-        this.backend.remove(transaction, this.options.buckets.resources, role, resource);
+        this.store.del(transaction, bucket, role);
+        this.store.remove(transaction, this.options.buckets.resources, role, resource);
       }
     });
 
-    return this.backend.endAsync(transaction)
+    return this.store.endAsync(transaction)
       .then(() => {
-        const transaction = this.backend.begin();
+        const transaction = this.store.begin();
         return bluebird.all(resources.map(resource => {
           let bucket = this.allowsBucket(resource);
-          return this.backend.getAsync(bucket, role)
+          return this.store.getAsync(bucket, role)
             .then(permissions => {
-              if (!permissions.length) this.backend.remove(transaction, this.options.buckets.resources, role, resource);
+              if (!permissions.length) this.store.remove(transaction, this.options.buckets.resources, role, resource);
             });
         }))
-          .then(this.backend.endAsync(transaction));
+          .then(this.store.endAsync(transaction));
       }).nodeify(callback);
   };
 
@@ -237,20 +237,20 @@ export default class Acl extends Common {
       roles = this.makeArray(roles);
       resources = this.makeArray(resources);
 
-      const transaction = this.backend.begin();
-      this.backend.add(transaction, this.options.buckets.meta, 'roles', roles);
+      const transaction = this.store.begin();
+      this.store.add(transaction, this.options.buckets.meta, 'roles', roles);
 
       resources.forEach(resource => {
         roles.forEach(role => {
-          this.backend.add(transaction, this.allowsBucket(resource), role, permissions);
+          this.store.add(transaction, this.allowsBucket(resource), role, permissions);
         });
       });
 
       roles.forEach(function (role) {
-        this.backend.add(transaction, this.options.buckets.resources, role, resources);
+        this.store.add(transaction, this.options.buckets.resources, role, resources);
       });
 
-      return this.backend.endAsync(transaction).nodeify(callback);
+      return this.store.endAsync(transaction).nodeify(callback);
     }
   };
 
@@ -264,7 +264,7 @@ export default class Acl extends Common {
    */
   allowedPermissions(userId: string | number, resources: mixed, callback: ?() => void) {
     if (!userId) return callback(null, {});
-    if (this.backend.unionsAsync) return this.optimizedAllowedPermissions(userId, resources, callback);
+    if (this.store.unionsAsync) return this.optimizedAllowedPermissions(userId, resources, callback);
 
     resources = this.makeArray(resources);
     return this.userRoles(userId)
@@ -284,7 +284,7 @@ export default class Acl extends Common {
    * @description Returns all the allowable permissions a given user have to access the given resources.
    * It returns a map of resource name to a list of permissions for that resource.
    * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce
-   * the number of backend queries.
+   * the number of store queries.
    * @param userId
    * @param resources
    * @param callback
@@ -304,7 +304,7 @@ export default class Acl extends Common {
           });
           return bluebird.resolve(emptyResult);
         }
-        return this.backend.unionsAsync(buckets, roles);
+        return this.store.unionsAsync(buckets, roles);
       })
       .then(response => {
         let result = {};
@@ -325,7 +325,7 @@ export default class Acl extends Common {
    * @param callback
    */
   isAllowed(userId: string | number, resource: string, permissions: mixed, callback: ?() => void) {
-    return this.backend.getAsync(this.options.buckets.users, userId)
+    return this.store.getAsync(this.options.buckets.users, userId)
       .then(roles => {
         if (roles.length) return this.areAnyRolesAllowed(roles, resource, permissions);
         return false;
@@ -426,7 +426,7 @@ export default class Acl extends Common {
    * @private
    */
   _rolesParents(roles) {
-    return this.backend.unionAsync(this.options.buckets.parents, roles);
+    return this.store.unionAsync(this.options.buckets.parents, roles);
   };
 
   /**
@@ -474,7 +474,7 @@ export default class Acl extends Common {
       .then(allRoles => {
         let result = [];
         return bluebird.all(allRoles.map(role => {
-          return this.backend.getAsync(this.options.buckets.resources, role)
+          return this.store.getAsync(this.options.buckets.resources, role)
             .then(resources => result = result.concat(resources));
         })).then(() => {
           return result;
@@ -491,7 +491,7 @@ export default class Acl extends Common {
    */
   _resourcePermissions(roles, resource) {
     if (!roles.length) return bluebird.resolve([]);
-    return this.backend.unionAsync(this.allowsBucket(resource), roles)
+    return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then(resourcePermissions => {
         return this._rolesParents(roles)
           .then(parents => {
@@ -515,7 +515,7 @@ export default class Acl extends Common {
    * @private
    */
   _checkPermissions(roles, resource, permissions) {
-    return this.backend.unionAsync(this.allowsBucket(resource), roles)
+    return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then(resourcePermissions => {
         if (resourcePermissions.indexOf('*') !== -1) return true;
         permissions = permissions.filter(p => {
@@ -523,7 +523,7 @@ export default class Acl extends Common {
         });
 
         if (!permissions.length) return true;
-        return this.backend.unionAsync(this.options.buckets.parents, roles)
+        return this.store.unionAsync(this.options.buckets.parents, roles)
           .then(parents => {
             return (parents && parents.length) ? this._checkPermissions(parents, resource, permissions) : false;
           });
