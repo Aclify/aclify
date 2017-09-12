@@ -2,6 +2,7 @@
 import bluebird from 'bluebird';
 import Common from './common';
 import _ from 'lodash';
+import Memory from '../stores/memory'
 
 export default class Acl extends Common {
 
@@ -15,7 +16,7 @@ export default class Acl extends Common {
    * @param logger
    * @param options
    */
-  constructor(backend: {}, logger: {} = {} , options: {} = {}) {
+  constructor(backend: {} = new Memory(), logger: {} = {}, options: {} = {}) {
     super()
     this.options = _.extend({
       buckets: {
@@ -30,12 +31,11 @@ export default class Acl extends Common {
 
     this.logger = logger;
     this.backend = backend;
-
-    backend.endAsync = bluebird.promisify(backend.end);
-    backend.getAsync = bluebird.promisify(backend.get);
-    backend.cleanAsync = bluebird.promisify(backend.clean);
-    backend.unionAsync = bluebird.promisify(backend.union);
-    if (backend.unions) backend.unionsAsync = bluebird.promisify(backend.unions);
+    this.backend.endAsync = bluebird.promisify(backend.end);
+    this.backend.getAsync = bluebird.promisify(backend.get);
+    this.backend.cleanAsync = bluebird.promisify(backend.clean);
+    this.backend.unionAsync = bluebird.promisify(backend.union);
+    if (backend.unions) this.backend.unionsAsync = bluebird.promisify(backend.unions);
   }
 
   /**
