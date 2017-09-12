@@ -281,7 +281,8 @@ export class Acl extends Common {
   /**
    * @description Returns all the allowable permissions a given user have to access the given resources.
    * It returns a map of resource name to a list of permissions for that resource.
-   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce the number of backend queries.
+   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce
+   * the number of backend queries.
    * @param userId
    * @param resources
    * @param callback
@@ -314,7 +315,8 @@ export class Acl extends Common {
   };
 
   /**
-   * @description Checks if the given user is allowed to access the resource for the given permissions (note: it must fulfill all the permissions).
+   * @description Checks if the given user is allowed to access the resource for the given permissions
+   * (note: it must fulfill all the permissions).
    * @param userId
    * @param resource
    * @param permissions
@@ -618,7 +620,8 @@ export class Acl extends Common {
   /**
    * @description Returns all the allowable permissions a given user have to access the given resources.
    * It returns a map of resource name to a list of permissions for that resource.
-   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce the number of backend queries.
+   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce
+   * the number of backend queries.
    * @param userId
    * @param resources
    * @param callback
@@ -651,7 +654,8 @@ export class Acl extends Common {
   };
 
   /**
-   * @description Checks if the given user is allowed to access the resource for the given permissions (note: it must fulfill all the permissions).
+   * @description Checks if the given user is allowed to access the resource for the given permissions
+   * (note: it must fulfill all the permissions).
    * @param userId
    * @param resource
    * @param permissions
