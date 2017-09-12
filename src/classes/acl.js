@@ -141,7 +141,7 @@ export class Acl extends Common {
       .then(resources => {
         const transaction = _this.backend.begin();
         resources.forEach(resource => {
-          let bucket = allowsBucket(resource);
+          let bucket = this.allowsBucket(resource);
           this.backend.del(transaction, bucket, role);
         });
 
@@ -162,7 +162,7 @@ export class Acl extends Common {
     return this.backend.getAsync(this.options.buckets.meta, 'roles')
       .then(roles => {
         const transaction = this.backend.begin();
-        this.backend.del(transaction, allowsBucket(resource), roles);
+        this.backend.del(transaction, this.allowsBucket(resource), roles);
         roles.forEach(role => this.backend.remove(transaction, this.options.buckets.resources, role, resource));
         return this.backend.endAsync(transaction);
       }).nodeify(callback)
@@ -274,6 +274,41 @@ export class Acl extends Common {
           .then(() => {
             return result
           });
+      }).nodeify(callback);
+  };
+
+  /**
+   * @description Returns all the allowable permissions a given user have to access the given resources.
+   * It returns a map of resource name to a list of permissions for that resource.
+   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce the number of backend queries.
+   * @param userId
+   * @param resources
+   * @param callback
+   * @return {*}
+   */
+  optimizedAllowedPermissions(userId: string | number, resources: mixed, callback: () => void) {
+    if (!userId) return callback(null, {});
+
+    resources = this.makeArray(resources);
+    return this._allUserRoles(userId)
+      .then(roles => {
+        const buckets = resources.map(this.allowsBucket);
+        if (roles.length === 0) {
+          let emptyResult = {};
+          buckets.forEach(bucket => {
+            emptyResult[bucket] = [];
+          });
+          return bluebird.resolve(emptyResult);
+        }
+        return this.backend.unionsAsync(buckets, roles);
+      })
+      .then(response => {
+        let result = {};
+        Object.keys(response).forEach(bucket => {
+          result[this.keyFromAllowsBucket(bucket)] = response[bucket];
+        });
+
+        return result;
       }).nodeify(callback);
   };
 
