@@ -42,7 +42,7 @@ export default class Memory extends Common implements Store {
    * @param key
    * @param callback
    */
-  get (bucket: string, key: string | number, callback: () => void) {
+  get (bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
     if (this._buckets[bucket]) {
       callback(null, this._buckets[bucket][key] || []);
     } else {
@@ -56,7 +56,7 @@ export default class Memory extends Common implements Store {
    * @param keys
    * @param callback
    */
-  unions(buckets: Array<any>, keys: Array<any>, callback: () => void) {
+  unions(buckets: Array<any>, keys: Array<any>, callback: (key: null, value: {}) => void) {
     let results = {};
     buckets.forEach(function (bucket) {
       if (this._buckets[bucket]) {
@@ -74,7 +74,7 @@ export default class Memory extends Common implements Store {
    * @param keys
    * @param callback
    */
-  union(bucket: string, keys: Array<any>, callback: () => void) {
+  union(bucket: string, keys: Array<any>, callback: (key: null, value: Array<any>) => void) {
     let match, re;
     if (!this._buckets[bucket]) {
       Object.keys(this._buckets).some(b => {
@@ -92,9 +92,9 @@ export default class Memory extends Common implements Store {
           keyArrays.push.apply(keyArrays, this._buckets[bucket][keys[i]]);
         }
       }
-      callback(undefined, _.union(keyArrays));
+      callback(null, _.union(keyArrays));
     } else {
-      callback(undefined, []);
+      callback(null, []);
     }
   }
 
