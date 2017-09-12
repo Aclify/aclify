@@ -1,6 +1,7 @@
 // @flow
 import bluebird from 'bluebird';
 import Common from './common';
+import _ from 'lodash';
 
 export default class Acl extends Common {
 
@@ -14,7 +15,7 @@ export default class Acl extends Common {
    * @param logger
    * @param options
    */
-  constructor(backend: {}, logger: ?{}, options: ?{}) {
+  constructor(backend: {}, logger: {} = {} , options: {} = {}) {
     super()
     this.options = _.extend({
       buckets: {
