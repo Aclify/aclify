@@ -325,8 +325,18 @@ export class Acl extends Common {
         if (roles.length) return this.areAnyRolesAllowed(roles, resource, permissions);
         return false;
       }).nodeify(callback);
-  };import bluebird from 'bluebird'
-  import {Common} from './common'
+  };
+
+  import
+  bluebird
+  from
+  'bluebird'
+  import {
+  Common
+}
+
+from
+'./common'
 
 export class Acl extends Common {
 
@@ -669,6 +679,24 @@ export class Acl extends Common {
   };
 
   /**
+   * @description Returns what resources a given role or roles have permissions over.
+   * @param roles
+   * @param permissions
+   * @param callback
+   * @return {*}
+   */
+  whatResources(roles: mixed, permissions: mixed, callback: () => void) {
+    roles = this.makeArray(roles);
+    if (_.isFunction(permissions)) {
+      callback = permissions;
+      permissions = undefined;
+    } else if (permissions) {
+      permissions = this.makeArray(permissions);
+    }
+    return this.permittedResources(roles, permissions, callback);
+  };
+
+  /**
    * @description Same as allow but accepts a more compact input
    * @param objs
    * @return {*}
@@ -693,33 +721,46 @@ export class Acl extends Common {
 }
 
 
-areAnyRolesAllowed(roles: mixed, resource: string, permissions: mixed, callback: () => void) {
-    roles = this.makeArray(roles);
-    permissions = this.makeArray(permissions);
-    if (!roles.length) return bluebird.resolve(false).nodeify(callback);
-    return this._checkPermissions(roles, resource, permissions).nodeify(callback);
-  };
+areAnyRolesAllowed(roles
+:
+mixed, resource
+:
+string, permissions
+:
+mixed, callback
+:
+() => void
+)
+{
+  roles = this.makeArray(roles);
+  permissions = this.makeArray(permissions);
+  if (!roles.length) return bluebird.resolve(false).nodeify(callback);
+  return this._checkPermissions(roles, resource, permissions).nodeify(callback);
+}
+;
 
-  /**
-   * @description Same as allow but accepts a more compact input
-   * @param objs
-   * @return {*}
-   * @private
-   */
-  _allowEx(objs) {
-    objs = this.makeArray(objs);
+/**
+ * @description Same as allow but accepts a more compact input
+ * @param objs
+ * @return {*}
+ * @private
+ */
+_allowEx(objs)
+{
+  objs = this.makeArray(objs);
 
-    let demuxed = [];
-    objs.forEach(obj => {
-      obj.allows.forEach(allow => {
-        demuxed.push({
-          roles: obj.roles,
-          resources: allow.resources,
-          permissions: allow.permissions
-        });
+  let demuxed = [];
+  objs.forEach(obj => {
+    obj.allows.forEach(allow => {
+      demuxed.push({
+        roles: obj.roles,
+        resources: allow.resources,
+        permissions: allow.permissions
       });
     });
-    return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
-  };
+  });
+  return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
+}
+;
 
 }
