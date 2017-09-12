@@ -1,6 +1,6 @@
 // @flow
 
-export class Common {
+export default class Common {
 
   allowPrefix: string;
 

@@ -1,8 +1,8 @@
 // @flow
 import bluebird from 'bluebird';
-import {Common} from './common';
+import Common from './common';
 
-export class Acl extends Common {
+export default class Acl extends Common {
 
   logger: {};
   backend: {};
