@@ -252,6 +252,32 @@ export class Acl extends Common {
   };
 
   /**
+   * @description Returns all the allowable permissions a given user have to access the given resources.
+   * It returns an array of objects where every object maps a resource name to a list of permissions for that resource.
+   * @param userId
+   * @param resources
+   * @param callback
+   * @return {*}
+   */
+  allowedPermissions(userId: string | number, resources: mixed, callback: () => void) {
+    if (!userId) return callback(null, {});
+    if (this.backend.unionsAsync) return this.optimizedAllowedPermissions(userId, resources, callback);
+
+    resources = this.makeArray(resources);
+    return this.userRoles(userId)
+      .then(roles => {
+        let result = {};
+        return bluebird.all(resources.map(resource => {
+          return this._resourcePermissions(roles, resource)
+            .then(permissions => result[resource] = permissions);
+        }))
+          .then(() => {
+            return result
+          });
+      }).nodeify(callback);
+  };
+
+  /**
    * @description Same as allow but accepts a more compact input
    * @param objs
    * @return {*}
