@@ -169,6 +169,25 @@ export class Acl extends Common {
   };
 
   /**
+   * @description Remove all permissions
+   * @param role
+   * @param resources
+   * @param permissions
+   * @param callback
+   * @return {*}
+   */
+  removeAllow(role: string, resources: mixed, permissions: mixed, callback: () => void) {
+    resources = this.makeArray(resources);
+    if (callback || (permissions && !_.isFunction(permissions))) {
+      permissions = this.makeArray(permissions);
+    } else {
+      callback = permissions;
+      permissions = null;
+    }
+    return this.removePermissions(role, resources, permissions, callback);
+  }
+
+  /**
    * @description Adds the given permissions to the given roles over the given resources
    * @param roles
    * @param resources
