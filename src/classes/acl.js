@@ -313,6 +313,21 @@ export class Acl extends Common {
   };
 
   /**
+   * @description Checks if the given user is allowed to access the resource for the given permissions (note: it must fulfill all the permissions).
+   * @param userId
+   * @param resource
+   * @param permissions
+   * @param callback
+   */
+  isAllowed(userId: string | number, resource: string, permissions:mixed, callback: () => void) {
+    return this.backend.getAsync(this.options.buckets.users, userId)
+      .then(roles => {
+        if (roles.length) return this.areAnyRolesAllowed(roles, resource, permissions);
+        return false;
+      }).nodeify(callback);
+  };
+
+  /**
    * @description Same as allow but accepts a more compact input
    * @param objs
    * @return {*}
