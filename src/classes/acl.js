@@ -1,5 +1,6 @@
-import bluebird from 'bluebird'
-import {Common} from './common'
+// @flow
+import bluebird from 'bluebird';
+import {Common} from './common';
 
 export class Acl extends Common {
 
