@@ -818,7 +818,7 @@ export class Acl extends Common {
    * @return {Promise.<TResult>}
    * @private
    */
-  _checkPermissions = function (roles, resource, permissions) {
+  _checkPermissions(roles, resource, permissions) {
     return this.backend.unionAsync(this.allowsBucket(resource), roles)
       .then(resourcePermissions => {
         if (resourcePermissions.indexOf('*') !== -1) return true;
