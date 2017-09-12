@@ -14,6 +14,7 @@ export class Acl extends Common {
    * @param options
    */
   constructor(backend: {}, logger: ?{}, options: ?{}) {
+    super()
     this.options = _.extend({
       buckets: {
         meta: 'meta',
