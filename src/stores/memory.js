@@ -1,11 +1,10 @@
 // @flow
-import Store from '../interfaces/store'
-import Common from '../classes/common'
-import _ from 'lodash'
+import _ from 'lodash';
+import Store from '../interfaces/store';
+import Common from '../classes/common';
 
 export default class Memory extends Common implements Store {
-
-  _buckets = {};
+  buckets: {};
 
   /**
    * @description Begins a transaction.
@@ -32,7 +31,7 @@ export default class Memory extends Common implements Store {
    * @param callback
    */
   clean(callback: () => void) {
-    this._buckets = {};
+    this.buckets = {};
     callback();
   }
 
@@ -42,9 +41,9 @@ export default class Memory extends Common implements Store {
    * @param key
    * @param callback
    */
-  get (bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
-    if (this._buckets[bucket]) {
-      callback(null, this._buckets[bucket][key] || []);
+  get(bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
+    if (this.buckets[bucket]) {
+      callback(null, this.buckets[bucket][key] || []);
     } else {
       callback(null, []);
     }
@@ -59,8 +58,8 @@ export default class Memory extends Common implements Store {
   unions(buckets: Array<any>, keys: Array<any>, callback: (key: null, value: {}) => void) {
     let results = {};
     buckets.forEach(function (bucket) {
-      if (this._buckets[bucket]) {
-        results[bucket] = _.uniq(_.flatten(_.values(_.pick(this._buckets[bucket], keys))));
+      if (this.buckets[bucket]) {
+        results[bucket] = _.uniq(_.flatten(_.values(_.pick(this.buckets[bucket], keys))));
       } else {
         results[bucket] = [];
       }
@@ -76,8 +75,8 @@ export default class Memory extends Common implements Store {
    */
   union(bucket: string, keys: Array<any>, callback: (key: null, value: Array<any>) => void) {
     let match, re;
-    if (!this._buckets[bucket]) {
-      Object.keys(this._buckets).some(b => {
+    if (!this.buckets[bucket]) {
+      Object.keys(this.buckets).some((b) => {
         re = new RegExp(`^${b}$`);
         match = re.test(bucket);
         if (match) bucket = b;
@@ -85,11 +84,11 @@ export default class Memory extends Common implements Store {
       });
     }
 
-    if (this._buckets[bucket]) {
+    if (this.buckets[bucket]) {
       let keyArrays = [];
       for (let i = 0, len = keys.length; i < len; i++) {
-        if (this._buckets[bucket][keys[i]]) {
-          keyArrays.push.apply(keyArrays, this._buckets[bucket][keys[i]]);
+        if (this.buckets[bucket][keys[i]]) {
+          keyArrays.push.apply(keyArrays, this.buckets[bucket][keys[i]]);
         }
       }
       callback(null, _.union(keyArrays));
@@ -109,15 +108,15 @@ export default class Memory extends Common implements Store {
     values = this.makeArray(values);
 
     transaction.push(() => {
-      if (!this._buckets[bucket]) {
-        this._buckets[bucket] = {};
+      if (!this.buckets[bucket]) {
+        this.buckets[bucket] = {};
       }
-      if (!this._buckets[bucket][key]) {
-        this._buckets[bucket][key] = values;
+      if (!this.buckets[bucket][key]) {
+        this.buckets[bucket][key] = values;
       } else {
-        this._buckets[bucket][key] = _.union(values, this._buckets[bucket][key]);
+        this.buckets[bucket][key] = _.union(values, this.buckets[bucket][key]);
       }
-    })
+    });
   }
 
   /**
@@ -128,13 +127,13 @@ export default class Memory extends Common implements Store {
    */
   del(transaction: Array<any>, bucket: string, keys: string | Array<any>) {
     keys = this.makeArray(keys);
-    transaction.push(function () {
-      if (this._buckets[bucket]) {
+    transaction.push(() => {
+      if (this.buckets[bucket]) {
         for (let i = 0, len = keys.length; i < len; i++) {
-          delete this._buckets[bucket][keys[i]];
+          delete this.buckets[bucket][keys[i]];
         }
       }
-    })
+    });
   }
 
   /**
@@ -148,8 +147,8 @@ export default class Memory extends Common implements Store {
     values = this.makeArray(values);
     transaction.push(() => {
       let old;
-      if (this._buckets[bucket] && (old = this._buckets[bucket][key])) {
-        this._buckets[bucket][key] = _.difference(old, values);
+      if (this.buckets[bucket] && (old = this.buckets[bucket][key])) {
+        this.buckets[bucket][key] = _.difference(old, values);
       }
     });
   }
