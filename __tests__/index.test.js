@@ -1,3 +1,4 @@
+// @flow
 import Acl from '../src/classes/acl';
 import Memory from '../src/stores/memory';
 
