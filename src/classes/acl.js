@@ -1,11 +1,10 @@
 // @flow
+import _ from 'lodash';
 import bluebird from 'bluebird';
 import Common from './common';
-import _ from 'lodash';
-import Memory from '../stores/memory'
+import Memory from '../stores/memory';
 
 export default class Acl extends Common {
-
   logger: {};
   store: {};
   options: {};
@@ -17,7 +16,7 @@ export default class Acl extends Common {
    * @param options
    */
   constructor(store: {} = new Memory(), logger: {} = {}, options: {} = {}) {
-    super()
+    super();
     this.options = _.extend({
       buckets: {
         meta: 'meta',
@@ -25,8 +24,8 @@ export default class Acl extends Common {
         permissions: 'permissions',
         resources: 'resources',
         roles: 'roles',
-        users: 'users'
-      }
+        users: 'users',
+      },
     }, options);
 
     this.logger = logger;
@@ -50,7 +49,7 @@ export default class Acl extends Common {
     this.store.add(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach(role => this.store.add(transaction, this.options.buckets.roles, role, userId));
+      roles.forEach((role) => this.store.add(transaction, this.options.buckets.roles, role, userId));
     } else {
       this.store.add(transaction, this.options.buckets.roles, roles, userId);
     }
@@ -68,12 +67,12 @@ export default class Acl extends Common {
     this.store.remove(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach(role => this.store.remove(transaction, this.options.buckets.roles, role, userId));
+      roles.forEach((role) => this.store.remove(transaction, this.options.buckets.roles, role, userId));
     } else {
       this.store.remove(transaction, this.options.buckets.roles, roles, userId);
     }
     return this.store.endAsync(transaction).nodeify(callback);
-  };
+  }
 
   /**
    * @description Return all the roles from a given user
@@ -82,7 +81,7 @@ export default class Acl extends Common {
    */
   userRoles(userId: string | number, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.users, userId).nodeify(callback);
-  };
+  }
 
   /**
    * @description Return all users who has a given role
@@ -91,7 +90,7 @@ export default class Acl extends Common {
    */
   roleUsers(roleName: string | number, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
-  };
+  }
 
   /**
    * @description Return boolean whether user is in the role
@@ -100,8 +99,8 @@ export default class Acl extends Common {
    * @param callback
    */
   hasRole(userId: string | number, rolename: string | number, callback: ?() => void) {
-    return this.userRoles(userId).then(roles => roles.indexOf(rolename) !== -1).nodeify(callback);
-  };
+    return this.userRoles(userId).then((roles) => roles.indexOf(rolename) !== -1).nodeify(callback);
+  }
 
   /**
    * @description Adds a parent or parent list to role
@@ -114,7 +113,7 @@ export default class Acl extends Common {
     this.store.add(transaction, this.options.buckets.meta, 'roles', role);
     this.store.add(transaction, this.options.buckets.parents, role, parents);
     return this.store.endAsync(transaction).nodeify(callback);
-  };
+  }
 
   /**
    * @description Removes a parent or parent list from role. If `parents` is not specified, removes all parents
@@ -132,7 +131,7 @@ export default class Acl extends Common {
     if (parents) this.store.remove(transaction, this.options.buckets.parents, role, parents);
     else this.store.del(transaction, this.options.buckets.parents, role);
     return this.store.endAsync(transaction).nodeify(callback);
-  };
+  }
 
   /**
    * @description Removes a role from the system
@@ -141,9 +140,9 @@ export default class Acl extends Common {
    */
   removeRole(role: string, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.resources, role)
-      .then(resources => {
+      .then((resources) => {
         const transaction = this.store.begin();
-        resources.forEach(resource => {
+        resources.forEach((resource) => {
           let bucket = this.allowsBucket(resource);
           this.store.del(transaction, bucket, role);
         });
@@ -154,7 +153,7 @@ export default class Acl extends Common {
         this.store.remove(transaction, this.options.buckets.meta, 'roles', role);
         return this.store.endAsync(transaction);
       }).nodeify(callback);
-  };
+  }
 
   /**
    * @description Removes a resource from the system
@@ -163,13 +162,13 @@ export default class Acl extends Common {
    */
   removeResource(resource: string, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.meta, 'roles')
-      .then(roles => {
+      .then((roles) => {
         const transaction = this.store.begin();
         this.store.del(transaction, this.allowsBucket(resource), roles);
-        roles.forEach(role => this.store.remove(transaction, this.options.buckets.resources, role, resource));
+        roles.forEach((role) => this.store.remove(transaction, this.options.buckets.resources, role, resource));
         return this.store.endAsync(transaction);
-      }).nodeify(callback)
-  };
+      }).nodeify(callback);
+  }
 
   /**
    * @description Remove all permissions
@@ -199,7 +198,7 @@ export default class Acl extends Common {
    */
   removePermissions(role: string, resources: string | Array<any>, permissions: string | Array<any>, callback: ?() => void) {
     const transaction = this.store.begin();
-    resources.forEach(resource => {
+    resources.forEach((resource) => {
       let bucket = this.allowsBucket(resource);
       if (permissions) {
         this.store.remove(transaction, bucket, role, permissions);
@@ -212,7 +211,7 @@ export default class Acl extends Common {
     return this.store.endAsync(transaction)
       .then(() => {
         const transaction = this.store.begin();
-        return bluebird.all(resources.map(resource => {
+        return bluebird.all(resources.map((resource) => {
           let bucket = this.allowsBucket(resource);
           return this.store.getAsync(bucket, role)
             .then(permissions => {
@@ -221,7 +220,7 @@ export default class Acl extends Common {
         }))
           .then(this.store.endAsync(transaction));
       }).nodeify(callback);
-  };
+  }
 
   /**
    * @description Adds the given permissions to the given roles over the given resources
@@ -240,19 +239,19 @@ export default class Acl extends Common {
       const transaction = this.store.begin();
       this.store.add(transaction, this.options.buckets.meta, 'roles', roles);
 
-      resources.forEach(resource => {
-        roles.forEach(role => {
+      resources.forEach((resource) => {
+        roles.forEach((role) => {
           this.store.add(transaction, this.allowsBucket(resource), role, permissions);
         });
       });
 
-      roles.forEach(function (role) {
+      roles.forEach((role) => {
         this.store.add(transaction, this.options.buckets.resources, role, resources);
       });
 
       return this.store.endAsync(transaction).nodeify(callback);
     }
-  };
+  }
 
   /**
    * @description Returns all the allowable permissions a given user have to access the given resources.
@@ -270,15 +269,15 @@ export default class Acl extends Common {
     return this.userRoles(userId)
       .then(roles => {
         let result = {};
-        return bluebird.all(resources.map(resource => {
+        return bluebird.all(resources.map((resource) => {
           return this._resourcePermissions(roles, resource)
-            .then(permissions => result[resource] = permissions);
+            .then((permissions) => result[resource] = permissions);
         }))
           .then(() => {
             return result
           });
       }).nodeify(callback);
-  };
+  }
 
   /**
    * @description Returns all the allowable permissions a given user have to access the given resources.
@@ -299,7 +298,7 @@ export default class Acl extends Common {
         const buckets = resources.map(this.allowsBucket);
         if (roles.length === 0) {
           let emptyResult = {};
-          buckets.forEach(bucket => {
+          buckets.forEach((bucket) => {
             emptyResult[bucket] = [];
           });
           return bluebird.resolve(emptyResult);
@@ -314,7 +313,7 @@ export default class Acl extends Common {
 
         return result;
       }).nodeify(callback);
-  };
+  }
 
   /**
    * @description Checks if the given user is allowed to access the resource for the given permissions
@@ -326,11 +325,11 @@ export default class Acl extends Common {
    */
   isAllowed(userId: string | number, resource: string, permissions: mixed, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.users, userId)
-      .then(roles => {
+      .then((roles) => {
         if (roles.length) return this.areAnyRolesAllowed(roles, resource, permissions);
         return false;
       }).nodeify(callback);
-  };
+  }
 
   /**
    * @description Returns true if any of the given roles have the right permissions.
@@ -344,7 +343,7 @@ export default class Acl extends Common {
     permissions = this.makeArray(permissions);
     if (!roles.length) return bluebird.resolve(false).nodeify(callback);
     return this._checkPermissions(roles, resource, permissions).nodeify(callback);
-  };
+  }
 
   /**
    * @description Returns what resources a given role or roles have permissions over.
@@ -362,7 +361,7 @@ export default class Acl extends Common {
       permissions = this.makeArray(permissions);
     }
     return this.permittedResources(roles, permissions, callback);
-  };
+  }
 
   /**
    * @description Returns permitted resources.
@@ -403,21 +402,19 @@ export default class Acl extends Common {
     objs = this.makeArray(objs);
 
     let demuxed = [];
-    objs.forEach(obj => {
+    objs.forEach((obj) => {
       let roles = obj.roles;
-      obj.allows.forEach(allow => {
+      obj.allows.forEach((allow) => {
         demuxed.push({
           roles: roles,
           resources: allow.resources,
-          permissions: allow.permissions
+          permissions: allow.permissions,
         });
       });
     });
 
-    return bluebird.reduce(demuxed, (values, obj) => {
-      return this.allow(obj.roles, obj.resources, obj.permissions);
-    }, null);
-  };
+    return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
+  }
 
   /**
    * @description Returns the parents of the given roles.
@@ -427,7 +424,7 @@ export default class Acl extends Common {
    */
   _rolesParents(roles) {
     return this.store.unionAsync(this.options.buckets.parents, roles);
-  };
+  }
 
   /**
    * @description Return all roles in the hierarchy including the given roles.
@@ -437,16 +434,16 @@ export default class Acl extends Common {
    */
   _allRoles(roleNames) {
     return this._rolesParents(roleNames)
-      .then(parents => {
+      .then((parents) => {
         if (parents.length) {
           return this._allRoles(parents)
-            .then(parentRoles => {
+            .then((parentRoles) => {
               return _.union(roleNames, parentRoles);
             });
         }
         return roleNames;
       });
-  };
+  }
 
   /**
    * @description Return all roles in the hierarchy of the given user.
@@ -456,11 +453,11 @@ export default class Acl extends Common {
    */
   _allUserRoles(userId) {
     return this.userRoles(userId)
-      .then(roles => {
+      .then((roles) => {
         if (roles && roles.length) return this._allRoles(roles);
         return [];
       });
-  };
+  }
 
   /**
    * @description Returns an array with resources for the given roles.
@@ -471,16 +468,16 @@ export default class Acl extends Common {
   _rolesResources(roles) {
     roles = this.makeArray(roles);
     return this._allRoles(roles)
-      .then(allRoles => {
+      .then((allRoles) => {
         let result = [];
-        return bluebird.all(allRoles.map(role => {
+        return bluebird.all(allRoles.map((role) => {
           return this.store.getAsync(this.options.buckets.resources, role)
-            .then(resources => result = result.concat(resources));
+            .then((resources) => result = result.concat(resources));
         })).then(() => {
           return result;
         });
       });
-  };
+  }
 
   /**
    * @description Returns the permissions for the given resource and set of roles.
@@ -492,19 +489,19 @@ export default class Acl extends Common {
   _resourcePermissions(roles, resource) {
     if (!roles.length) return bluebird.resolve([]);
     return this.store.unionAsync(this.allowsBucket(resource), roles)
-      .then(resourcePermissions => {
+      .then((resourcePermissions) => {
         return this._rolesParents(roles)
           .then(parents => {
             if (parents && parents.length) {
               return this._resourcePermissions(parents, resource)
-                .then(morePermissions => {
+                .then((morePermissions) => {
                   return _.union(resourcePermissions, morePermissions);
                 });
             }
             return resourcePermissions;
           });
       });
-  };
+  }
 
   /**
    * @description This function will not handle circular dependencies and result in a crash.
@@ -516,7 +513,7 @@ export default class Acl extends Common {
    */
   _checkPermissions(roles, resource, permissions) {
     return this.store.unionAsync(this.allowsBucket(resource), roles)
-      .then(resourcePermissions => {
+      .then((resourcePermissions) => {
         if (resourcePermissions.indexOf('*') !== -1) return true;
         permissions = permissions.filter(p => {
           return resourcePermissions.indexOf(p) === -1;
@@ -524,10 +521,7 @@ export default class Acl extends Common {
 
         if (!permissions.length) return true;
         return this.store.unionAsync(this.options.buckets.parents, roles)
-          .then(parents => {
-            return (parents && parents.length) ? this._checkPermissions(parents, resource, permissions) : false;
-          });
+          .then((parents) => (parents && parents.length) ? this._checkPermissions(parents, resource, permissions) : false);
       });
-  };
-
+  }
 }
