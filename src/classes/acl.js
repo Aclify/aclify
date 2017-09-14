@@ -15,7 +15,7 @@ export default class Acl extends Common {
    * @param logger
    * @param options
    */
-  constructor(store: {} = new Memory(), logger: {} = {}, options: {} = {}) {
+  constructor(store: {} = new Memory(), logger: {} | null = null, options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
