@@ -100,27 +100,27 @@ describe(`Add user roles`, () => {
   });
 });
 
-// describe(`Read user's roles`, () => {
-//   it(`run userRoles function`, (done) => {
-//     const acl = new Acl(store);
-//     acl.addUserRoles('harry', 'admin', (err) => {
-//       if (err) return done(err);
-//
-//       acl.userRoles('harry', (err, roles) => {
-//         if (err) return done(err);
-//
-//         expect.deepEqual(roles, ['admin']);
-//         acl.hasRole('harry', 'admin', (err, is_in_role) => {
-//           if (err) return done(err);
-//
-//           expect.ok(is_in_role);
-//           acl.hasRole('harry', 'no role', (err, is_in_role) => {
-//             if (err) return done(err);
-//             expect.notOk(is_in_role);
-//             done();
-//           });
-//         });
-//       });
-//     });
-//   });
-// });
+describe(`Read user's roles`, () => {
+  it(`Run userRoles function`, (done) => {
+    const acl = new Acl(store);
+    acl.addUserRoles('harry', 'admin', (err) => {
+      if (err) return done(err);
+
+      acl.userRoles('harry', (err, roles) => {
+        if (err) return done(err);
+        expect(roles).toEqual(['admin']);
+
+        acl.hasRole('harry', 'admin', (err, is_in_role) => {
+          if (err) return done(err);
+          expect(is_in_role).toBeTruthy();
+
+          acl.hasRole('harry', 'no role', (err, is_in_role) => {
+            if (err) return done(err);
+            expect(is_in_role).toBeFalsy();
+            done();
+          });
+        });
+      });
+    });
+  });
+});
