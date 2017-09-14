@@ -26,3 +26,27 @@ describe('Allows', () => {
     });
   });
 });
+
+describe('Add user roles', () => {
+  it('joed = guest, jsmith = member, harry = admin, test@test.com = member', (done) => {
+    const acl = new Acl(store);
+
+    acl.addUserRoles('joed', 'guest', (err) => {
+      expect(!err);
+
+      acl.addUserRoles('jsmith', 'member', (err) => {
+        expect(!err);
+
+        acl.addUserRoles('harry', 'admin', (err) => {
+          expect(!err);
+
+          acl.addUserRoles('test@test.com', 'member', (err) => {
+            expect(!err);
+            done();
+          });
+        });
+      });
+    });
+  });
+});
+
