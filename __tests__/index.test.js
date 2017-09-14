@@ -181,3 +181,24 @@ describe(`Add role parents`, () => {
     });
   });
 });
+
+describe(`Add user roles`, () => {
+  it(`Add them`, (done) => {
+    const acl = new Acl(store);
+
+    acl.addUserRoles('james', 'baz', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it(`Add them with numeric userId`, (done) => {
+    const acl = new Acl(store);
+
+    acl.addUserRoles(3, 'baz', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
