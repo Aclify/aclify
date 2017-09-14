@@ -202,3 +202,52 @@ describe(`Add user roles`, () => {
   });
 });
 
+
+describe(`allow admin to do anything`, () => {
+  it(`add them`, (done) => {
+    const acl = new Acl(store)
+
+    acl.allow('admin', ['blogs', 'forums'], '*', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
+describe(`Arguments in one array`, () => {
+  it(`Give role fumanchu an array of resources and permissions`, (done) => {
+    const acl = new Acl(store);
+
+    acl.allow([{
+        roles: 'fumanchu',
+        allows: [
+          {resources: 'blogs', permissions: 'get'},
+          {resources: ['forums', 'news'], permissions: ['get', 'put', 'delete']},
+          {resources: ['/path/file/file1.txt', '/path/file/file2.txt'], permissions: ['get', 'put', 'delete']}
+        ]
+      }],
+      (err) => {
+        expect(!err);
+        done();
+      });
+  });
+});
+
+describe(`Add fumanchu role to suzanne`, () => {
+  it(`Do it`, (done) => {
+    const acl = new Acl(store);
+    acl.addUserRoles('suzanne', 'fumanchu', (err) => {
+      expect(!err);
+      done();
+    })
+  });
+
+  it('Do it (numeric userId)', (done) => {
+    const acl = new Acl(store);
+    acl.addUserRoles(4, 'fumanchu', (err) => {
+      expect(!err);
+      done();
+    })
+  })
+});
+
