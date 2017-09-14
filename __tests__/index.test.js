@@ -48,5 +48,21 @@ describe('Add user roles', () => {
       });
     });
   });
-});
 
+  it('0 = guest, 1 = member, 2 = admin', (done) => {
+    const acl = new Acl(store);
+
+    acl.addUserRoles(0, 'guest', (err) => {
+      expect(!err);
+
+      acl.addUserRoles(1, 'member', (err) => {
+        expect(!err);
+
+        acl.addUserRoles(2, 'admin', (err) => {
+          expect(!err);
+          done();
+        });
+      });
+    });
+  });
+});
