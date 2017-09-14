@@ -124,3 +124,19 @@ describe(`Read user's roles`, () => {
     });
   });
 });
+
+describe(`Read role's users`, () => {
+  it('Run roleUsers function', (done) => {
+    const acl = new Acl(store);
+    acl.addUserRoles('harry', 'admin', (err) => {
+      if (err) return done(err);
+
+      acl.roleUsers('admin', (err, users) => {
+        if (err) return done(err);
+        expect(users).toContain('harry');
+        done();
+      });
+    });
+  });
+});
+
