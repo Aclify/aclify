@@ -126,7 +126,7 @@ describe(`Read user's roles`, () => {
 });
 
 describe(`Read role's users`, () => {
-  it('Run roleUsers function', (done) => {
+  it(`Run roleUsers function`, (done) => {
     const acl = new Acl(store);
 
     acl.addUserRoles('harry', 'admin', (err) => {
@@ -142,7 +142,7 @@ describe(`Read role's users`, () => {
 });
 
 
-describe('Allow', () => {
+describe(`Allow`, () => {
   it('admin view/add/edit/delete users', (done) => {
     const acl = new Acl(store);
 
@@ -152,7 +152,7 @@ describe('Allow', () => {
     })
   });
 
-  it('foo view/edit blogs', (done) => {
+  it(`foo view/edit blogs`, (done) => {
     const acl = new Acl(store);
 
     acl.allow('foo', 'blogs', ['edit', 'view'], (err) => {
@@ -161,7 +161,7 @@ describe('Allow', () => {
     })
   });
 
-  it('bar to view/delete blogs', (done) => {
+  it(`bar to view/delete blogs`, (done) => {
     const acl = new Acl(store);
 
     acl.allow('bar', 'blogs', ['view', 'delete'], (err) => {
@@ -171,3 +171,13 @@ describe('Allow', () => {
   });
 });
 
+describe(`Add role parents`, () => {
+  it(`Add foot and bar roles into baz parent role`, (done) => {
+    const acl = new Acl(store);
+
+    acl.addRoleParents('baz', ['foo', 'bar'], (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
