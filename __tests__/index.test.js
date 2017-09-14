@@ -128,6 +128,7 @@ describe(`Read user's roles`, () => {
 describe(`Read role's users`, () => {
   it('Run roleUsers function', (done) => {
     const acl = new Acl(store);
+
     acl.addUserRoles('harry', 'admin', (err) => {
       if (err) return done(err);
 
@@ -136,6 +137,36 @@ describe(`Read role's users`, () => {
         expect(users).toContain('harry');
         done();
       });
+    });
+  });
+});
+
+
+describe('Allow', () => {
+  it('admin view/add/edit/delete users', (done) => {
+    const acl = new Acl(store);
+
+    acl.allow('admin', 'users', ['add', 'edit', 'view', 'delete'], (err) => {
+      expect(!err);
+      done();
+    })
+  });
+
+  it('foo view/edit blogs', (done) => {
+    const acl = new Acl(store);
+
+    acl.allow('foo', 'blogs', ['edit', 'view'], (err) => {
+      expect(!err);
+      done()
+    })
+  });
+
+  it('bar to view/delete blogs', (done) => {
+    const acl = new Acl(store);
+
+    acl.allow('bar', 'blogs', ['view', 'delete'], (err) => {
+      expect(!err);
+      done();
     });
   });
 });
