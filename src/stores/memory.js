@@ -6,6 +6,11 @@ import Common from '../classes/common';
 export default class Memory extends Common implements Store {
   buckets: {};
 
+  constructor() {
+    super();
+    this.buckets = {}
+  }
+
   /**
    * @description Begins a transaction.
    * @return {Array}
@@ -41,7 +46,7 @@ export default class Memory extends Common implements Store {
    * @param key
    * @param callback
    */
-  get(bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
+  get (bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
     if (this.buckets[bucket]) {
       callback(null, this.buckets[bucket][key] || []);
     } else {
