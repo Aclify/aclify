@@ -4,7 +4,40 @@ import Memory from '../src/stores/memory';
 
 const store = new Memory();
 
-describe('Allows', () => {
+describe('Constructor', () => {
+  it('Should use default `buckets` names', () => {
+    const acl = new Acl(store);
+
+    expect(acl.options.buckets.meta).toEqual('meta');
+    expect(acl.options.buckets.parents).toEqual('parents');
+    expect(acl.options.buckets.permissions).toEqual('permissions');
+    expect(acl.options.buckets.resources).toEqual('resources');
+    expect(acl.options.buckets.roles).toEqual('roles');
+    expect(acl.options.buckets.users).toEqual('users');
+  });
+
+  it('Should use given `buckets` names', () => {
+    const acl = new Acl(store, null, {
+      buckets: {
+        meta: 'Meta',
+        parents: 'Parents',
+        permissions: 'Permissions',
+        resources: 'Resources',
+        roles: 'Roles',
+        users: 'Users',
+      }
+    });
+
+    expect(acl.options.buckets.meta).toEqual('Meta');
+    expect(acl.options.buckets.parents).toEqual('Parents');
+    expect(acl.options.buckets.permissions).toEqual('Permissions');
+    expect(acl.options.buckets.resources).toEqual('Resources');
+    expect(acl.options.buckets.roles).toEqual('Roles');
+    expect(acl.options.buckets.users).toEqual('Users');
+  });
+});
+
+describe(`Allows`, () => {
   it('guest to view blogs', () => {
     const acl = new Acl();
     acl.allow('guest', 'blogs', 'view', (err) => {
@@ -12,14 +45,14 @@ describe('Allows', () => {
     });
   });
 
-  it('guest to view forums', () => {
+  it(`guest to view forums`, () => {
     const acl = new Acl(store);
     acl.allow('guest', 'forums', 'view', (err) => {
       expect(!err);
     });
   });
 
-  it('member to view/edit/delete blogs', () => {
+  it(`member to view/edit/delete blogs`, () => {
     const acl = new Acl(store);
     acl.allow('member', 'blogs', ['edit', 'view', 'delete'], (err) => {
       expect(!err);
@@ -27,8 +60,8 @@ describe('Allows', () => {
   });
 });
 
-describe('Add user roles', () => {
-  it('joed = guest, jsmith = member, harry = admin, test@test.com = member', (done) => {
+describe(`Add user roles`, () => {
+  it(`joed = guest, jsmith = member, harry = admin, test@test.com = member`, (done) => {
     const acl = new Acl(store);
 
     acl.addUserRoles('joed', 'guest', (err) => {
@@ -49,7 +82,7 @@ describe('Add user roles', () => {
     });
   });
 
-  it('0 = guest, 1 = member, 2 = admin', (done) => {
+  it(`0 = guest, 1 = member, 2 = admin`, (done) => {
     const acl = new Acl(store);
 
     acl.addUserRoles(0, 'guest', (err) => {
@@ -66,3 +99,28 @@ describe('Add user roles', () => {
     });
   });
 });
+
+// describe(`Read user's roles`, () => {
+//   it(`run userRoles function`, (done) => {
+//     const acl = new Acl(store);
+//     acl.addUserRoles('harry', 'admin', (err) => {
+//       if (err) return done(err);
+//
+//       acl.userRoles('harry', (err, roles) => {
+//         if (err) return done(err);
+//
+//         expect.deepEqual(roles, ['admin']);
+//         acl.hasRole('harry', 'admin', (err, is_in_role) => {
+//           if (err) return done(err);
+//
+//           expect.ok(is_in_role);
+//           acl.hasRole('harry', 'no role', (err, is_in_role) => {
+//             if (err) return done(err);
+//             expect.notOk(is_in_role);
+//             done();
+//           });
+//         });
+//       });
+//     });
+//   });
+// });
