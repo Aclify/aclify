@@ -36,9 +36,9 @@ Run using npm run <script> command.
 ## License
 MIT © [Dimitri DO BAIRRO](https://github.com/rimiti/aclify/blob/master/LICENSE)
 
-[prod-dependencies-badge]: https://david-dm.org/rimiti/aclify/status.svg?style=flat-square
+[prod-dependencies-badge]: https://david-dm.org/rimiti/aclify/status.svg
 [prod-dependencies]: https://david-dm.org/rimiti/aclify
-[dev-dependencies-badge]: https://david-dm.org/rimiti/aclify/dev-status.svg?style=flat-square
+[dev-dependencies-badge]: https://david-dm.org/rimiti/aclify/dev-status.svg
 [dev-dependencies]: https://david-dm.org/rimiti/aclify?type=dev
 [codeclimate-score-badge]: https://codeclimate.com/github/rimiti/aclify/badges/gpa.svg
 [codeclimate-score]: https://codeclimate.com/github/rimiti/aclify
