@@ -43,17 +43,34 @@ export default class Acl extends Common {
    * @param roles
    * @param callback
    */
-  addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-    const transaction = this.store.begin();
+  // addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
+  //   const transaction = this.store.begin();
+  //   this.store.add(transaction, this.options.buckets.meta, 'users', userId);
+  //   this.store.add(transaction, this.options.buckets.users, userId, roles);
+  //
+  //   if (Array.isArray(roles)) {
+  //     roles.forEach((role) => this.store.add(transaction, this.options.buckets.roles, role, userId));
+  //   } else {
+  //     this.store.add(transaction, this.options.buckets.roles, roles, userId);
+  //   }
+  //   return this.store.endAsync(transaction).nodeify(callback);
+  // }
+
+
+  addUserRoles(userId, roles, cb) {
+    let transaction = this.store.begin();
     this.store.add(transaction, this.options.buckets.meta, 'users', userId);
     this.store.add(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach((role) => this.store.add(transaction, this.options.buckets.roles, role, userId));
+      roles.forEach((role) => {
+        this.store.add(transaction, this.options.buckets.roles, role, userId);
+      });
     } else {
       this.store.add(transaction, this.options.buckets.roles, roles, userId);
     }
-    return this.store.endAsync(transaction).nodeify(callback);
+
+    return this.store.endAsync(transaction).nodeify(cb);
   }
 
   /**
@@ -257,19 +274,22 @@ export default class Acl extends Common {
    * @description Returns all the allowable permissions a given user have to access the given resources.
    * It returns an array of objects where every object maps a resource name to a list of permissions for that resource.
    * @param userId
-   * @param resources
+   * @param ressources
    * @param callback
    * @return {*}
    */
-  allowedPermissions(userId: string | number, resources: mixed, callback: ?() => void) {
+  allowedPermissions(userId: string | number, ressources: mixed, callback: ?() => void) {
     if (!userId) return callback(null, {});
-    if (this.store.unionsAsync) return this.optimizedAllowedPermissions(userId, resources, callback);
+    if (this.store.unionsAsync) {
+      console.log('On passe par optimizedAllowedPermissions')
+      return this.optimizedAllowedPermissions(userId, ressources, callback);
+    }
 
-    resources = this.makeArray(resources);
+    let resourcesArray = this.makeArray(ressources);
     return this.userRoles(userId)
       .then(roles => {
         let result = {};
-        return bluebird.all(resources.map((resource) => {
+        return bluebird.all(resourcesArray.map((resource) => {
           return this._resourcePermissions(roles, resource)
             .then((permissions) => result[resource] = permissions);
         }))
@@ -292,10 +312,10 @@ export default class Acl extends Common {
   optimizedAllowedPermissions(userId: string | number, resources: mixed, callback: ?() => void) {
     if (!userId) return callback(null, {});
 
-    resources = this.makeArray(resources);
+    let resourcesArray = this.makeArray(resources);
     return this._allUserRoles(userId)
       .then(roles => {
-        const buckets = resources.map(this.allowsBucket);
+        const buckets = resourcesArray.map(this.allowsBucket);
         if (roles.length === 0) {
           let emptyResult = {};
           buckets.forEach((bucket) => {
