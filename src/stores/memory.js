@@ -46,7 +46,7 @@ export default class Memory extends Common implements Store {
    * @param key
    * @param callback
    */
-  get (bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
+  get(bucket: string, key: string | number, callback: (key: null, value: Array<any>) => void) {
     if (this.buckets[bucket]) {
       callback(null, this.buckets[bucket][key] || []);
     } else {
@@ -62,13 +62,13 @@ export default class Memory extends Common implements Store {
    */
   unions(buckets: Array<any>, keys: Array<any>, callback: (key: null, value: {}) => void) {
     let results = {};
-    buckets.forEach(function (bucket) {
+    buckets.map(function (bucket) {
       if (this.buckets[bucket]) {
         results[bucket] = _.uniq(_.flatten(_.values(_.pick(this.buckets[bucket], keys))));
       } else {
         results[bucket] = [];
       }
-    });
+    }, this);
     callback(null, results);
   }
 
@@ -109,24 +109,9 @@ export default class Memory extends Common implements Store {
    * @param key
    * @param values
    */
-  // add(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
-  //   values = this.makeArray(values);
-  //
-  //   transaction.push(() => {
-  //     if (!this.buckets[bucket]) {
-  //       this.buckets[bucket] = {};
-  //     }
-  //     if (!this.buckets[bucket][key]) {
-  //       this.buckets[bucket][key] = values;
-  //     } else {
-  //       this.buckets[bucket][key] = _.union(values, this.buckets[bucket][key]);
-  //     }
-  //   });
-  // }
-
-
-  add(transaction, bucket, key, values) {
+  add(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
     values = this.makeArray(values);
+
     transaction.push(() => {
       if (!this.buckets[bucket]) {
         this.buckets[bucket] = {};
