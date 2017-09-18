@@ -43,34 +43,17 @@ export default class Acl extends Common {
    * @param roles
    * @param callback
    */
-  // addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-  //   const transaction = this.store.begin();
-  //   this.store.add(transaction, this.options.buckets.meta, 'users', userId);
-  //   this.store.add(transaction, this.options.buckets.users, userId, roles);
-  //
-  //   if (Array.isArray(roles)) {
-  //     roles.forEach((role) => this.store.add(transaction, this.options.buckets.roles, role, userId));
-  //   } else {
-  //     this.store.add(transaction, this.options.buckets.roles, roles, userId);
-  //   }
-  //   return this.store.endAsync(transaction).nodeify(callback);
-  // }
-
-
-  addUserRoles(userId, roles, cb) {
-    let transaction = this.store.begin();
+  addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
+    const transaction = this.store.begin();
     this.store.add(transaction, this.options.buckets.meta, 'users', userId);
     this.store.add(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach((role) => {
-        this.store.add(transaction, this.options.buckets.roles, role, userId);
-      });
+      roles.map((role) => this.store.add(transaction, this.options.buckets.roles, role, userId), this);
     } else {
       this.store.add(transaction, this.options.buckets.roles, roles, userId);
     }
-
-    return this.store.endAsync(transaction).nodeify(cb);
+    return this.store.endAsync(transaction).nodeify(callback);
   }
 
   /**
@@ -84,7 +67,7 @@ export default class Acl extends Common {
     this.store.remove(transaction, this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach((role) => this.store.remove(transaction, this.options.buckets.roles, role, userId));
+      roles.map((role) => this.store.remove(transaction, this.options.buckets.roles, role, userId), this);
     } else {
       this.store.remove(transaction, this.options.buckets.roles, roles, userId);
     }
@@ -159,10 +142,10 @@ export default class Acl extends Common {
     return this.store.getAsync(this.options.buckets.resources, role)
       .then((resources) => {
         const transaction = this.store.begin();
-        resources.forEach((resource) => {
+        resources.map((resource) => {
           let bucket = this.allowsBucket(resource);
           this.store.del(transaction, bucket, role);
-        });
+        }, this);
 
         this.store.del(transaction, this.options.buckets.resources, role);
         this.store.del(transaction, this.options.buckets.parents, role);
@@ -182,7 +165,7 @@ export default class Acl extends Common {
       .then((roles) => {
         const transaction = this.store.begin();
         this.store.del(transaction, this.allowsBucket(resource), roles);
-        roles.forEach((role) => this.store.remove(transaction, this.options.buckets.resources, role, resource));
+        roles.map((role) => this.store.remove(transaction, this.options.buckets.resources, role, resource), this);
         return this.store.endAsync(transaction);
       }).nodeify(callback);
   }
@@ -215,7 +198,7 @@ export default class Acl extends Common {
    */
   removePermissions(role: string, resources: string | Array<any>, permissions: string | Array<any>, callback: ?() => void) {
     const transaction = this.store.begin();
-    resources.forEach((resource) => {
+    resources.map((resource) => {
       let bucket = this.allowsBucket(resource);
       if (permissions) {
         this.store.remove(transaction, bucket, role, permissions);
@@ -223,7 +206,7 @@ export default class Acl extends Common {
         this.store.del(transaction, bucket, role);
         this.store.remove(transaction, this.options.buckets.resources, role, resource);
       }
-    });
+    }, this);
 
     return this.store.endAsync(transaction)
       .then(() => {
@@ -234,7 +217,7 @@ export default class Acl extends Common {
             .then(permissions => {
               if (!permissions.length) this.store.remove(transaction, this.options.buckets.resources, role, resource);
             });
-        }))
+        }, this))
           .then(this.store.endAsync(transaction));
       }).nodeify(callback);
   }
@@ -248,7 +231,7 @@ export default class Acl extends Common {
    */
   allow(roles: mixed, resources: ?mixed, permissions: ?mixed, callback: ?() => void) {
     if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
-      return this._allowEx(roles).nodeify(resources);
+      return this.allowEx(roles).nodeify(resources);
     } else {
       roles = this.makeArray(roles);
       resources = this.makeArray(resources);
@@ -256,15 +239,15 @@ export default class Acl extends Common {
       const transaction = this.store.begin();
       this.store.add(transaction, this.options.buckets.meta, 'roles', roles);
 
-      resources.forEach((resource) => {
-        roles.forEach((role) => {
+      resources.map((resource) => {
+        roles.map((role) => {
           this.store.add(transaction, this.allowsBucket(resource), role, permissions);
-        });
-      });
+        }, this);
+      }, this);
 
-      roles.forEach((role) => {
+      roles.map((role) => {
         this.store.add(transaction, this.options.buckets.resources, role, resources);
-      });
+      }, this);
 
       return this.store.endAsync(transaction).nodeify(callback);
     }
@@ -281,7 +264,6 @@ export default class Acl extends Common {
   allowedPermissions(userId: string | number, ressources: mixed, callback: ?() => void) {
     if (!userId) return callback(null, {});
     if (this.store.unionsAsync) {
-      console.log('On passe par optimizedAllowedPermissions')
       return this.optimizedAllowedPermissions(userId, ressources, callback);
     }
 
@@ -290,9 +272,9 @@ export default class Acl extends Common {
       .then(roles => {
         let result = {};
         return bluebird.all(resourcesArray.map((resource) => {
-          return this._resourcePermissions(roles, resource)
+          return this.resourcePermissions(roles, resource)
             .then((permissions) => result[resource] = permissions);
-        }))
+        }, this))
           .then(() => {
             return result
           });
@@ -313,23 +295,23 @@ export default class Acl extends Common {
     if (!userId) return callback(null, {});
 
     let resourcesArray = this.makeArray(resources);
-    return this._allUserRoles(userId)
+    return this.allUserRoles(userId)
       .then(roles => {
-        const buckets = resourcesArray.map(this.allowsBucket);
+        const buckets = resourcesArray.map(this.allowsBucket, this);
         if (roles.length === 0) {
           let emptyResult = {};
-          buckets.forEach((bucket) => {
+          buckets.map((bucket) => {
             emptyResult[bucket] = [];
-          });
+          }, this);
           return bluebird.resolve(emptyResult);
         }
         return this.store.unionsAsync(buckets, roles);
       })
       .then(response => {
         let result = {};
-        Object.keys(response).forEach(bucket => {
+        Object.keys(response).map(bucket => {
           result[this.keyFromAllowsBucket(bucket)] = response[bucket];
-        });
+        }, this);
 
         return result;
       }).nodeify(callback);
@@ -362,7 +344,7 @@ export default class Acl extends Common {
     roles = this.makeArray(roles);
     permissions = this.makeArray(permissions);
     if (!roles.length) return bluebird.resolve(false).nodeify(callback);
-    return this._checkPermissions(roles, resource, permissions).nodeify(callback);
+    return this.checkPermissions(roles, resource, permissions).nodeify(callback);
   }
 
   /**
@@ -391,10 +373,10 @@ export default class Acl extends Common {
    */
   permittedResources(roles: mixed, permissions: mixed, callback: ?() => void) {
     let result = _.isUndefined(permissions) ? {} : [];
-    return this._rolesResources(roles)
+    return this.rolesResources(roles)
       .then(resources => {
         return bluebird.all(resources.map(resource => {
-          return this._resourcePermissions(roles, resource)
+          return this.resourcePermissions(roles, resource)
             .then(p => {
               if (permissions) {
                 let commonPermissions = _.intersection(permissions, p);
@@ -405,7 +387,7 @@ export default class Acl extends Common {
                 result[resource] = p;
               }
             });
-        }))
+        }, this))
           .then(() => {
             return result;
           });
@@ -418,20 +400,20 @@ export default class Acl extends Common {
    * @return {*}
    * @private
    */
-  _allowEx(objs) {
+  allowEx(objs) {
     objs = this.makeArray(objs);
 
     let demuxed = [];
-    objs.forEach((obj) => {
+    objs.map((obj) => {
       let roles = obj.roles;
-      obj.allows.forEach((allow) => {
+      obj.allows.map((allow) => {
         demuxed.push({
           roles: roles,
           resources: allow.resources,
           permissions: allow.permissions,
         });
-      });
-    });
+      }, this);
+    }, this);
 
     return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
   }
@@ -442,7 +424,7 @@ export default class Acl extends Common {
    * @return {*}
    * @private
    */
-  _rolesParents(roles) {
+  rolesParents(roles) {
     return this.store.unionAsync(this.options.buckets.parents, roles);
   }
 
@@ -452,11 +434,11 @@ export default class Acl extends Common {
    * @return {Promise.<TResult>}
    * @private
    */
-  _allRoles(roleNames) {
-    return this._rolesParents(roleNames)
+  allRoles(roleNames) {
+    return this.rolesParents(roleNames)
       .then((parents) => {
         if (parents.length) {
-          return this._allRoles(parents)
+          return this.allRoles(parents)
             .then((parentRoles) => {
               return _.union(roleNames, parentRoles);
             });
@@ -471,10 +453,12 @@ export default class Acl extends Common {
    * @return {Promise.<TResult>}
    * @private
    */
-  _allUserRoles(userId) {
+  allUserRoles(userId) {
     return this.userRoles(userId)
       .then((roles) => {
-        if (roles && roles.length) return this._allRoles(roles);
+        if (roles && roles.length) {
+          return this.allRoles(roles);
+        }
         return [];
       });
   }
@@ -485,15 +469,15 @@ export default class Acl extends Common {
    * @return {Promise.<TResult>}
    * @private
    */
-  _rolesResources(roles) {
+  rolesResources(roles) {
     roles = this.makeArray(roles);
-    return this._allRoles(roles)
+    return this.allRoles(roles)
       .then((allRoles) => {
         let result = [];
         return bluebird.all(allRoles.map((role) => {
           return this.store.getAsync(this.options.buckets.resources, role)
             .then((resources) => result = result.concat(resources));
-        })).then(() => {
+        }, this)).then(() => {
           return result;
         });
       });
@@ -506,14 +490,14 @@ export default class Acl extends Common {
    * @return {*}
    * @private
    */
-  _resourcePermissions(roles, resource) {
+  resourcePermissions(roles, resource) {
     if (!roles.length) return bluebird.resolve([]);
     return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then((resourcePermissions) => {
-        return this._rolesParents(roles)
+        return this.rolesParents(roles)
           .then(parents => {
             if (parents && parents.length) {
-              return this._resourcePermissions(parents, resource)
+              return this.resourcePermissions(parents, resource)
                 .then((morePermissions) => {
                   return _.union(resourcePermissions, morePermissions);
                 });
@@ -531,7 +515,7 @@ export default class Acl extends Common {
    * @return {Promise.<TResult>}
    * @private
    */
-  _checkPermissions(roles, resource, permissions) {
+  checkPermissions(roles, resource, permissions) {
     return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then((resourcePermissions) => {
         if (resourcePermissions.indexOf('*') !== -1) return true;
@@ -541,7 +525,7 @@ export default class Acl extends Common {
 
         if (!permissions.length) return true;
         return this.store.unionAsync(this.options.buckets.parents, roles)
-          .then((parents) => (parents && parents.length) ? this._checkPermissions(parents, resource, permissions) : false);
+          .then((parents) => (parents && parents.length) ? this.checkPermissions(parents, resource, permissions) : false);
       });
   }
 }
