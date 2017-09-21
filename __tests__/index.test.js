@@ -477,22 +477,38 @@ describe('Allowance queries', () => {
         done();
       });
     });
-  })
-  ;
-})
-;
+  });
+});
 
 describe('allowedPermissions', () => {
   it('What permissions has james over blogs and forums?', (done) => {
     acl.allowedPermissions('james', ['blogs', 'forums'], (err, permissions) => {
       expect(!err);
-      console.log(permissions.blogs)
       expect(permissions).toHaveProperty('blogs');
       expect(permissions).toHaveProperty('forums');
       expect(permissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
       expect(!permissions.forums.length);
       done();
     });
+  });
 
+  it('What permissions has userId=3 over blogs and forums?', (done) => {
+    acl.allowedPermissions(3, ['blogs', 'forums'], (err, permissions) => {
+      expect(!err);
+      expect(permissions).toHaveProperty('blogs');
+      expect(permissions).toHaveProperty('forums');
+      expect(permissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+      expect(!permissions.forums.length);
+      done();
+    });
+  });
+
+  it('What permissions has nonsenseUser over blogs and forums?', (done) => {
+    acl.allowedPermissions('nonsense', ['blogs', 'forums'], (err, permissions) => {
+      expect(!err);
+      expect(!permissions.forums.length);
+      expect(!permissions.blogs.length);
+      done();
+    });
   });
 });
