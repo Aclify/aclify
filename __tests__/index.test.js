@@ -813,3 +813,69 @@ describe('WhatResources', () => {
     });
   });
 });
+
+describe('Remove user roles', () => {
+  it('Remove role guest from joed', (done) => {
+    acl.removeUserRoles('joed', 'guest', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove role guest from userId=0', (done) => {
+    acl.removeUserRoles(0, 'guest', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+  it('Remove role admin from harry', (done) => {
+    acl.removeUserRoles('harry', 'admin', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove role admin from userId=2', (done) => {
+    acl.removeUserRoles(2, 'admin', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
+describe('Were roles removed?', () => {
+  it('What permissions has harry over forums and blogs?', (done) => {
+    acl.allowedPermissions('harry', ['forums', 'blogs'], (err, permissions) => {
+      expect(!err);
+      expect(typeof permissions === 'object');
+      expect(!permissions.forums.length);
+      done();
+    });
+  });
+
+  it('What permissions has userId=2 over forums and blogs?', (done) => {
+    acl.allowedPermissions(2, ['forums', 'blogs'], (err, permissions) => {
+      expect(!err);
+      expect(typeof permissions === 'object');
+      expect(!permissions.forums.length);
+      done();
+    });
+  });
+});
+
+describe('RemoveAllow is removing all permissions', () => {
+  it('Add roles/resources/permissions', () => {
+    return acl.addUserRoles('jannette', 'member')
+      .then(() => acl.allow('member', 'blogs', ['view', 'update']))
+      .then(() => acl.isAllowed('jannette', 'blogs', 'view'))
+      .then((isAllowed) => expect(isAllowed).toBeTruthy())
+      .then(() => acl.removeAllow('member', 'blogs', 'update'))
+      .then(() => acl.isAllowed('jannette', 'blogs', 'view'))
+      .then((isAllowed) => expect(isAllowed).toBeTruthy())
+      .then(() => acl.isAllowed('jannette', 'blogs', 'update'))
+      .then((isAllowed) => expect(isAllowed).toBeFalsy())
+      .then(() => acl.removeAllow('member', 'blogs', 'view'))
+      .then(() => acl.isAllowed('jannette', 'blogs', 'view'))
+      .then((isAllowed) => expect(isAllowed).toBeFalsy());
+  });
+});
