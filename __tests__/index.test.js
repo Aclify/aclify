@@ -757,3 +757,59 @@ describe('RoleParentRemoval', () => {
     });
   });
 });
+
+describe('RemoveResource', () => {
+  it('Remove resource blogs', (done) => {
+    acl.removeResource('blogs', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove resource users', (done) => {
+    acl.removeResource('users', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
+describe('AllowedPermissions', () => {
+  it('What permissions has james over blogs?', (done) => {
+    acl.allowedPermissions('james', 'blogs', (err, permissions) => {
+      expect(err).toBeNull();
+      expect(permissions).toHaveProperty('blogs');
+      expect(!permissions.blogs.length);
+      done();
+    });
+  });
+
+  it('What permissions has userId=4 over blogs?', (done) => {
+    acl.allowedPermissions(4, 'blogs')
+      .then((permissions) => {
+        expect(permissions).toHaveProperty('blogs');
+        expect(!permissions.blogs.length);
+        done();
+      });
+  });
+});
+
+describe('WhatResources', () => {
+  it('What resources have "baz" some rights on after removed blogs?', (done) => {
+    acl.whatResources('baz', (err, resources) => {
+      expect(!err);
+      expect(typeof resources === 'object');
+      expect(!Object.keys(resources).length);
+      done();
+    });
+  });
+
+  it('What resources have "admin" some rights on after removed users resource?', (done) => {
+    acl.whatResources('admin', (err, resources) => {
+      expect(!err);
+      expect(resources).not.toContain('users');
+      expect(resources).not.toContain('blogs');
+      done();
+    });
+  });
+});
