@@ -656,3 +656,104 @@ describe('Was role removed?', () => {
     });
   });
 });
+
+describe('RoleParentRemoval', () => {
+  beforeAll((done) => {
+    acl.allow('parent1', 'x', 'read1')
+      .then(Promise.all([
+        acl.allow('parent2', 'x', 'read2'),
+        acl.allow('parent3', 'x', 'read3'),
+        acl.allow('parent4', 'x', 'read4'),
+        acl.allow('parent5', 'x', 'read5'),
+      ]))
+      .then(acl.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']))
+      .then(() => done());
+  });
+
+  it('Environment check', (done) => {
+    acl.whatResources('child')
+      .then((resources) => {
+        expect(resources.x.length === 5);
+        expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+        done();
+      });
+  });
+
+  it('Operation uses a callback when removing a specific parent role', (done) => {
+    acl.removeRoleParents('child', 'parentX', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Operation uses a callback when removing multiple specific parent roles', (done) => {
+    acl.removeRoleParents('child', ['parentX', 'parentY'], (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove parent role "parentX" from role "child"', (done) => {
+    acl.removeRoleParents('child', 'parentX')
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources.x.length === 5);
+        expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+        done();
+      });
+  });
+
+  it('Remove parent role "parent1" from role "child"', (done) => {
+    acl.removeRoleParents('child', 'parent1')
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources.x.length === 4);
+        expect(resources).toHaveProperty('x', ['read2', 'read3', 'read4', 'read5']);
+        done();
+      });
+  });
+
+  it('Remove parent roles "parent2" & "parent3" from role "child"', (done) => {
+    acl.removeRoleParents('child', ['parent2', 'parent3'])
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources.x.length === 2);
+        expect(resources).toHaveProperty('x', ['read4', 'read5']);
+        done();
+      });
+  });
+
+  it('Remove all parent roles from role "child"', (done) => {
+    acl.removeRoleParents('child')
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources).not.toHaveProperty('x');
+        done();
+      });
+  });
+
+  it('Remove all parent roles from role "child" with no parents', (done) => {
+    acl.removeRoleParents('child')
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources).not.toHaveProperty('x');
+        done();
+      });
+  });
+
+  it('Remove parent role "parent1" from role "child" with no parents', (done) => {
+    acl.removeRoleParents('child', 'parent1')
+      .then(() => acl.whatResources('child'))
+      .then((resources) => {
+        expect(resources).not.toHaveProperty('x');
+        done();
+      });
+  });
+
+  it('Operation uses a callback when removing all parent roles', (done) => {
+    acl.removeRoleParents('child', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
