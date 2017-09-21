@@ -36,19 +36,19 @@ describe('Constructor', () => {
 });
 
 describe('Allows', () => {
-  it('guest to view blogs', () => {
+  it('Guest to view blogs', () => {
     acl.allow('guest', 'blogs', 'view', (err) => {
       expect(!err);
     });
   });
 
-  it('guest to view forums', () => {
+  it('Guest to view forums', () => {
     acl.allow('guest', 'forums', 'view', (err) => {
       expect(!err);
     });
   });
 
-  it('member to view/edit/delete blogs', () => {
+  it('Member to view/edit/delete blogs', () => {
     acl.allow('member', 'blogs', ['edit', 'view', 'delete'], (err) => {
       expect(!err);
     });
@@ -56,7 +56,7 @@ describe('Allows', () => {
 });
 
 describe('Add user roles', () => {
-  it('joed = guest, jsmith = member, harry = admin, test@test.com = member', (done) => {
+  it('Joed = guest, jsmith = member, harry = admin, test@test.com = member', (done) => {
     acl.addUserRoles('joed', 'guest', (err) => {
       expect(!err);
 
@@ -130,21 +130,21 @@ describe('Read role\'s users', () => {
 });
 
 describe('Allow', () => {
-  it('admin view/add/edit/delete users', (done) => {
+  it('Admin view/add/edit/delete users', (done) => {
     acl.allow('admin', 'users', ['add', 'edit', 'view', 'delete'], (err) => {
       expect(!err);
       done();
     });
   });
 
-  it('foo view/edit blogs', (done) => {
+  it('Foo view/edit blogs', (done) => {
     acl.allow('foo', 'blogs', ['edit', 'view'], (err) => {
       expect(!err);
       done();
     });
   });
 
-  it('bar to view/delete blogs', (done) => {
+  it('Bar to view/delete blogs', (done) => {
     acl.allow('bar', 'blogs', ['view', 'delete'], (err) => {
       expect(!err);
       done();
@@ -180,7 +180,7 @@ describe('Add user roles', () => {
 
 
 describe('allow admin to do anything', () => {
-  it('add them', (done) => {
+  it('Add them', (done) => {
     acl.allow('admin', ['blogs', 'forums'], '*', (err) => {
       expect(!err);
       done();
@@ -212,20 +212,20 @@ describe('Add fumanchu role to suzanne', () => {
     acl.addUserRoles('suzanne', 'fumanchu', (err) => {
       expect(!err);
       done();
-    })
+    });
   });
 
   it('Do it (numeric userId)', (done) => {
     acl.addUserRoles(4, 'fumanchu', (err) => {
       expect(!err);
       done();
-    })
+    });
   });
 });
 
 
 describe('Allowance queries', () => {
-  describe('isAllowed', () => {
+  describe('IsAllowed', () => {
     it('Can joed view blogs?', (done) => {
       acl.isAllowed('joed', 'blogs', 'view', (err, allow) => {
         expect(!err);
@@ -508,6 +508,45 @@ describe('allowedPermissions', () => {
       expect(!err);
       expect(!permissions.forums.length);
       expect(!permissions.blogs.length);
+      done();
+    });
+  });
+});
+
+
+describe('WhatResources queries', () => {
+  it('What resources have "bar" some rights on?', (done) => {
+    acl.whatResources('bar', (err, resources) => {
+      expect(err).toBeNull();
+      expect(resources).toHaveProperty('blogs', ['view', 'delete']);
+      done();
+    });
+  });
+
+  it('What resources have "bar" view rights on?', (done) => {
+    acl.whatResources('bar', 'view', (err, resources) => {
+      expect(err).toBeNull();
+      expect(resources).toContain('blogs');
+      done();
+    });
+  });
+
+  it('What resources have "fumanchu" some rights on?', (done) => {
+    acl.whatResources('fumanchu', (err, resources) => {
+      expect(err).toBeNull();
+      expect(resources).toHaveProperty('blogs', ['get']);
+      expect(resources).toHaveProperty('forums', ['get', 'put', 'delete']);
+      expect(resources).toHaveProperty('news', ['get', 'put', 'delete']);
+      expect(resources['/path/file/file1.txt']).toEqual(['get', 'put', 'delete']);
+      expect(resources['/path/file/file2.txt']).toEqual(['get', 'put', 'delete']);
+      done();
+    });
+  });
+
+  it('What resources have "baz" some rights on?', (done) => {
+    acl.whatResources('baz', (err, resources) => {
+      expect(err).toBeNull();
+      expect(resources).toHaveProperty('blogs', ['edit', 'view', 'delete']);
       done();
     });
   });
