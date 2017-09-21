@@ -553,7 +553,7 @@ describe('WhatResources queries', () => {
 
 describe('removeAllow', () => {
   it('Remove get permissions from resources blogs and forums from role fumanchu', (done) => {
-    acl.removeAllow('fumanchu', ['blogs','forums'], 'get', (err) => {
+    acl.removeAllow('fumanchu', ['blogs', 'forums'], 'get', (err) => {
       expect(!err);
       done();
     });
@@ -584,6 +584,75 @@ describe('See if permissions were removed', () => {
       expect(resources).not.toContain('delete');
       expect(resources).toHaveProperty('forums', ['put', 'delete']);
       done();
+    });
+  });
+});
+
+describe('RemoveRole', () => {
+  it('Remove role fumanchu', (done) => {
+    acl.removeRole('fumanchu', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove role member', (done) => {
+    acl.removeRole('member', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove role foo', (done) => {
+    acl.removeRole('foo', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
+describe('Was role removed?', () => {
+  it('What resources have "fumanchu" some rights on after removed?', (done) => {
+    acl.whatResources('fumanchu', (err, resources) => {
+      expect(!err);
+      expect(!Object.keys(resources).length);
+      done();
+    });
+  });
+
+  it('What resources have "member" some rights on after removed?', (done) => {
+    acl.whatResources('member', (err, resources) => {
+      expect(!err);
+      expect(!Object.keys(resources).length);
+      done();
+    });
+  });
+
+  describe('Allowed permissions', () => {
+    it('What permissions has jsmith over blogs and forums?', (done) => {
+      acl.allowedPermissions('jsmith', ['blogs', 'forums'], (err, permissions) => {
+        expect(!err);
+        expect(!permissions.blogs);
+        expect(!permissions.forums);
+        done();
+      });
+    });
+
+    it('What permissions has test@test.com over blogs and forums?', (done) => {
+      acl.allowedPermissions('test@test.com', ['blogs', 'forums'], (err, permissions) => {
+        expect(!err);
+        expect(!permissions.blogs);
+        expect(!permissions.forums);
+        done();
+      });
+    });
+
+    it('What permissions has james over blogs?', (done) => {
+      acl.allowedPermissions('james', 'blogs', (err, permissions) => {
+        expect(!err);
+        expect(permissions).toHaveProperty('blogs', ['delete']);
+        done();
+      });
     });
   });
 });
