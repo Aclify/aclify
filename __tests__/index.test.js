@@ -879,3 +879,70 @@ describe('RemoveAllow is removing all permissions', () => {
       .then((isAllowed) => expect(isAllowed).toBeFalsy());
   });
 });
+
+
+describe('Removing a role removes the entire "allows" document.', () => {
+  it('Add roles/resources/permissions', (done) => {
+    acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3'], (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Add user roles and parent roles', (done) => {
+    acl.addUserRoles('user1', 'role1', (err) => {
+      expect(!err);
+
+      acl.addRoleParents('role1', 'parentRole1', (err) => {
+        expect(!err);
+        done();
+      });
+    });
+  });
+
+  it('Add user roles and parent roles', (done) => {
+    acl.addUserRoles(1, 'role1', (err) => {
+      expect(!err);
+
+      acl.addRoleParents('role1', 'parentRole1', (err) => {
+        expect(!err);
+        done();
+      });
+    });
+  });
+
+  it('Verify that roles have permissions as assigned', (done) => {
+    acl.whatResources('role1', (err, res) => {
+      expect(!err);
+      expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+
+      acl.whatResources('role2', (err, res) => {
+        expect(!err);
+        expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+        done();
+      });
+    });
+  });
+
+  it('Remove role "role1"', (done) => {
+    acl.removeRole('role1', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Verify that "role1" has no permissions and "role2" has permissions intact', (done) => {
+    acl.removeRole('role1', (err) => {
+      expect(!err);
+
+      acl.whatResources('role1', (err, res) => {
+        expect(!Object.keys(res).length);
+
+        acl.whatResources('role2', (err, res) => {
+          expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+          done();
+        });
+      });
+    });
+  });
+});
