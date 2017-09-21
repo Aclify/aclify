@@ -513,7 +513,6 @@ describe('allowedPermissions', () => {
   });
 });
 
-
 describe('WhatResources queries', () => {
   it('What resources have "bar" some rights on?', (done) => {
     acl.whatResources('bar', (err, resources) => {
@@ -547,6 +546,43 @@ describe('WhatResources queries', () => {
     acl.whatResources('baz', (err, resources) => {
       expect(err).toBeNull();
       expect(resources).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+      done();
+    });
+  });
+});
+
+describe('removeAllow', () => {
+  it('Remove get permissions from resources blogs and forums from role fumanchu', (done) => {
+    acl.removeAllow('fumanchu', ['blogs','forums'], 'get', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove delete and put permissions from resource news from role fumanchu', (done) => {
+    acl.removeAllow('fumanchu', 'news', 'delete', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+
+  it('Remove view permissions from resource blogs from role bar', (done) => {
+    acl.removeAllow('bar', 'blogs', 'view', (err) => {
+      expect(!err);
+      done();
+    });
+  });
+});
+
+describe('See if permissions were removed', () => {
+  it('What resources have "fumanchu" some rights on after removed some of them?', (done) => {
+    acl.whatResources('fumanchu', (err, resources) => {
+      expect(err).toBeNull();
+      expect(resources).not.toContain('blogs');
+      expect(resources).toHaveProperty('news');
+      expect(resources).toHaveProperty('news', ['get', 'put']);
+      expect(resources).not.toContain('delete');
+      expect(resources).toHaveProperty('forums', ['put', 'delete']);
       done();
     });
   });
