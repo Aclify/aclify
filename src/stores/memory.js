@@ -8,12 +8,12 @@ export default class Memory extends Common implements Store {
 
   constructor() {
     super();
-    this.buckets = {}
+    this.buckets = {};
   }
 
   /**
    * @description Begins a transaction.
-   * @return {Array}
+   * @returns {Array}
    */
   begin() {
     return [];
@@ -61,8 +61,8 @@ export default class Memory extends Common implements Store {
    * @param callback
    */
   unions(buckets: Array<any>, keys: Array<any>, callback: (key: null, value: {}) => void) {
-    let results = {};
-    buckets.map(function (bucket) {
+    const results = {};
+    buckets.map((bucket) => {
       if (this.buckets[bucket]) {
         results[bucket] = _.uniq(_.flatten(_.values(_.pick(this.buckets[bucket], keys))));
       } else {
@@ -90,7 +90,7 @@ export default class Memory extends Common implements Store {
     }
 
     if (this.buckets[bucket]) {
-      let keyArrays = [];
+      const keyArrays = [];
       for (let i = 0, len = keys.length; i < len; i++) {
         if (this.buckets[bucket][keys[i]]) {
           keyArrays.push.apply(keyArrays, this.buckets[bucket][keys[i]]);
