@@ -1,4 +1,5 @@
 // @flow
+/* eslint-disable no-unused-vars */
 
 interface Store {
 
@@ -23,12 +24,14 @@ interface Store {
   get(bucket: string, key: string | number, callback: () => void): any;
 
   /**
-   * @description Get union of contents of the specified keys in each of the specified buckets and returns a mapping of bucket to union
+   * @description Get union of contents of the specified keys in each of the specified buckets
+   * and returns a mapping of bucket to union
    */
   unions(bucket: Array<any>, keys: Array<any>, callback: () => void): any;
 
   /**
-   * @description Get union of contents of the specified keys in each of the specified buckets and returns a mapping of bucket to union
+   * @description Get union of contents of the specified keys in each of the specified buckets
+   * and returns a mapping of bucket to union
    */
   union(bucket: string, keys: Array<any>, callback: () => void): any;
 
