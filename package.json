@@ -71,6 +71,9 @@
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "src/**/*.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/__tests__/tests.js"
     ]
   }
 }
