@@ -110,7 +110,7 @@ export default class Memory extends Common implements Store {
    * @param values
    */
   add(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
-    values = this.makeArray(values);
+    values = Common.makeArray(values);
 
     transaction.push(() => {
       if (!this.buckets[bucket]) {
@@ -131,7 +131,7 @@ export default class Memory extends Common implements Store {
    * @param keys
    */
   del(transaction: Array<any>, bucket: string, keys: string | Array<any>) {
-    keys = this.makeArray(keys);
+    keys = Common.makeArray(keys);
     transaction.push(() => {
       if (this.buckets[bucket]) {
         for (let i = 0, len = keys.length; i < len; i++) {
@@ -149,7 +149,7 @@ export default class Memory extends Common implements Store {
    * @param values
    */
   remove(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
-    values = this.makeArray(values);
+    values = Common.makeArray(values);
     transaction.push(() => {
       let old;
       if (this.buckets[bucket] && (old = this.buckets[bucket][key])) {
