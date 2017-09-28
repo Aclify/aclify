@@ -179,9 +179,9 @@ export default class Acl extends Common {
    * @return {*}
    */
   removeAllow(role: string, resources: mixed, permissions: ?mixed, callback: ?() => void) {
-    resources = this.makeArray(resources);
+    resources = Common.makeArray(resources);
     if (callback || (permissions && !_.isFunction(permissions))) {
-      permissions = this.makeArray(permissions);
+      permissions = Common.makeArray(permissions);
     } else {
       callback = permissions;
       permissions = null;
@@ -233,8 +233,8 @@ export default class Acl extends Common {
     if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
       return this.allowEx(roles).nodeify(resources);
     } else {
-      roles = this.makeArray(roles);
-      resources = this.makeArray(resources);
+      roles = Common.makeArray(roles);
+      resources = Common.makeArray(resources);
 
       const transaction = this.store.begin();
       this.store.add(transaction, this.options.buckets.meta, 'roles', roles);
@@ -267,7 +267,7 @@ export default class Acl extends Common {
       return this.optimizedAllowedPermissions(userId, ressources, callback);
     }
 
-    let resourcesArray = this.makeArray(ressources);
+    let resourcesArray = Common.makeArray(ressources);
     return this.userRoles(userId)
       .then(roles => {
         let result = {};
@@ -294,7 +294,7 @@ export default class Acl extends Common {
   optimizedAllowedPermissions(userId: string | number, resources: mixed, callback: ?() => void) {
     if (!userId) return callback(null, {});
 
-    let resourcesArray = this.makeArray(resources);
+    let resourcesArray = Common.makeArray(resources);
     return this.allUserRoles(userId)
       .then(roles => {
         const buckets = resourcesArray.map(this.allowsBucket, this);
@@ -341,8 +341,8 @@ export default class Acl extends Common {
    * @param callback
    */
   areAnyRolesAllowed(roles: mixed, resource: string, permissions: mixed, callback: ?() => void) {
-    roles = this.makeArray(roles);
-    permissions = this.makeArray(permissions);
+    roles = Common.makeArray(roles);
+    permissions = Common.makeArray(permissions);
     if (!roles.length) return bluebird.resolve(false).nodeify(callback);
     return this.checkPermissions(roles, resource, permissions).nodeify(callback);
   }
@@ -355,12 +355,12 @@ export default class Acl extends Common {
    * @return {*}
    */
   whatResources(roles: mixed, permissions: ?mixed, callback: ?() => void) {
-    roles = this.makeArray(roles);
+    roles = Common.makeArray(roles);
     if (_.isFunction(permissions)) {
       callback = permissions;
       permissions = undefined;
     } else if (permissions) {
-      permissions = this.makeArray(permissions);
+      permissions = Common.makeArray(permissions);
     }
     return this.permittedResources(roles, permissions, callback);
   }
@@ -401,7 +401,7 @@ export default class Acl extends Common {
    * @private
    */
   allowEx(objs) {
-    objs = this.makeArray(objs);
+    objs = Common.makeArray(objs);
 
     let demuxed = [];
     objs.map((obj) => {
@@ -470,7 +470,7 @@ export default class Acl extends Common {
    * @private
    */
   rolesResources(roles) {
-    roles = this.makeArray(roles);
+    roles = Common.makeArray(roles);
     return this.allRoles(roles)
       .then((allRoles) => {
         let result = [];
