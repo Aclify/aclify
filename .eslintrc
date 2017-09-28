@@ -9,6 +9,7 @@
     "flowtype"
   ],
   "rules": {
+    "object-curly-spacing": "off",
     "max-len": [
       2,
       120
