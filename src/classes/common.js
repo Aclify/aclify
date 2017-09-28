@@ -1,14 +1,20 @@
 // @flow
 export default class Common {
-  makeArray(arr: mixed): Array<any> {
+  prefix: string;
+
+  constructor() {
+    this.prefix = 'allows_';
+  }
+
+  static makeArray(arr: mixed): Array<any> {
     return Array.isArray(arr) ? arr : [arr];
   }
 
   allowsBucket(role: string): string {
-    return 'allows_' + role;
+    return this.prefix + role;
   }
 
   keyFromAllowsBucket(str: string): string {
-    return str.replace(/^allows_/, '');
+    return str.replace(new RegExp(`^${this.prefix}`), '');
   }
 }
