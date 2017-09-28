@@ -6,12 +6,12 @@ interface Store {
   /**
    * @description Begin a transaction
    */
-  begin(): Array<any>;
+  begin(): Array;
 
   /**
    * @description End a transaction
    */
-  end(transaction: Array<any>, callback: () => void): any;
+  end(transaction: Array, callback: () => void): any;
 
   /**
    * @description Cleans the whole storage
@@ -27,26 +27,26 @@ interface Store {
    * @description Get union of contents of the specified keys in each of the specified buckets
    * and returns a mapping of bucket to union
    */
-  unions(bucket: Array<any>, keys: Array<any>, callback: () => void): any;
+  unions(bucket: Array, keys: Array, callback: () => void): any;
 
   /**
    * @description Get union of contents of the specified keys in each of the specified buckets
    * and returns a mapping of bucket to union
    */
-  union(bucket: string, keys: Array<any>, callback: () => void): any;
+  union(bucket: string, keys: Array, callback: () => void): any;
 
   /**
    * @description Add values to a given key inside a bucket
    */
-  add(transaction: Array<any>, bucket: string, key: string | number, values: string | number | Array<any>): any;
+  add(transaction: Array, bucket: string, key: string | number, values: string | number | Array): any;
 
   /**
    * @description Delete given key(s) at the bucket
    */
-  del(transaction: Array<any>, bucket: string, keys: string | Array<any>): any;
+  del(transaction: Array, bucket: string, keys: string | Array): any;
 
   /**
    * @description Removes values from a given key inside a bucket
    */
-  remove(transaction: Array<any>, bucket: string, key: string | number, values: string | number | Array<any>): any;
+  remove(transaction: Array, bucket: string, key: string | number, values: string | number | Array): any;
 }
