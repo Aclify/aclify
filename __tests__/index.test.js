@@ -57,17 +57,17 @@ describe('Allows', () => {
 
 describe('Add user roles', () => {
   it('Joed = guest, jsmith = member, harry = admin, test@test.com = member', (done) => {
-    acl.addUserRoles('joed', 'guest', (err) => {
-      expect(!err);
+    acl.addUserRoles('joed', 'guest', (err1) => {
+      expect(!err1);
 
-      acl.addUserRoles('jsmith', 'member', (err) => {
-        expect(!err);
+      acl.addUserRoles('jsmith', 'member', (err2) => {
+        expect(!err2);
 
-        acl.addUserRoles('harry', 'admin', (err) => {
-          expect(!err);
+        acl.addUserRoles('harry', 'admin', (err3) => {
+          expect(!err3);
 
-          acl.addUserRoles('test@test.com', 'member', (err) => {
-            expect(!err);
+          acl.addUserRoles('test@test.com', 'member', (err4) => {
+            expect(!err4);
             done();
           });
         });
@@ -76,14 +76,14 @@ describe('Add user roles', () => {
   });
 
   it('0 = guest, 1 = member, 2 = admin', (done) => {
-    acl.addUserRoles(0, 'guest', (err) => {
-      expect(!err);
+    acl.addUserRoles(0, 'guest', (err1) => {
+      expect(!err1);
 
-      acl.addUserRoles(1, 'member', (err) => {
-        expect(!err);
+      acl.addUserRoles(1, 'member', (err2) => {
+        expect(!err2);
 
-        acl.addUserRoles(2, 'admin', (err) => {
-          expect(!err);
+        acl.addUserRoles(2, 'admin', (err3) => {
+          expect(!err3);
           done();
         });
       });
@@ -93,20 +93,20 @@ describe('Add user roles', () => {
 
 describe('Read user\'s roles', () => {
   it('Run userRoles function', (done) => {
-    acl.addUserRoles('harry', 'admin', (err) => {
-      if (err) return done(err);
+    acl.addUserRoles('harry', 'admin', (err1) => {
+      if (err1) done(err1);
 
-      acl.userRoles('harry', (err, roles) => {
-        if (err) return done(err);
+      acl.userRoles('harry', (err2, roles) => {
+        if (err2) done(err2);
         expect(roles).toEqual(['admin']);
 
-        acl.hasRole('harry', 'admin', (err, is_in_role) => {
-          if (err) return done(err);
-          expect(is_in_role).toBeTruthy();
+        acl.hasRole('harry', 'admin', (err3, isInRole1) => {
+          if (err3) done(err3);
+          expect(isInRole1).toBeTruthy();
 
-          acl.hasRole('harry', 'no role', (err, is_in_role) => {
-            if (err) return done(err);
-            expect(is_in_role).toBeFalsy();
+          acl.hasRole('harry', 'no role', (err4, isInRole2) => {
+            if (err4) done(err4);
+            expect(isInRole2).toBeFalsy();
             done();
           });
         });
@@ -117,11 +117,11 @@ describe('Read user\'s roles', () => {
 
 describe('Read role\'s users', () => {
   it('Run roleUsers function', (done) => {
-    acl.addUserRoles('harry', 'admin', (err) => {
-      if (err) return done(err);
+    acl.addUserRoles('harry', 'admin', (err1) => {
+      if (err1) done(err1);
 
-      acl.roleUsers('admin', (err, users) => {
-        if (err) return done(err);
+      acl.roleUsers('admin', (err2, users) => {
+        if (err2) done(err2);
         expect(users).toContain('harry');
         done();
       });
@@ -175,8 +175,7 @@ describe('Add user roles', () => {
       done();
     });
   });
-})
-;
+});
 
 
 describe('allow admin to do anything', () => {
@@ -196,7 +195,7 @@ describe('Arguments in one array', () => {
         allows: [
           {resources: 'blogs', permissions: 'get'},
           {resources: ['forums', 'news'], permissions: ['get', 'put', 'delete']},
-          {resources: ['/path/file/file1.txt', '/path/file/file2.txt'], permissions: ['get', 'put', 'delete']}
+          {resources: ['/path/file/file1.txt', '/path/file/file2.txt'], permissions: ['get', 'put', 'delete']},
         ],
       }],
       (err) => {
@@ -324,8 +323,6 @@ describe('Allowance queries', () => {
     });
 
     it('Can userId=1 edit blogs?', (done) => {
-
-
       acl.isAllowed(1, 'blogs', 'edit', (err, allow) => {
         expect(!err);
         expect(allow);
@@ -865,7 +862,7 @@ describe('Were roles removed?', () => {
 
 describe('RemoveAllow is removing all permissions', () => {
   it('Add roles/resources/permissions', () => {
-    return acl.addUserRoles('jannette', 'member')
+    acl.addUserRoles('jannette', 'member')
       .then(() => acl.allow('member', 'blogs', ['view', 'update']))
       .then(() => acl.isAllowed('jannette', 'blogs', 'view'))
       .then((isAllowed) => expect(isAllowed).toBeTruthy())
@@ -880,7 +877,6 @@ describe('RemoveAllow is removing all permissions', () => {
   });
 });
 
-
 describe('Removing a role removes the entire "allows" document.', () => {
   it('Add roles/resources/permissions', (done) => {
     acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3'], (err) => {
@@ -890,35 +886,35 @@ describe('Removing a role removes the entire "allows" document.', () => {
   });
 
   it('Add user roles and parent roles', (done) => {
-    acl.addUserRoles('user1', 'role1', (err) => {
-      expect(!err);
+    acl.addUserRoles('user1', 'role1', (err1) => {
+      expect(!err1);
 
-      acl.addRoleParents('role1', 'parentRole1', (err) => {
-        expect(!err);
+      acl.addRoleParents('role1', 'parentRole1', (err2) => {
+        expect(!err2);
         done();
       });
     });
   });
 
   it('Add user roles and parent roles', (done) => {
-    acl.addUserRoles(1, 'role1', (err) => {
-      expect(!err);
+    acl.addUserRoles(1, 'role1', (err1) => {
+      expect(!err1);
 
-      acl.addRoleParents('role1', 'parentRole1', (err) => {
-        expect(!err);
+      acl.addRoleParents('role1', 'parentRole1', (err2) => {
+        expect(!err2);
         done();
       });
     });
   });
 
   it('Verify that roles have permissions as assigned', (done) => {
-    acl.whatResources('role1', (err, res) => {
-      expect(!err);
-      expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+    acl.whatResources('role1', (err1, res1) => {
+      expect(!err1);
+      expect(res1.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
 
-      acl.whatResources('role2', (err, res) => {
-        expect(!err);
-        expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+      acl.whatResources('role2', (err2, res2) => {
+        expect(!err2);
+        expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
         done();
       });
     });
@@ -935,11 +931,11 @@ describe('Removing a role removes the entire "allows" document.', () => {
     acl.removeRole('role1', (err) => {
       expect(!err);
 
-      acl.whatResources('role1', (err, res) => {
-        expect(!Object.keys(res).length);
+      acl.whatResources('role1', (err1, res1) => {
+        expect(!Object.keys(res1).length);
 
-        acl.whatResources('role2', (err, res) => {
-          expect(res.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
+        acl.whatResources('role2', (err2, res2) => {
+          expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3']);
           done();
         });
       });
