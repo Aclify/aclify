@@ -1,2 +1,2 @@
 exclude_paths:
-- "__tests__/"
+- "__tests__/tests.js"
