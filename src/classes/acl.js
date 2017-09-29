@@ -10,7 +10,7 @@ export default class Acl extends Common {
   options: {};
 
   /**
-   * @description Create ACL class and promisify store methods
+   * @description Create ACL class and promisify store methods.
    * @param store
    * @param logger
    * @param options
@@ -38,7 +38,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Adds roles to a given user id
+   * @description Adds roles to a given user id.
    * @param userId
    * @param roles
    * @param callback
@@ -57,7 +57,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Remove roles from a given user
+   * @description Remove roles from a given user.
    * @param userId
    * @param roles
    * @param callback
@@ -75,7 +75,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Return all the roles from a given user
+   * @description Return all the roles from a given user.
    * @param userId
    * @param callback
    */
@@ -84,7 +84,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Return all users who has a given role
+   * @description Return all users who has a given role.
    * @param roleName
    * @param callback
    */
@@ -93,7 +93,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Return boolean whether user is in the role
+   * @description Return boolean whether user is in the role.
    * @param userId
    * @param rolename
    * @param callback
@@ -103,7 +103,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Adds a parent or parent list to role
+   * @description Adds a parent or parent list to role.
    * @param role
    * @param parents
    * @param callback
@@ -116,7 +116,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Removes a parent or parent list from role. If `parents` is not specified, removes all parents
+   * @description Removes a parent or parent list from role. If `parents` is not specified, removes all parents.
    * @param role
    * @param parents
    * @param callback
@@ -136,7 +136,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Removes a role from the system
+   * @description Removes a role from the system.
    * @param role
    * @param callback
    */
@@ -159,7 +159,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Removes a resource from the system
+   * @description Removes a resource from the system.
    * @param resource
    * @param callback
    */
@@ -174,12 +174,11 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Remove all permissions
+   * @description Remove all permissions.
    * @param role
    * @param resources
    * @param permissions
    * @param callback
-   * @return {*}
    */
   removeAllow(role: string, resources: mixed, permissions: ?mixed, callback: ?() => void): void {
     let permissionsParam = permissions;
@@ -229,7 +228,7 @@ export default class Acl extends Common {
   }
 
   /**
-   * @description Adds the given permissions to the given roles over the given resources
+   * @description Adds the given permissions to the given roles over the given resources.
    * @param roles
    * @param resources
    * @param permissions
@@ -264,7 +263,7 @@ export default class Acl extends Common {
    * @param userId
    * @param ressources
    * @param callback
-   * @return {*}
+   * @returns {*}
    */
   allowedPermissions(userId: string | number, ressources: mixed, callback: ?() => void): Array {
     if (!userId) return callback(null, {});
@@ -292,7 +291,7 @@ export default class Acl extends Common {
    * @param userId
    * @param resources
    * @param callback
-   * @return {*}
+   * @returns {*}
    */
   optimizedAllowedPermissions(userId: string | number, resources: mixed, callback: ?() => void): Array {
     if (!userId) return callback(null, {});
@@ -357,7 +356,7 @@ export default class Acl extends Common {
    * @param roles
    * @param permissions
    * @param callback
-   * @return {*}
+   * @returns {Array}
    */
   whatResources(roles: mixed, permissions: ?mixed, callback: ?() => void): Array {
     const rolesParam = Common.makeArray(roles);
@@ -398,8 +397,6 @@ export default class Acl extends Common {
   /**
    * @description Same as allow but accepts a more compact input.
    * @param objs
-   * @return {*}
-   * @private
    */
   allowEx(objs): Array {
     const objsParam = Common.makeArray(objs);
@@ -422,8 +419,7 @@ export default class Acl extends Common {
   /**
    * @description Returns the parents of the given roles.
    * @param roles
-   * @return {*}
-   * @private
+   * @returns {*}
    */
   rolesParents(roles): Array {
     return this.store.unionAsync(this.options.buckets.parents, roles);
@@ -432,8 +428,7 @@ export default class Acl extends Common {
   /**
    * @description Return all roles in the hierarchy including the given roles.
    * @param roleNames
-   * @return {Promise.<TResult>}
-   * @private
+   * @returns {Promise}
    */
   allRoles(roleNames): Array {
     return this.rolesParents(roleNames)
@@ -449,8 +444,7 @@ export default class Acl extends Common {
   /**
    * @description Return all roles in the hierarchy of the given user.
    * @param userId
-   * @return {Promise.<TResult>}
-   * @private
+   * @returns {Promise}
    */
   allUserRoles(userId): Array {
     return this.userRoles(userId)
@@ -465,8 +459,7 @@ export default class Acl extends Common {
   /**
    * @description Returns an array with resources for the given roles.
    * @param roles
-   * @return {Promise.<TResult>}
-   * @private
+   * @returns {Promise.<TResult>}
    */
   rolesResources(roles): Array {
     const rolesParam = Common.makeArray(roles);
@@ -485,8 +478,7 @@ export default class Acl extends Common {
    * @description Returns the permissions for the given resource and set of roles.
    * @param roles
    * @param resource
-   * @return {*}
-   * @private
+   * @returns {*}
    */
   resourcePermissions(roles, resource): Array {
     if (!roles.length) return bluebird.resolve([]);
@@ -506,8 +498,7 @@ export default class Acl extends Common {
    * @param roles
    * @param resource
    * @param permissions
-   * @return {Promise.<TResult>}
-   * @private
+   * @returns {Promise.<TResult>}
    */
   checkPermissions(roles, resource, permissions): boolean {
     return this.store.unionAsync(this.allowsBucket(resource), roles)
