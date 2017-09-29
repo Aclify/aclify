@@ -105,15 +105,14 @@ export default class Memory extends Common implements Store {
 
   /**
    * @description Adds values to a given key inside a bucket.
-   * @param transaction
    * @param bucket
    * @param key
    * @param values
    */
-  add(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
+  add(bucket: string, key: string | number, values: mixed) {
     values = Common.makeArray(values);
 
-    transaction.push(() => {
+    this.transaction.push(() => {
       if (!this.buckets[bucket]) {
         this.buckets[bucket] = {};
       }
@@ -127,13 +126,12 @@ export default class Memory extends Common implements Store {
 
   /**
    * @description Delete the given key(s) at the bucket.
-   * @param transaction
    * @param bucket
    * @param keys
    */
-  del(transaction: Array<any>, bucket: string, keys: string | Array<any>) {
+  del(bucket: string, keys: string | Array<any>) {
     keys = Common.makeArray(keys);
-    transaction.push(() => {
+    this.transaction.push(() => {
       if (this.buckets[bucket]) {
         for (let i = 0, len = keys.length; i < len; i++) {
           delete this.buckets[bucket][keys[i]];
@@ -144,14 +142,13 @@ export default class Memory extends Common implements Store {
 
   /**
    * @description Removes values from a given key inside a bucket.
-   * @param transaction
    * @param bucket
    * @param key
    * @param values
    */
-  remove(transaction: Array<any>, bucket: string, key: string | number, values: mixed) {
+  remove(bucket: string, key: string | number, values: mixed) {
     values = Common.makeArray(values);
-    transaction.push(() => {
+    this.transaction.push(() => {
       let old;
       if (this.buckets[bucket] && (old = this.buckets[bucket][key])) {
         this.buckets[bucket][key] = _.difference(old, values);
