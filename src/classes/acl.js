@@ -43,7 +43,7 @@ export default class Acl extends Common {
    * @param roles
    * @param callback
    */
-  addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
+  addUserRoles(userId: string | number, roles: mixed, callback: ?() => void): void {
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'users', userId);
     this.store.add(this.options.buckets.users, userId, roles);
@@ -62,7 +62,7 @@ export default class Acl extends Common {
    * @param roles
    * @param callback
    */
-  removeUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
+  removeUserRoles(userId: string | number, roles: mixed, callback: ?() => void): void {
     this.store.begin();
     this.store.remove(this.options.buckets.users, userId, roles);
 
@@ -79,7 +79,7 @@ export default class Acl extends Common {
    * @param userId
    * @param callback
    */
-  userRoles(userId: string | number, callback: ?() => void) {
+  userRoles(userId: string | number, callback: ?() => void): Array {
     return this.store.getAsync(this.options.buckets.users, userId).nodeify(callback);
   }
 
@@ -88,7 +88,7 @@ export default class Acl extends Common {
    * @param roleName
    * @param callback
    */
-  roleUsers(roleName: string | number, callback: ?() => void) {
+  roleUsers(roleName: string | number, callback: ?() => void): Array {
     return this.store.getAsync(this.options.buckets.roles, roleName).nodeify(callback);
   }
 
@@ -98,7 +98,7 @@ export default class Acl extends Common {
    * @param rolename
    * @param callback
    */
-  hasRole(userId: string | number, rolename: string | number, callback: ?() => void) {
+  hasRole(userId: string | number, rolename: string | number, callback: ?() => void): boolean {
     return this.userRoles(userId).then((roles) => roles.indexOf(rolename) !== -1).nodeify(callback);
   }
 
@@ -108,7 +108,7 @@ export default class Acl extends Common {
    * @param parents
    * @param callback
    */
-  addRoleParents(role: string | number, parents: mixed, callback: ?() => void) {
+  addRoleParents(role: string | number, parents: mixed, callback: ?() => void): void {
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'roles', role);
     this.store.add(this.options.buckets.parents, role, parents);
@@ -121,16 +121,18 @@ export default class Acl extends Common {
    * @param parents
    * @param callback
    */
-  removeRoleParents(role: string, parents: ?mixed, callback: ?() => void) {
-    if (!callback && _.isFunction(parents)) {
-      callback = parents;
-      parents = null;
+  removeRoleParents(role: string, parents: ?mixed, callback: ?() => void): void {
+    let callbackParam = callback;
+    let parentsParam = parents;
+    if (!callbackParam && _.isFunction(parentsParam)) {
+      callbackParam = parentsParam;
+      parentsParam = null;
     }
 
     this.store.begin();
-    if (parents) this.store.remove(this.options.buckets.parents, role, parents);
+    if (parentsParam) this.store.remove(this.options.buckets.parents, role, parentsParam);
     else this.store.del(this.options.buckets.parents, role);
-    return this.store.endAsync().nodeify(callback);
+    return this.store.endAsync().nodeify(callbackParam);
   }
 
   /**
@@ -138,14 +140,15 @@ export default class Acl extends Common {
    * @param role
    * @param callback
    */
-  removeRole(role: string, callback: ?() => void) {
+  removeRole(role: string, callback: ?() => void): void {
     return this.store.getAsync(this.options.buckets.resources, role)
       .then((resources) => {
         this.store.begin();
-        resources.map((resource) => {
-          const bucket = this.allowsBucket(resource);
+
+        for (let i = 0; i < resources.length; i += 1) {
+          const bucket = this.allowsBucket(resources[i]);
           this.store.del(bucket, role);
-        }, this);
+        }
 
         this.store.del(this.options.buckets.resources, role);
         this.store.del(this.options.buckets.parents, role);
@@ -160,7 +163,7 @@ export default class Acl extends Common {
    * @param resource
    * @param callback
    */
-  removeResource(resource: string, callback: ?() => void) {
+  removeResource(resource: string, callback: ?() => void): void {
     return this.store.getAsync(this.options.buckets.meta, 'roles')
       .then((roles) => {
         this.store.begin();
@@ -178,15 +181,17 @@ export default class Acl extends Common {
    * @param callback
    * @return {*}
    */
-  removeAllow(role: string, resources: mixed, permissions: ?mixed, callback: ?() => void) {
-    resources = Common.makeArray(resources);
-    if (callback || (permissions && !_.isFunction(permissions))) {
-      permissions = Common.makeArray(permissions);
+  removeAllow(role: string, resources: mixed, permissions: ?mixed, callback: ?() => void): void {
+    let permissionsParam = permissions;
+    let callbackParam = callback;
+    const resourcesParam = Common.makeArray(resources);
+    if (callbackParam || (permissionsParam && !_.isFunction(permissionsParam))) {
+      permissionsParam = Common.makeArray(permissionsParam);
     } else {
-      callback = permissions;
-      permissions = null;
+      callbackParam = permissionsParam;
+      permissionsParam = null;
     }
-    return this.removePermissions(role, resources, permissions, callback);
+    return this.removePermissions(role, resourcesParam, permissionsParam, callbackParam);
   }
 
   /**
@@ -196,17 +201,18 @@ export default class Acl extends Common {
    * @param permissions
    * @param callback
    */
-  removePermissions(role: string, resources: string | Array, permissions: string | Array, callback: ?() => void) {
+  removePermissions(role: string, resources: string | Array, permissions: string | Array, callback: ?() => void): void {
     this.store.begin();
-    resources.map((resource) => {
-      const bucket = this.allowsBucket(resource);
+
+    for (let i = 0; i < resources.length; i += 1) {
+      const bucket = this.allowsBucket(resources[i]);
       if (permissions) {
         this.store.remove(bucket, role, permissions);
       } else {
         this.store.del(bucket, role);
-        this.store.remove(this.options.buckets.resources, role, resource);
+        this.store.remove(this.options.buckets.resources, role, resources[i]);
       }
-    }, this);
+    }
 
     return this.store.endAsync()
       .then(() => {
@@ -214,8 +220,8 @@ export default class Acl extends Common {
         return bluebird.all(resources.map((resource) => {
           const bucket = this.allowsBucket(resource);
           return this.store.getAsync(bucket, role)
-            .then((permissions) => {
-              if (!permissions.length) this.store.remove(this.options.buckets.resources, role, resource);
+            .then((permissionsUpdated) => {
+              if (!permissionsUpdated.length) this.store.remove(this.options.buckets.resources, role, resource);
             });
         }, this))
           .then(this.store.endAsync());
@@ -229,25 +235,25 @@ export default class Acl extends Common {
    * @param permissions
    * @param callback
    */
-  allow(roles: mixed, resources: ?mixed, permissions: ?mixed, callback: ?() => void) {
+  allow(roles: mixed, resources: ?mixed, permissions: ?mixed, callback: ?() => void): void {
     if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
       return this.allowEx(roles).nodeify(resources);
     }
-    roles = Common.makeArray(roles);
-    resources = Common.makeArray(resources);
+    const rolesParam = Common.makeArray(roles);
+    const resourcesParam = Common.makeArray(resources);
 
     this.store.begin();
-    this.store.add(this.options.buckets.meta, 'roles', roles);
+    this.store.add(this.options.buckets.meta, 'roles', rolesParam);
 
-    resources.map((resource) => {
-      roles.map((role) => {
-        this.store.add(this.allowsBucket(resource), role, permissions);
-      }, this);
-    }, this);
+    for (let i = 0; i < resourcesParam.length; i += 1) {
+      for (let j = 0; j < rolesParam.length; j += 1) {
+        this.store.add(this.allowsBucket(resourcesParam[i]), rolesParam[j], permissions);
+      }
+    }
 
-    roles.map((role) => {
-      this.store.add(this.options.buckets.resources, role, resources);
-    }, this);
+    for (let i = 0; i < resourcesParam.length; i += 1) {
+      this.store.add(this.options.buckets.resources, resourcesParam[i], resourcesParam);
+    }
 
     return this.store.endAsync().nodeify(callback);
   }
