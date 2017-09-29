@@ -63,13 +63,13 @@ export default class Memory extends Common implements Store {
    */
   unions(buckets: Array<any>, keys: Array<any>, callback: (key: null, value: {}) => void) {
     const results = {};
-    buckets.map((bucket) => {
-      if (this.buckets[bucket]) {
-        results[bucket] = _.uniq(_.flatten(_.values(_.pick(this.buckets[bucket], keys))));
+    for (let i = 0; i < buckets.length; i += 1) {
+      if (this.buckets[buckets[i]]) {
+        results[buckets[i]] = _.uniq(_.flatten(_.values(_.pick(this.buckets[buckets[i]], keys))));
       } else {
-        results[bucket] = [];
+        results[buckets[i]] = [];
       }
-    }, this);
+    }
     callback(null, results);
   }
 
@@ -82,20 +82,21 @@ export default class Memory extends Common implements Store {
   union(bucket: string, keys: Array<any>, callback: (key: null, value: Array<any>) => void) {
     let match;
     let re;
-    if (!this.buckets[bucket]) {
+    let bucketParam = bucket;
+    if (!this.buckets[bucketParam]) {
       Object.keys(this.buckets).some((b) => {
         re = new RegExp(`^${b}$`);
-        match = re.test(bucket);
-        if (match) bucket = b;
+        match = re.test(bucketParam);
+        if (match) bucketParam = b;
         return match;
       });
     }
 
-    if (this.buckets[bucket]) {
+    if (this.buckets[bucketParam]) {
       const keyArrays = [];
-      for (let i = 0, len = keys.length; i < len; i++) {
-        if (this.buckets[bucket][keys[i]]) {
-          keyArrays.push.apply(keyArrays, this.buckets[bucket][keys[i]]);
+      for (let i = 0, len = keys.length; i < len; i += 1) {
+        if (this.buckets[bucketParam][keys[i]]) {
+          keyArrays.push(...this.buckets[bucketParam][keys[i]]);
         }
       }
       callback(null, _.union(keyArrays));
@@ -133,7 +134,7 @@ export default class Memory extends Common implements Store {
     const keysArray = Common.makeArray(keys);
     this.transaction.push(() => {
       if (this.buckets[bucket]) {
-        for (let i = 0, len = keysArray.length; i < len; i++) {
+        for (let i = 0, len = keysArray.length; i < len; i += 1) {
           delete this.buckets[bucket][keysArray[i]];
         }
       }
@@ -149,9 +150,9 @@ export default class Memory extends Common implements Store {
   remove(bucket: string, key: string | number, values: mixed) {
     const valuesArray = Common.makeArray(values);
     this.transaction.push(() => {
-      let old;
-      if (this.buckets[bucket] && (old = this.buckets[bucket][key])) {
-        this.buckets[bucket][key] = _.difference(old, valuesArray);
+      const bucketKey = this.buckets[bucket][key];
+      if (this.buckets[bucket] && bucketKey) {
+        this.buckets[bucket][key] = _.difference(bucketKey, valuesArray);
       }
     });
   }
