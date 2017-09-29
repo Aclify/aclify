@@ -235,7 +235,7 @@ export default class Acl extends Common {
    * @param permissions
    * @param callback
    */
-  allow(roles: mixed, resources: ?mixed, permissions: ?mixed, callback: ?() => void): void {
+  allow(roles: mixed, resources: ?mixed, permissions: ?mixed, callback: ?() => void) {
     if ((arguments.length === 1) || ((arguments.length === 2) && _.isObject(roles) && _.isFunction(resources))) {
       return this.allowEx(roles).nodeify(resources);
     }
@@ -251,8 +251,8 @@ export default class Acl extends Common {
       }
     }
 
-    for (let i = 0; i < resourcesParam.length; i += 1) {
-      this.store.add(this.options.buckets.resources, resourcesParam[i], resourcesParam);
+    for (let i = 0; i < rolesParam.length; i += 1) {
+      this.store.add(this.options.buckets.resources, rolesParam[i], resourcesParam);
     }
 
     return this.store.endAsync().nodeify(callback);
