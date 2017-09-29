@@ -11,7 +11,7 @@ interface Store {
   /**
    * @description End a transaction
    */
-  end(transaction: Array, callback: () => void): any;
+  end(callback: () => void): any;
 
   /**
    * @description Cleans the whole storage
@@ -38,15 +38,15 @@ interface Store {
   /**
    * @description Add values to a given key inside a bucket
    */
-  add(transaction: Array, bucket: string, key: string | number, values: string | number | Array): any;
+  add(bucket: string, key: string | number, values: string | number | Array): any;
 
   /**
    * @description Delete given key(s) at the bucket
    */
-  del(transaction: Array, bucket: string, keys: string | Array): any;
+  del(bucket: string, keys: string | Array): any;
 
   /**
    * @description Removes values from a given key inside a bucket
    */
-  remove(transaction: Array, bucket: string, key: string | number, values: string | number | Array): any;
+  remove(bucket: string, key: string | number, values: string | number | Array): any;
 }
