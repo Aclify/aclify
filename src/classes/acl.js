@@ -44,16 +44,16 @@ export default class Acl extends Common {
    * @param callback
    */
   addUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-    const transaction = this.store.begin();
-    this.store.add(transaction, this.options.buckets.meta, 'users', userId);
-    this.store.add(transaction, this.options.buckets.users, userId, roles);
+    this.store.begin();
+    this.store.add(this.options.buckets.meta, 'users', userId);
+    this.store.add(this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.map((role) => this.store.add(transaction, this.options.buckets.roles, role, userId), this);
+      roles.map((role) => this.store.add(this.options.buckets.roles, role, userId), this);
     } else {
-      this.store.add(transaction, this.options.buckets.roles, roles, userId);
+      this.store.add(this.options.buckets.roles, roles, userId);
     }
-    return this.store.endAsync(transaction).nodeify(callback);
+    return this.store.endAsync().nodeify(callback);
   }
 
   /**
@@ -63,15 +63,15 @@ export default class Acl extends Common {
    * @param callback
    */
   removeUserRoles(userId: string | number, roles: mixed, callback: ?() => void) {
-    const transaction = this.store.begin();
-    this.store.remove(transaction, this.options.buckets.users, userId, roles);
+    this.store.begin();
+    this.store.remove(this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.map((role) => this.store.remove(transaction, this.options.buckets.roles, role, userId), this);
+      roles.map((role) => this.store.remove(this.options.buckets.roles, role, userId), this);
     } else {
-      this.store.remove(transaction, this.options.buckets.roles, roles, userId);
+      this.store.remove(this.options.buckets.roles, roles, userId);
     }
-    return this.store.endAsync(transaction).nodeify(callback);
+    return this.store.endAsync().nodeify(callback);
   }
 
   /**
@@ -109,10 +109,10 @@ export default class Acl extends Common {
    * @param callback
    */
   addRoleParents(role: string | number, parents: mixed, callback: ?() => void) {
-    const transaction = this.store.begin();
-    this.store.add(transaction, this.options.buckets.meta, 'roles', role);
-    this.store.add(transaction, this.options.buckets.parents, role, parents);
-    return this.store.endAsync(transaction).nodeify(callback);
+    this.store.begin();
+    this.store.add(this.options.buckets.meta, 'roles', role);
+    this.store.add(this.options.buckets.parents, role, parents);
+    return this.store.endAsync().nodeify(callback);
   }
 
   /**
@@ -127,10 +127,10 @@ export default class Acl extends Common {
       parents = null;
     }
 
-    const transaction = this.store.begin();
-    if (parents) this.store.remove(transaction, this.options.buckets.parents, role, parents);
-    else this.store.del(transaction, this.options.buckets.parents, role);
-    return this.store.endAsync(transaction).nodeify(callback);
+    this.store.begin();
+    if (parents) this.store.remove(this.options.buckets.parents, role, parents);
+    else this.store.del(this.options.buckets.parents, role);
+    return this.store.endAsync().nodeify(callback);
   }
 
   /**
@@ -141,17 +141,17 @@ export default class Acl extends Common {
   removeRole(role: string, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.resources, role)
       .then((resources) => {
-        const transaction = this.store.begin();
+        this.store.begin();
         resources.map((resource) => {
           let bucket = this.allowsBucket(resource);
-          this.store.del(transaction, bucket, role);
+          this.store.del(bucket, role);
         }, this);
 
-        this.store.del(transaction, this.options.buckets.resources, role);
-        this.store.del(transaction, this.options.buckets.parents, role);
-        this.store.del(transaction, this.options.buckets.roles, role);
-        this.store.remove(transaction, this.options.buckets.meta, 'roles', role);
-        return this.store.endAsync(transaction);
+        this.store.del(this.options.buckets.resources, role);
+        this.store.del(this.options.buckets.parents, role);
+        this.store.del(this.options.buckets.roles, role);
+        this.store.remove(this.options.buckets.meta, 'roles', role);
+        return this.store.endAsync();
       }).nodeify(callback);
   }
 
@@ -163,10 +163,10 @@ export default class Acl extends Common {
   removeResource(resource: string, callback: ?() => void) {
     return this.store.getAsync(this.options.buckets.meta, 'roles')
       .then((roles) => {
-        const transaction = this.store.begin();
-        this.store.del(transaction, this.allowsBucket(resource), roles);
-        roles.map((role) => this.store.remove(transaction, this.options.buckets.resources, role, resource), this);
-        return this.store.endAsync(transaction);
+        this.store.begin();
+        this.store.del(this.allowsBucket(resource), roles);
+        roles.map((role) => this.store.remove(this.options.buckets.resources, role, resource), this);
+        return this.store.endAsync();
       }).nodeify(callback);
   }
 
@@ -196,29 +196,29 @@ export default class Acl extends Common {
    * @param permissions
    * @param callback
    */
-  removePermissions(role: string, resources: string | Array<any>, permissions: string | Array<any>, callback: ?() => void) {
-    const transaction = this.store.begin();
+  removePermissions(role: string, resources: string | Array, permissions: string | Array, callback: ?() => void) {
+    this.store.begin();
     resources.map((resource) => {
       let bucket = this.allowsBucket(resource);
       if (permissions) {
-        this.store.remove(transaction, bucket, role, permissions);
+        this.store.remove(bucket, role, permissions);
       } else {
-        this.store.del(transaction, bucket, role);
-        this.store.remove(transaction, this.options.buckets.resources, role, resource);
+        this.store.del(bucket, role);
+        this.store.remove(this.options.buckets.resources, role, resource);
       }
     }, this);
 
-    return this.store.endAsync(transaction)
+    return this.store.endAsync()
       .then(() => {
-        const transaction = this.store.begin();
+        this.store.begin();
         return bluebird.all(resources.map((resource) => {
           let bucket = this.allowsBucket(resource);
           return this.store.getAsync(bucket, role)
             .then(permissions => {
-              if (!permissions.length) this.store.remove(transaction, this.options.buckets.resources, role, resource);
+              if (!permissions.length) this.store.remove(this.options.buckets.resources, role, resource);
             });
         }, this))
-          .then(this.store.endAsync(transaction));
+          .then(this.store.endAsync());
       }).nodeify(callback);
   }
 
@@ -236,20 +236,20 @@ export default class Acl extends Common {
       roles = Common.makeArray(roles);
       resources = Common.makeArray(resources);
 
-      const transaction = this.store.begin();
-      this.store.add(transaction, this.options.buckets.meta, 'roles', roles);
+      this.store.begin();
+      this.store.add(this.options.buckets.meta, 'roles', roles);
 
       resources.map((resource) => {
         roles.map((role) => {
-          this.store.add(transaction, this.allowsBucket(resource), role, permissions);
+          this.store.add(this.allowsBucket(resource), role, permissions);
         }, this);
       }, this);
 
       roles.map((role) => {
-        this.store.add(transaction, this.options.buckets.resources, role, resources);
+        this.store.add(this.options.buckets.resources, role, resources);
       }, this);
 
-      return this.store.endAsync(transaction).nodeify(callback);
+      return this.store.endAsync().nodeify(callback);
     }
   }
 
