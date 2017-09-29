@@ -5,6 +5,7 @@ import Common from '../classes/common';
 
 export default class Memory extends Common implements Store {
   buckets: {};
+  transaction: Array;
 
   constructor() {
     super();
@@ -15,18 +16,18 @@ export default class Memory extends Common implements Store {
    * @description Begins a transaction.
    * @returns {Array}
    */
-  begin() {
-    return [];
+  begin(): Array {
+    this.transaction = [];
+    return this.transaction;
   }
 
   /**
    * @description Ends a transaction (and executes it)
-   * @param transaction
    * @param callback
    */
-  end(transaction: Array<any>, callback: () => void) {
-    for (let i = 0, len = transaction.length; i < len; i++) {
-      transaction[i]();
+  end(callback: () => void) {
+    for (let i = 0; i < this.transaction.length; i += 1) {
+      this.transaction[i]();
     }
     callback();
   }
