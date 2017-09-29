@@ -1,6 +1,7 @@
 [ignore]
 <PROJECT_ROOT>/coverage/.*
 <PROJECT_ROOT>/dist/.*
+<PROJECT_ROOT>/__tests__/.*
 
 [include]
 
@@ -11,4 +12,4 @@ suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
 unsafe.enable_getters_and_setters=true
 
 [version]
-0.54.1
+0.56.0
