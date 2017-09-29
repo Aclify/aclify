@@ -80,7 +80,8 @@ export default class Memory extends Common implements Store {
    * @param callback
    */
   union(bucket: string, keys: Array<any>, callback: (key: null, value: Array<any>) => void) {
-    let match, re;
+    let match;
+    let re;
     if (!this.buckets[bucket]) {
       Object.keys(this.buckets).some((b) => {
         re = new RegExp(`^${b}$`);
@@ -110,16 +111,15 @@ export default class Memory extends Common implements Store {
    * @param values
    */
   add(bucket: string, key: string | number, values: mixed) {
-    values = Common.makeArray(values);
-
+    const valuesArray = Common.makeArray(values);
     this.transaction.push(() => {
       if (!this.buckets[bucket]) {
         this.buckets[bucket] = {};
       }
       if (!this.buckets[bucket][key]) {
-        this.buckets[bucket][key] = values;
+        this.buckets[bucket][key] = valuesArray;
       } else {
-        this.buckets[bucket][key] = _.union(values, this.buckets[bucket][key]);
+        this.buckets[bucket][key] = _.union(valuesArray, this.buckets[bucket][key]);
       }
     });
   }
@@ -130,11 +130,11 @@ export default class Memory extends Common implements Store {
    * @param keys
    */
   del(bucket: string, keys: string | Array<any>) {
-    keys = Common.makeArray(keys);
+    const keysArray = Common.makeArray(keys);
     this.transaction.push(() => {
       if (this.buckets[bucket]) {
-        for (let i = 0, len = keys.length; i < len; i++) {
-          delete this.buckets[bucket][keys[i]];
+        for (let i = 0, len = keysArray.length; i < len; i++) {
+          delete this.buckets[bucket][keysArray[i]];
         }
       }
     });
@@ -147,11 +147,11 @@ export default class Memory extends Common implements Store {
    * @param values
    */
   remove(bucket: string, key: string | number, values: mixed) {
-    values = Common.makeArray(values);
+    const valuesArray = Common.makeArray(values);
     this.transaction.push(() => {
       let old;
       if (this.buckets[bucket] && (old = this.buckets[bucket][key])) {
-        this.buckets[bucket][key] = _.difference(old, values);
+        this.buckets[bucket][key] = _.difference(old, valuesArray);
       }
     });
   }
