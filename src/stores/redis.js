@@ -1,8 +1,11 @@
 // @flow
-import _ from 'lodash';
-import Redis from 'redis';
+import RedisClient from 'redis';
 import Store from '../interfaces/store';
 import Common from '../classes/common';
+
+function noop() {
+};
+
 
 export default class Redis extends Common implements Store {
   buckets: {};
@@ -10,10 +13,11 @@ export default class Redis extends Common implements Store {
   redis: {};
   redisPrefix: string;
 
-  constructor(redis: Redis) {
+  constructor(rds: RedisClient) {
     super();
     this.buckets = {};
-    this.redis = redis;
+    this.redis = rds;
+    this.redisPrefix = 'acl';
   }
 
   /**
@@ -21,15 +25,15 @@ export default class Redis extends Common implements Store {
    * @returns {*}
    */
   begin() {
-    return this.redis.multi();
+    this.transaction = this.redis.multi();
+    return this.transaction;
   }
 
   /**
    * @description Ends a transaction (and executes it)
-   * @param transaction
    * @param cb
    */
-  end(transaction, cb) {
+  end(cb) {
     this.transaction.exec(() => cb());
   }
 
@@ -61,8 +65,14 @@ export default class Redis extends Common implements Store {
    * @param cb
    */
   unions(buckets, keys, cb) {
+    // console.log(`================================================================================================`)
+    // console.log(buckets)
+    // console.log(keys)
+    // console.log(`==========//========`)
     const redisKeys = {};
     const batch = this.redis.batch();
+
+
 
     for (let i = 0; i < buckets.length; i += 1) {
       redisKeys[buckets[i]] = this.bucketKey(buckets[i], keys);
@@ -91,65 +101,59 @@ export default class Redis extends Common implements Store {
   }
 
   /**
-   Adds values to a given key inside a bucket.
+   * @description Adds values to a given key inside a bucket.
+   * @param bucket
+   * @param key
+   * @param values
    */
-  add(transaction, bucket, key, values) {
-    let key = this.bucketKey(bucket, key);
+  add(bucket, key, values) {
+    const keyTmp = this.bucketKey(bucket, key);
 
     if (Array.isArray(values)) {
-      values.forEach(function (value) {
-        transaction.sadd(key, value);
-      });
+      for (let i = 0; i < values.length; i += 1) {
+        this.redis.sadd(keyTmp, values[i]);
+      }
     } else {
-      transaction.sadd(key, values);
+      this.redis.sadd(keyTmp, values);
     }
   }
 
   /**
-   Delete the given key(s) at the bucket
+   * @description Delete the given key(s) at the bucket.
+   * @param bucket
+   * @param keys
    */
-  del(transaction, bucket, keys) {
-    var self = this;
-
-    keys = Array.isArray(keys) ? keys : [keys]
-
-    keys = keys.map(function (key) {
-      return self.bucketKey(bucket, key);
-    });
-
-    transaction.del(keys);
+  del(bucket, keys) {
+    let keysTmp = Array.isArray(keys) ? keys : [keys];
+    keysTmp = keysTmp.map((key) => this.bucketKey(bucket, key), this);
+    this.redis.del(keysTmp);
   }
 
   /**
-   Removes values from a given key inside a bucket.
+   * @description Removes values from a given key inside a bucket.
+   * @param bucket
+   * @param key
+   * @param values
    */
-  remove(transaction, bucket, key, values) {
-    key = this.bucketKey(bucket, key);
-
+  remove(bucket, key, values) {
+    const keyTmp = this.bucketKey(bucket, key);
     if (Array.isArray(values)) {
-      values.forEach(function (value) {
-        transaction.srem(key, value);
-      });
+      for (let i = 0; i < values.length; i += 1) {
+        this.redis.srem(keyTmp, values[i]);
+      }
     } else {
-      transaction.srem(key, values);
+      this.redis.srem(keyTmp, values);
     }
   }
 
+  /**
+   * @description
+   * @param bucket
+   * @param keys
+   * @returns {string}
+   */
   bucketKey(bucket, keys) {
-    var self = this;
-    if (Array.isArray(keys)) {
-      return keys.map(function (key) {
-        return self.redisPrefix + '_' + bucket + '@' + key;
-      });
-    } else {
-      return self.redisPrefix + '_' + bucket + '@' + keys;
-    }
-
-
+    if (Array.isArray(keys)) return this.map((key) => `${this.redisPrefix}_${bucket}@${key}`, this);
+    return `${this.redisPrefix}_${bucket}@${keys}`;
   }
 }
-
-
-
-
-

@@ -2,10 +2,10 @@
 import _ from 'lodash';
 import bluebird from 'bluebird';
 import Common from './common';
-import Memory from '../stores/memory';
+// import Memory from '../stores/memory';
 
 export default class Acl extends Common {
-  store: Memory;
+  store: {};
   options: {};
 
   /**
@@ -13,7 +13,7 @@ export default class Acl extends Common {
    * @param store
    * @param options
    */
-  constructor(store: Memory, options: {} = {}) {
+  constructor(store: {}, options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
@@ -265,6 +265,7 @@ export default class Acl extends Common {
   allowedPermissions(userId: string | number, ressources: mixed, callback: ?() => void): Array {
     if (!userId) return callback(null, {});
     if (this.store.unionsAsync) {
+      console.log(`====================> dans this.store.unionsAsync`)
       return this.optimizedAllowedPermissions(userId, ressources, callback);
     }
 
@@ -294,8 +295,11 @@ export default class Acl extends Common {
     if (!userId) return callback(null, {});
 
     const resourcesArray = Common.makeArray(resources);
+    // console.log(`====> anvxxant le allUserRoles`)
     return this.allUserRoles(userId)
       .then((roles) => {
+        // console.log(`====> apres le allUserRoles`)
+
         const buckets = resourcesArray.map(this.allowsBucket, this);
         if (roles.length === 0) {
           const emptyResult = {};
@@ -303,17 +307,26 @@ export default class Acl extends Common {
           for (let i = 0; i < buckets.length; i += 1) {
             emptyResult[buckets[i]] = [];
           }
+
+          // console.log(`===== avant  le return bluebird.resolve(emptyResult)`)
+          // console.log(emptyResult)
           return bluebird.resolve(emptyResult);
         }
+        // console.log(`=========> avant le call `)
+        // console.log(buckets)
+        // console.log(roles)
         return this.store.unionsAsync(buckets, roles);
       })
       .then((response) => {
+      // console.log(`=======apres `, response)
         const result = {};
         const keys = Object.keys(response);
 
         for (let i = 0; i < keys.length; i += 1) {
           result[this.keyFromAllowsBucket(keys[i])] = response[keys[i]];
         }
+        // console.log(`========> result:`)
+        // console.log(result)
         return result;
       }).nodeify(callback);
   }
