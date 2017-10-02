@@ -5,17 +5,15 @@ import Common from './common';
 import Memory from '../stores/memory';
 
 export default class Acl extends Common {
-  logger: {};
   store: {};
   options: {};
 
   /**
    * @description Create ACL class and promisify store methods.
    * @param store
-   * @param logger
    * @param options
    */
-  constructor(store: {} = new Memory(), logger: {} | null = null, options: {} = {}) {
+  constructor(store: {} = new Memory(), options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
@@ -28,7 +26,6 @@ export default class Acl extends Common {
       },
     }, options);
 
-    this.logger = logger;
     this.store = store;
     this.store.endAsync = bluebird.promisify(store.end);
     this.store.getAsync = bluebird.promisify(store.get);

@@ -15,7 +15,7 @@ export default (store) => {
     });
 
     it('Should use given `buckets` names', () => {
-      const aclCustomized = new Acl(store, null, {
+      const aclCustomized = new Acl(store, {
         buckets: {
           meta: 'Meta',
           parents: 'Parents',
