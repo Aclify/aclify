@@ -5,7 +5,7 @@ import Common from '../classes/common';
 
 export default class Memory extends Common implements Store {
   buckets: {};
-  transaction: Array;
+  transaction: Array<any>;
 
   constructor() {
     super();
@@ -16,7 +16,7 @@ export default class Memory extends Common implements Store {
    * @description Begins a transaction.
    * @returns {Array}
    */
-  begin(): Array {
+  begin(): Array<any> {
     this.transaction = [];
     return this.transaction;
   }
