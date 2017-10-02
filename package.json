@@ -63,7 +63,8 @@
     "eslint-plugin-flowtype": "~2.37.0",
     "eslint-plugin-import": "~2.7.0",
     "flow-bin": "~0.56.0",
-    "jest": "~21.2.1"
+    "jest": "~21.2.1",
+    "redis-mock": "^0.20.0"
   },
   "jest": {
     "testEnvironment": "node",
