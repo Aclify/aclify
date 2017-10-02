@@ -5,7 +5,7 @@ import Common from './common';
 import Memory from '../stores/memory';
 
 export default class Acl extends Common {
-  store: {};
+  store: Memory;
   options: {};
 
   /**
@@ -13,7 +13,7 @@ export default class Acl extends Common {
    * @param store
    * @param options
    */
-  constructor(store: {} = new Memory(), options: {} = {}) {
+  constructor(store: Memory, options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
