@@ -47,7 +47,8 @@
     "babel-runtime": "~6.26.0",
     "bluebird": "^3.5.0",
     "lodash": "^4.17.4",
-    "redis": "^2.2.5"
+    "redis": "^2.2.5",
+    "mongodb": "^2.0.47"
   },
   "devDependencies": {
     "babel-core": "~6.26.0",
