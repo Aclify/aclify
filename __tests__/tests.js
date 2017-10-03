@@ -3,9 +3,16 @@ import Acl from '../src/classes/acl';
 
 export default (store) => {
   const acl = new Acl(store);
+  console.log(`=> on lance les tests`)
 
   describe('Constructor', () => {
+
     it('Should use default `buckets` names', () => {
+      console.log(`chiiiiibreeeeeeeekijvdflkbglksf djgslkdfj gskldfjg `)
+
+
+
+
       expect(acl.options.buckets.meta).toEqual('meta');
       expect(acl.options.buckets.parents).toEqual('parents');
       expect(acl.options.buckets.permissions).toEqual('permissions');
