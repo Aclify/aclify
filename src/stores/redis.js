@@ -3,21 +3,14 @@ import RedisClient from 'redis';
 import Store from '../interfaces/store';
 import Common from '../classes/common';
 
-function noop() {
-};
-
-
 export default class Redis extends Common implements Store {
-  buckets: {};
   transaction: Array<any>;
   redis: {};
   redisPrefix: string;
 
-  constructor(rds: RedisClient) {
+  constructor(redis: RedisClient) {
     super();
-    this.buckets = {};
-    this.redis = rds;
-    this.redisPrefix = 'acl';
+    this.redis = redis;
   }
 
   /**
@@ -65,18 +58,12 @@ export default class Redis extends Common implements Store {
    * @param cb
    */
   unions(buckets, keys, cb) {
-    // console.log(`================================================================================================`)
-    // console.log(buckets)
-    // console.log(keys)
-    // console.log(`==========//========`)
     const redisKeys = {};
     const batch = this.redis.batch();
 
-
-
     for (let i = 0; i < buckets.length; i += 1) {
       redisKeys[buckets[i]] = this.bucketKey(buckets[i], keys);
-      batch.sunion(redisKeys[buckets[i]], noop);
+      batch.sunion(redisKeys[buckets[i]], this);
     }
 
     batch.exec((err, replies) => {
@@ -108,25 +95,18 @@ export default class Redis extends Common implements Store {
    */
   add(bucket, key, values) {
     const keyTmp = this.bucketKey(bucket, key);
-
-    if (Array.isArray(values)) {
-      for (let i = 0; i < values.length; i += 1) {
-        this.redis.sadd(keyTmp, values[i]);
-      }
-    } else {
-      this.redis.sadd(keyTmp, values);
-    }
+    if (Array.isArray(values)) values.map((value) => this.transaction.sadd(keyTmp, value), this);
+    else this.transaction.sadd(keyTmp, values);
   }
 
   /**
-   * @description Delete the given key(s) at the bucket.
+   * @description Delete the given key(s) at the bucket
    * @param bucket
    * @param keys
    */
   del(bucket, keys) {
-    let keysTmp = Array.isArray(keys) ? keys : [keys];
-    keysTmp = keysTmp.map((key) => this.bucketKey(bucket, key), this);
-    this.redis.del(keysTmp);
+    const keysTmp = Array.isArray(keys) ? keys : [keys];
+    this.transaction.del(keysTmp.map((key) => this.bucketKey(bucket, key), this));
   }
 
   /**
@@ -137,23 +117,18 @@ export default class Redis extends Common implements Store {
    */
   remove(bucket, key, values) {
     const keyTmp = this.bucketKey(bucket, key);
-    if (Array.isArray(values)) {
-      for (let i = 0; i < values.length; i += 1) {
-        this.redis.srem(keyTmp, values[i]);
-      }
-    } else {
-      this.redis.srem(keyTmp, values);
-    }
+    if (Array.isArray(values)) values.map((value) => this.transaction.srem(keyTmp, value), this);
+    else this.transaction.srem(keyTmp, values);
   }
 
   /**
-   * @description
+   * @description Return bucket key
    * @param bucket
    * @param keys
    * @returns {string}
    */
   bucketKey(bucket, keys) {
-    if (Array.isArray(keys)) return this.map((key) => `${this.redisPrefix}_${bucket}@${key}`, this);
+    if (Array.isArray(keys)) return keys.map((key) => `${this.redisPrefix}_${bucket}@${key}`);
     return `${this.redisPrefix}_${bucket}@${keys}`;
   }
 }
