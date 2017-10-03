@@ -44,11 +44,12 @@
   "engineStrict": true,
   "homepage": "https://github.com/rimiti/aclify#readme",
   "dependencies": {
+    "async": "^2.5.0",
     "babel-runtime": "~6.26.0",
     "bluebird": "^3.5.0",
     "lodash": "^4.17.4",
-    "redis": "^2.2.5",
-    "mongodb": "^2.0.47"
+    "mongodb": "^2.0.47",
+    "redis": "^2.2.5"
   },
   "devDependencies": {
     "babel-core": "~6.26.0",
