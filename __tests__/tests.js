@@ -482,7 +482,9 @@ export default (store) => {
         expect(!err);
         expect(permissions).toHaveProperty('blogs');
         expect(permissions).toHaveProperty('forums');
-        expect(permissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+        expect(permissions.blogs).toContain('edit');
+        expect(permissions.blogs).toContain('view');
+        expect(permissions.blogs).toContain('delete');
         expect(!permissions.forums.length);
         done();
       });
@@ -493,7 +495,9 @@ export default (store) => {
         expect(!err);
         expect(permissions).toHaveProperty('blogs');
         expect(permissions).toHaveProperty('forums');
-        expect(permissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+        expect(permissions.blogs).toContain('edit');
+        expect(permissions.blogs).toContain('view');
+        expect(permissions.blogs).toContain('delete');
         expect(!permissions.forums.length);
         done();
       });
@@ -513,7 +517,8 @@ export default (store) => {
     it('What resources have "bar" some rights on?', (done) => {
       acl.whatResources('bar', (err, resources) => {
         expect(err).toBeNull();
-        expect(resources).toHaveProperty('blogs', ['view', 'delete']);
+        expect(resources.blogs).toContain('view');
+        expect(resources.blogs).toContain('delete');
         done();
       });
     });
@@ -530,10 +535,18 @@ export default (store) => {
       acl.whatResources('fumanchu', (err, resources) => {
         expect(err).toBeNull();
         expect(resources).toHaveProperty('blogs', ['get']);
-        expect(resources).toHaveProperty('forums', ['get', 'put', 'delete']);
-        expect(resources).toHaveProperty('news', ['get', 'put', 'delete']);
-        expect(resources['/path/file/file1.txt']).toEqual(['get', 'put', 'delete']);
-        expect(resources['/path/file/file2.txt']).toEqual(['get', 'put', 'delete']);
+        expect(resources.forums).toContain('get');
+        expect(resources.forums).toContain('put');
+        expect(resources.forums).toContain('delete');
+        expect(resources.news).toContain('get');
+        expect(resources.news).toContain('put');
+        expect(resources.news).toContain('delete');
+        expect(resources['/path/file/file1.txt']).toContain('get');
+        expect(resources['/path/file/file1.txt']).toContain('put');
+        expect(resources['/path/file/file1.txt']).toContain('delete');
+        expect(resources['/path/file/file2.txt']).toContain('get');
+        expect(resources['/path/file/file2.txt']).toContain('put');
+        expect(resources['/path/file/file2.txt']).toContain('delete');
         done();
       });
     });
@@ -541,7 +554,9 @@ export default (store) => {
     it('What resources have "baz" some rights on?', (done) => {
       acl.whatResources('baz', (err, resources) => {
         expect(err).toBeNull();
-        expect(resources).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+        expect(resources.blogs).toContain('edit');
+        expect(resources.blogs).toContain('view');
+        expect(resources.blogs).toContain('delete');
         done();
       });
     });
@@ -576,9 +591,11 @@ export default (store) => {
         expect(err).toBeNull();
         expect(resources).not.toContain('blogs');
         expect(resources).toHaveProperty('news');
-        expect(resources).toHaveProperty('news', ['get', 'put']);
+        expect(resources.news).toContain('get');
+        expect(resources.news).toContain('put');
         expect(resources).not.toContain('delete');
-        expect(resources).toHaveProperty('forums', ['put', 'delete']);
+        expect(resources.forums).toContain('put');
+        expect(resources.forums).toContain('delete');
         done();
       });
     });
@@ -646,7 +663,7 @@ export default (store) => {
       it('What permissions has james over blogs?', (done) => {
         acl.allowedPermissions('james', 'blogs', (err, permissions) => {
           expect(!err);
-          expect(permissions).toHaveProperty('blogs', ['delete']);
+          expect(permissions.blogs).toContain('delete');
           done();
         });
       });
@@ -670,7 +687,11 @@ export default (store) => {
       acl.whatResources('child')
         .then((resources) => {
           expect(resources.x.length === 5);
-          expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+          expect(resources.x).toContain('read1');
+          expect(resources.x).toContain('read2');
+          expect(resources.x).toContain('read3');
+          expect(resources.x).toContain('read4');
+          expect(resources.x).toContain('read5');
           done();
         });
     });
@@ -694,7 +715,11 @@ export default (store) => {
         .then(() => acl.whatResources('child'))
         .then((resources) => {
           expect(resources.x.length === 5);
-          expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+          expect(resources.x).toContain('read1');
+          expect(resources.x).toContain('read2');
+          expect(resources.x).toContain('read3');
+          expect(resources.x).toContain('read4');
+          expect(resources.x).toContain('read5');
           done();
         });
     });
@@ -704,7 +729,10 @@ export default (store) => {
         .then(() => acl.whatResources('child'))
         .then((resources) => {
           expect(resources.x.length === 4);
-          expect(resources).toHaveProperty('x', ['read2', 'read3', 'read4', 'read5']);
+          expect(resources.x).toContain('read2');
+          expect(resources.x).toContain('read3');
+          expect(resources.x).toContain('read4');
+          expect(resources.x).toContain('read5');
           done();
         });
     });
@@ -714,7 +742,8 @@ export default (store) => {
         .then(() => acl.whatResources('child'))
         .then((resources) => {
           expect(resources.x.length === 2);
-          expect(resources).toHaveProperty('x', ['read4', 'read5']);
+          expect(resources.x).toContain('read4');
+          expect(resources.x).toContain('read5');
           done();
         });
     });
