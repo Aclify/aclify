@@ -1,5 +1,4 @@
 // @flow
-import RedisClient from 'redis';
 import Async from 'async';
 import Store from '../interfaces/store';
 import Common from '../classes/common';
@@ -8,14 +7,15 @@ export default class MongoDB extends Common implements Store {
   transaction: Array<any>;
   redis: {};
 
-  constructor(db, prefix, useSingle, useRawCollectionNames) {
+  constructor(db, prefix, useSingle, useRawCollectionNames = 'resources') {
     super();
+    console.log(`=======> in MongoDB Store`)
     this.db = db;
+    this.aclCollectionName = 'resources';
     this.prefix = typeof prefix !== 'undefined' ? prefix : '';
     this.useSingle = (typeof useSingle !== 'undefined') ? useSingle : false;
     this.useRawCollectionNames = useRawCollectionNames === false; // requires explicit boolean false value
   }
-
 
   /**
    * @description Begins a transaction. Returns a transaction object(just an array of functions will do here.)
@@ -54,9 +54,9 @@ export default class MongoDB extends Common implements Store {
    * @param cb
    */
   get(bucket, key, cb) {
-    const keyTmp = encodeText(key);
+    const keyTmp = MongoDB.encodeText(key);
     const searchParams = (this.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
-    const collName = (this.useSingle ? aclCollectionName : bucket);
+    const collName = (this.useSingle ? this.aclCollectionName : bucket);
 
     this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
       if (err instanceof Error) return cb(err);
@@ -64,7 +64,7 @@ export default class MongoDB extends Common implements Store {
       collection.findOne(searchParams, {_bucketname: 0}, (err, doc) => {
         if (err) return cb(err);
         if (!_.isObject(doc)) return cb(undefined, []);
-        cb(undefined, _.without(_.keys(fixKeys(doc)), 'key', '_id'));
+        cb(undefined, _.without(_.keys(MongoDB.fixKeys(doc)), 'key', '_id'));
       });
     });
   }
@@ -76,9 +76,9 @@ export default class MongoDB extends Common implements Store {
    * @param cb
    */
   union(bucket, keys, cb) {
-    const keysTmp = encodeAll(keys);
+    const keysTmp = MongoDB.encodeAll(keys);
     const searchParams = (this.useSingle ? {_bucketname: bucket, key: {$in: keysTmp}} : {key: {$in: keysTmp}});
-    const collName = (this.useSingle ? aclCollectionName : bucket);
+    const collName = (this.useSingle ? this.aclCollectionName : bucket);
 
     this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
       if (err instanceof Error) return cb(err);
@@ -88,7 +88,7 @@ export default class MongoDB extends Common implements Store {
         if (!docs.length) return cb(undefined, []);
 
         const keyArrays = [];
-        fixAllKeys(docs).forEach((doc) => {
+        MongoDB.fixAllKeys(docs).forEach((doc) => {
           keyArrays.push.apply(keyArrays, _.keys(doc));
         });
         cb(undefined, _.without(_.union(keyArrays), 'key', '_id'));
@@ -98,19 +98,18 @@ export default class MongoDB extends Common implements Store {
 
   /**
    * @description Adds values to a given key inside a bucket.
-   * @param transaction
    * @param bucket
    * @param key
    * @param values
    */
-  add(transaction, bucket, key, values) {
+  add(bucket, key, values) {
     if (key === 'key') throw new Error(`Key name 'key' is not allowed.`);
-    const keyTmp = encodeText(key);
+    const keyTmp = MongoDB.encodeText(key);
     var self = this;
     var updateParams = (self.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
-    var collName = (self.useSingle ? aclCollectionName : bucket);
-    transaction.push(function (cb) {
-      values = makeArray(values);
+    var collName = (self.useSingle ? this.aclCollectionName : bucket);
+    this.transaction.push((cb) => {
+      values = MongoDB.makeArray(values);
       self.db.collection(self.prefix + self.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
 
@@ -128,7 +127,7 @@ export default class MongoDB extends Common implements Store {
       });
     });
 
-    transaction.push((cb) => {
+    this.transaction.push((cb) => {
       self.db.collection(self.prefix + self.removeUnsupportedChar(collName), (err, collection) => {
         // Create index
         collection.ensureIndex({_bucketname: 1, key: 1}, (err) => {
@@ -144,17 +143,16 @@ export default class MongoDB extends Common implements Store {
 
   /**
    * @description Delete the given key(s) at the bucket
-   * @param transaction
    * @param bucket
    * @param keys
    */
-  del(transaction, bucket, keys) {
-    const keysTmp = makeArray(keys);
+  del(bucket, keys) {
+    const keysTmp = MongoDB.makeArray(keys);
     const self = this;
     const updateParams = (self.useSingle ? {_bucketname: bucket, key: {$in: keysTmp}} : {key: {$in: keysTmp}});
-    const collName = (self.useSingle ? aclCollectionName : bucket);
+    const collName = (self.useSingle ? this.aclCollectionName : bucket);
 
-    transaction.push((cb) => {
+    this.transaction.push((cb) => {
       self.db.collection(self.prefix + self.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
         collection.remove(updateParams, {safe: true}, (err) => {
@@ -167,19 +165,18 @@ export default class MongoDB extends Common implements Store {
 
   /**
    * @description Removes values from a given key inside a bucket.
-   * @param transaction
    * @param bucket
    * @param key
    * @param values
    */
-  remove(transaction, bucket, key, values) {
-    const keyTmp = encodeText(key);
+  remove(bucket, key, values) {
+    const keyTmp = MongoDB.encodeText(key);
     const self = this;
     const updateParams = (self.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
-    const collName = (self.useSingle ? aclCollectionName : bucket);
+    const collName = (self.useSingle ? this.aclCollectionName : bucket);
 
-    const valuesTmp = makeArray(values);
-    transaction.push((cb) => {
+    const valuesTmp = MongoDB.makeArray(values);
+    this.transaction.push((cb) => {
       self.db.collection(self.prefix + self.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
 
@@ -212,5 +209,62 @@ export default class MongoDB extends Common implements Store {
     return textTmp;
   }
 
+  static encodeText(text) {
+    let textTmp = text;
+    if (typeof textTmp === 'string' || textTmp instanceof String) {
+      textTmp = encodeURIComponent(textTmp);
+      textTmp = textTmp.replace(/\./g, '%2E');
+    }
+    return textTmp;
+  }
 
+  static decodeText(text) {
+    let textTmp = text;
+    if (typeof textTmp === 'string' || textTmp instanceof String) {
+      textTmp = decodeURIComponent(textTmp);
+    }
+    return textTmp;
+  }
+
+  static encodeAll(arr) {
+    if (Array.isArray(arr)) {
+      let ret = [];
+      arr.forEach((aval) => {
+        ret.push(MongoDB.encodeText(aval));
+      });
+      return ret;
+    } else {
+      return arr;
+    }
+  }
+
+  static fixKeys(doc) {
+    if (doc) {
+      let ret = {};
+      for (let key in doc) {
+        if (doc.hasOwnProperty(key)) {
+          ret[MongoDB.decodeText(key)] = doc[key];
+        }
+      }
+      return ret;
+    } else {
+      return doc;
+    }
+  }
+
+  static fixAllKeys(docs) {
+    if (docs && docs.length) {
+      let ret = [];
+      docs.forEach((adoc) => {
+        ret.push(MongoDB.fixKeys(adoc));
+      });
+      return ret;
+    } else {
+      return docs;
+    }
+  }
+
+  static makeArray(arr) {
+    return Array.isArray(arr) ? MongoDB.encodeAll(arr) : [MongoDB.encodeText(arr)];
+  }
 }
