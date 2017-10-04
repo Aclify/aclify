@@ -51,8 +51,8 @@
     "bluebird": "^3.5.0",
     "lodash": "^4.17.4",
     "mongodb": "^2.0.47",
-    "redis": "^2.2.5",
     "mysql": "^2.6.1",
+    "redis": "^2.8.0",
     "sequelize": "^3.2.0"
   },
   "devDependencies": {
