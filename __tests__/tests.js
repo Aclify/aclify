@@ -32,7 +32,6 @@ import MongoDBStore from '../src/stores/mongodb';
     });
 
     describe('Constructor', () => {
-
       it('Should use default `buckets` names', () => {
         expect(acl.options.buckets.meta).toEqual('meta');
         expect(acl.options.buckets.parents).toEqual('parents');
