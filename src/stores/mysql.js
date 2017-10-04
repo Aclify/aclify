@@ -4,7 +4,7 @@ import Bluebird from 'bluebird';
 import Store from '../interfaces/store';
 import Common from '../classes/common';
 
-export default class Mysql extends Common implements Store {
+export default class MySQL extends Common implements Store {
   buckets: {};
   transaction: Array<any>;
 
@@ -19,7 +19,7 @@ export default class Mysql extends Common implements Store {
    * @description Begins a transaction.
    * @returns {Array.<any>}
    */
-  begin() {
+  begin(): Array<any> {
     // Returns a transaction object
     this.transaction = [];
     return this.transaction;
@@ -28,8 +28,9 @@ export default class Mysql extends Common implements Store {
   /**
    * @description Ends a transaction (and executes it).
    * @param cb
+   * @returns {*}
    */
-  end(cb) {
+  end(cb): any {
     // Execute transaction
     return Bluebird.reduce(this.transaction, (res, func) => func(), null)
       .then()
@@ -39,8 +40,9 @@ export default class Mysql extends Common implements Store {
   /**
    * @description Cleans the whole storage.
    * @param cb
+   * @returns {*}
    */
-  clean(cb) {
+  clean(cb): any {
     return this.setup().clean(this.db, this.options).nodeify(cb);
   }
 
@@ -49,12 +51,13 @@ export default class Mysql extends Common implements Store {
    * @param bucket
    * @param key
    * @param cb
+   * @returns {*}
    */
-  get(bucket, key, cb) {
+  get(bucket, key, cb): any {
     return this.findRow(bucket, key)
       .then((row) => {
         if (!row) return [];
-        if (bucket.indexOf('allows_') === 0) return this.getPermission(key, row);
+        if (bucket.indexOf('allows_') === 0) return MySQL.getPermission(key, row);
         return row.value;
       })
       .nodeify(cb);
@@ -66,11 +69,11 @@ export default class Mysql extends Common implements Store {
    * @param keys
    * @param cb
    */
-  union(bucket, keys, cb) {
+  union(bucket, keys, cb): any {
     return this.findRows(bucket, keys)
       .then((rows) => {
-        if (bucket.indexOf('allows_') === 0) return this.getPermission(keys, rows);
-        return _.union.apply(_, rows.map((row) => row.value));
+        if (bucket.indexOf('allows_') === 0) return MySQL.getPermission(keys, rows);
+        return _.union(...rows.map((row) => row.value));
       })
       .nodeify(cb);
   }
@@ -85,21 +88,19 @@ export default class Mysql extends Common implements Store {
     const valuesTmp = Array.isArray(values) ? values : [values];
     let bucketTmp = bucket;
     let keyTmp = key;
-    this.transaction.push(() => {
-      return this.findRow(bucketTmp, keyTmp)
-        .then((row) => {
-          let update;
-          if (bucketTmp.indexOf('allows_') === 0) {
-            update = (row && row.value) ? row.value : {};
-            update[keyTmp] = _.union(update[keyTmp], valuesTmp);
-            keyTmp = bucketTmp;
-            bucketTmp = 'permissions';
-          } else {
-            update = _.union(row && row.value, valuesTmp);
-          }
-          return this.getModel(bucketTmp).upsert({key: keyTmp, value: JSON.stringify(update)});
-        });
-    });
+    this.transaction.push(() => this.findRow(bucketTmp, keyTmp)
+      .then((row) => {
+        let update;
+        if (bucketTmp.indexOf('allows_') === 0) {
+          update = (row && row.value) ? row.value : {};
+          update[keyTmp] = _.union(update[keyTmp], valuesTmp);
+          keyTmp = bucketTmp;
+          bucketTmp = 'permissions';
+        } else {
+          update = _.union(row && row.value, valuesTmp);
+        }
+        return this.getModel(bucketTmp).upsert({key: keyTmp, value: JSON.stringify(update)});
+      }));
   }
 
   /**
@@ -136,21 +137,20 @@ export default class Mysql extends Common implements Store {
   remove(bucket, key, values) {
     const valuesTmp = Array.isArray(values) ? values : [values];
 
-    this.transaction.push(() => {
-      return this.findRow(bucket, key)
-        .then((row) => {
-          let update;
-          if (!row) return;
-          if (bucket.indexOf('allows_') === 0) {
-            update = row.value;
-            update[key] = _.difference(update[key], valuesTmp);
-          } else {
-            update = _.difference(row.value, valuesTmp);
-          }
-          row.value = JSON.stringify(update);
-          row.save();
-        });
-    });
+    this.transaction.push(() => this.findRow(bucket, key)
+      .then((row) => {
+        let update;
+        if (!row) return;
+        if (bucket.indexOf('allows_') === 0) {
+          update = row.value;
+          update[key] = _.difference(update[key], valuesTmp);
+        } else {
+          update = _.difference(row.value, valuesTmp);
+        }
+        const rowTmp = row;
+        rowTmp.value = JSON.stringify(update);
+        rowTmp.save();
+      }));
   }
 
   /**
@@ -159,7 +159,7 @@ export default class Mysql extends Common implements Store {
    * @param options
    * @returns {*}
    */
-  setup(db, options) {
+  setup(db, options): {} {
     const {prefix} = options;
     const schema = options.schema || {};
     const defaultSchema = options.defaultSchema || {
@@ -179,20 +179,8 @@ export default class Mysql extends Common implements Store {
    * @param bucket
    * @returns {*}
    */
-  getModel(bucket) {
+  getModel(bucket): {} {
     return this.db.models[this.options.prefix + bucket];
-  }
-
-  /**
-   * @description Returns values for permissions bucket
-   * @param keys
-   * @param row
-   * @returns {*}
-   */
-  getPermission(keys, row) {
-    const res = (row && row.value) ? row.value : {};
-    const keysTmp = Array.isArray(keys) ? keys : [keys];
-    return _.union.apply(_, keysTmp.map((key) => res[key] || []));
   }
 
   /**
@@ -201,7 +189,7 @@ export default class Mysql extends Common implements Store {
    * @param key
    * @returns {Promise}
    */
-  findRow(bucket, key) {
+  findRow(bucket, key): {} {
     let bucketTmp = bucket;
     let keyTmp = key;
     let perm = false;
@@ -216,8 +204,14 @@ export default class Mysql extends Common implements Store {
       .findOne({where: {key: keyTmp.toString()}, attributes: ['key', 'value']})
       .then((row) => {
         if (!row) return null;
-        row.value = row.value && JSON.parse(row.value) || (perm ? {} : []);
-        return row;
+        const rowTmp = row;
+
+        if (row.value && JSON.parse(row.value)) {
+          rowTmp.value = JSON.parse(row.value);
+        } else {
+          rowTmp.value = perm ? {} : [];
+        }
+        return rowTmp;
       });
   }
 
@@ -227,15 +221,30 @@ export default class Mysql extends Common implements Store {
    * @param keys
    * @returns {Promise}
    */
-  findRows(bucket, keys) {
+  findRows(bucket, keys): Array<any> {
     if (bucket.indexOf('allows_') === 0) return this.findRow(bucket);
     return this.getModel(bucket)
       .findAll({where: {key: {$in: keys.map((key) => key.toString())}}, attributes: ['key', 'value']})
-      .then((rows) => {
-        return rows.map((row) => {
-          row.value = (row.value && JSON.parse(row.value)) ? row.value = JSON.parse(row.value) : [];
-          return row;
-        });
-      });
+      .then((rows) => rows.map((row) => {
+        const rowTmp = row;
+        if (row.value && JSON.parse(row.value)) {
+          rowTmp.value = JSON.parse(row.value);
+        } else {
+          rowTmp.value = [];
+        }
+        return row;
+      }));
+  }
+
+  /**
+   * @description Returns values for permissions bucket
+   * @param keys
+   * @param row
+   * @returns {*}
+   */
+  static getPermission(keys, row): Array<any> {
+    const res = (row && row.value) ? row.value : {};
+    const keysTmp = Array.isArray(keys) ? keys : [keys];
+    return _.union(...keysTmp.map((key) => res[key] || []));
   }
 }
