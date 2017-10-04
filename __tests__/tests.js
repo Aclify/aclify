@@ -6,7 +6,7 @@ import MemoryStore from '../src/stores/memory';
 import RedisStore from '../src/stores/redis';
 import MongoDBStore from '../src/stores/mongodb';
 
-['Memory', 'Redis', 'MongoDB'].map((store) => {
+['Memory', 'Redis', 'MongoDB'].forEach((store) => {
   let acl = null;
 
   describe(store, () => {
@@ -996,5 +996,5 @@ import MongoDBStore from '../src/stores/mongodb';
         });
       });
     });
-  })
+  });
 }, this);
