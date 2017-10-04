@@ -52,7 +52,7 @@ import MySQLStore from '../src/stores/mysql';
       });
 
       it('Should use given `buckets` names', () => {
-        const aclCustomized = new Acl(acl.store, {
+        const aclCustomized = new Acl(acl.store, {}, {
           buckets: {
             meta: 'Meta',
             parents: 'Parents',

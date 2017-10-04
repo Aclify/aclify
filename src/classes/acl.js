@@ -1,19 +1,22 @@
 // @flow
 import _ from 'lodash';
-import bluebird from 'bluebird';
+import Bluebird from 'bluebird';
+import Util from 'util';
 import Common from './common';
-// import Memory from '../stores/memory';
+import HttpError from './http_error';
 
 export default class Acl extends Common {
   store: {};
   options: {};
+  logger: {};
 
   /**
    * @description Create ACL class and promisify store methods.
    * @param store
+   * @param logger
    * @param options
    */
-  constructor(store: {}, options: {} = {}) {
+  constructor(store: {}, logger: {} = {}, options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
@@ -26,12 +29,13 @@ export default class Acl extends Common {
       },
     }, options);
 
+    this.logger = logger;
     this.store = store;
-    this.store.endAsync = bluebird.promisify(store.end);
-    this.store.getAsync = bluebird.promisify(store.get);
-    this.store.cleanAsync = bluebird.promisify(store.clean);
-    this.store.unionAsync = bluebird.promisify(store.union);
-    if (store.unions) this.store.unionsAsync = bluebird.promisify(store.unions);
+    this.store.endAsync = Bluebird.promisify(store.end);
+    this.store.getAsync = Bluebird.promisify(store.get);
+    this.store.cleanAsync = Bluebird.promisify(store.clean);
+    this.store.unionAsync = Bluebird.promisify(store.union);
+    if (store.unions) this.store.unionsAsync = Bluebird.promisify(store.unions);
   }
 
   /**
@@ -213,7 +217,7 @@ export default class Acl extends Common {
     return this.store.endAsync()
       .then(() => {
         this.store.begin();
-        return bluebird.all(resources.map((resource) => {
+        return Bluebird.all(resources.map((resource) => {
           const bucket = this.allowsBucket(resource);
           return this.store.getAsync(bucket, role)
             .then((permissionsUpdated) => {
@@ -272,7 +276,7 @@ export default class Acl extends Common {
     return this.userRoles(userId)
       .then((roles) => {
         const result = {};
-        return bluebird.all(resourcesArray.map((resource) => this.resourcePermissions(roles, resource)
+        return Bluebird.all(resourcesArray.map((resource) => this.resourcePermissions(roles, resource)
           .then((permissions) => {
             result[resource] = permissions;
           }), this))
@@ -303,7 +307,7 @@ export default class Acl extends Common {
           for (let i = 0; i < buckets.length; i += 1) {
             emptyResult[buckets[i]] = [];
           }
-          return bluebird.resolve(emptyResult);
+          return Bluebird.resolve(emptyResult);
         }
         return this.store.unionsAsync(buckets, roles);
       })
@@ -344,7 +348,7 @@ export default class Acl extends Common {
   areAnyRolesAllowed(roles: mixed, resource: string, permissions: mixed, callback: ?() => void): boolean {
     const rolesParam = Common.makeArray(roles);
     const permissionsParam = Common.makeArray(permissions);
-    if (!rolesParam.length) return bluebird.resolve(false).nodeify(callback);
+    if (!rolesParam.length) return Bluebird.resolve(false).nodeify(callback);
     return this.checkPermissions(rolesParam, resource, permissionsParam).nodeify(callback);
   }
 
@@ -377,7 +381,7 @@ export default class Acl extends Common {
   permittedResources(roles: mixed, permissions: mixed, callback: ?() => void): Array {
     const result = _.isUndefined(permissions) ? {} : [];
     return this.rolesResources(roles)
-      .then((resources) => bluebird.all(resources.map((resource) => this.resourcePermissions(roles, resource)
+      .then((resources) => Bluebird.all(resources.map((resource) => this.resourcePermissions(roles, resource)
         .then((p) => {
           if (permissions) {
             const commonPermissions = _.intersection(permissions, p);
@@ -410,7 +414,7 @@ export default class Acl extends Common {
         });
       }
     }
-    return bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
+    return Bluebird.reduce(demuxed, (values, obj) => this.allow(obj.roles, obj.resources, obj.permissions), null);
   }
 
   /**
@@ -463,7 +467,7 @@ export default class Acl extends Common {
     return this.allRoles(rolesParam)
       .then((allRoles) => {
         let result = [];
-        return bluebird.all(allRoles.map((role) => this.store.getAsync(this.options.buckets.resources, role)
+        return Bluebird.all(allRoles.map((role) => this.store.getAsync(this.options.buckets.resources, role)
           .then((resources) => {
             result = result.concat(resources);
           }), this))
@@ -478,7 +482,7 @@ export default class Acl extends Common {
    * @returns {*}
    */
   resourcePermissions(roles, resource): Array {
-    if (!roles.length) return bluebird.resolve([]);
+    if (!roles.length) return Bluebird.resolve([]);
     return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then((resourcePermissions) => this.rolesParents(roles)
         .then((parents) => {
@@ -506,5 +510,80 @@ export default class Acl extends Common {
         return this.store.unionAsync(this.options.buckets.parents, roles)
           .then((parents) => ((parents && parents.length) ? this.checkPermissions(parents, resource, perms) : false));
       });
+  }
+
+  /**
+   * @description Express middleware.
+   * @param numPathComponents
+   * @param userId
+   * @param actions
+   * @returns {function(*=, *=, *)}
+   */
+  middleware(numPathComponents, userId, actions): any {
+    const instance = this;
+
+    return (req, res, next) => {
+      let userIdTmp = userId;
+      let actionsTmp = actions;
+
+      // Call function to fetch userId
+      if (typeof userId === 'function') {
+        userIdTmp = userId(req, res);
+      }
+      if (!userId) {
+        if ((req.session) && (req.session.userId)) {
+          userIdTmp = req.session.userId;
+        } else if ((req.user) && (req.user.id)) {
+          userIdTmp = req.user.id;
+        } else {
+          next(new HttpError(401, 'User not authenticated'));
+          return;
+        }
+      }
+
+      if (!userIdTmp) {
+        next(new HttpError(401, 'User not authenticated'));
+        return;
+      }
+
+      const url = req.originalUrl.split('?')[0];
+      const resource = (!numPathComponents) ? url : url.split('/').slice(0, numPathComponents + 1).join('/');
+
+      if (!actionsTmp) actionsTmp = req.method.toLowerCase();
+      if (instance.logger) instance.logger.debug(`Requesting ${actionsTmp} on ${resource} by user ${userIdTmp}`);
+
+      instance.isAllowed(userIdTmp, resource, actionsTmp, (err, allowed) => {
+        if (err) {
+          next(new Error('Error checking permissions to access resource'));
+        } else if (allowed === false) {
+          if (instance.logger) {
+            instance.logger.debug(`Not allowed + ${actionsTmp} on ${resource} by user ${userIdTmp}`);
+            instance.allowedPermissions(userIdTmp, resource, (err2, obj) => {
+              instance.logger.debug(`Allowed permissions: ${Util.inspect(obj)}`);
+            });
+          }
+          next(new HttpError(403, 'Insufficient permissions to access resource'));
+        } else {
+          if (instance.logger) instance.logger.debug(`Allowed ${actionsTmp} on ${resource} by user ${userIdTmp}`);
+          next();
+        }
+      });
+    };
+  }
+
+  /**
+   * @description Error handler for the Express middleware.
+   * @param contentType (html|json) defaults to plain text.
+   * @returns {function(*=, *, *, *)}
+   */
+  static errorHandler(contentType): any {
+    let method = 'end';
+    if (contentType === 'json') method = 'json';
+    if (contentType === 'html') method = 'send';
+
+    return (err, req, res, next) => {
+      if (err.name !== 'HttpError' || !err.errorCode) return next(err);
+      return res.status(err.errorCode)[method](err.message);
+    };
   }
 }
