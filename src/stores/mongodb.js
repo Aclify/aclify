@@ -22,7 +22,7 @@ export default class MongoDB extends Common implements Store {
    * @description Begins a transaction. Returns a transaction object(just an array of functions will do here.)
    * @returns {Array}
    */
-  begin() {
+  begin(): Array<any> {
     this.transaction = [];
     return this.transaction;
   }
@@ -31,7 +31,7 @@ export default class MongoDB extends Common implements Store {
    * @description Ends a transaction (and executes it)
    * @param cb
    */
-  end(cb) {
+  end(cb): any {
     Async.series(this.transaction, (err) => cb(err instanceof Error ? err : undefined));
   }
 
@@ -42,7 +42,7 @@ export default class MongoDB extends Common implements Store {
   clean(cb) {
     this.db.collections((err, collections) => {
       if (err instanceof Error) return cb(err);
-      Async.forEach(collections, (coll, innercb) => {
+      return Async.forEach(collections, (coll, innercb) => {
         // ignores errors
         coll.drop(() => innercb());
       }, cb);
@@ -63,7 +63,7 @@ export default class MongoDB extends Common implements Store {
     this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
       if (err instanceof Error) return cb(err);
       // Excluding bucket field from search result
-      collection.findOne(searchParams, {_bucketname: 0}, (err2, doc) => {
+      return collection.findOne(searchParams, {_bucketname: 0}, (err2, doc) => {
         if (err2) return cb(err2);
         if (!_.isObject(doc)) return cb(undefined, []);
         return cb(undefined, _.without(_.keys(MongoDB.fixKeys(doc)), 'key', '_id'));
@@ -77,21 +77,21 @@ export default class MongoDB extends Common implements Store {
    * @param keys
    * @param cb
    */
-  union(bucket, keys, cb) {
+  union(bucket, keys, cb): any {
     const keysTmp = MongoDB.encodeAll(keys);
     const searchParams = (this.useSingle ? {_bucketname: bucket, key: {$in: keysTmp}} : {key: {$in: keysTmp}});
     const collName = (this.useSingle ? this.aclCollectionName : bucket);
 
-    this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
+    return this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
       if (err instanceof Error) return cb(err);
       // Excluding bucket field from search result
-      collection.find(searchParams, {_bucketname: 0}).toArray((err2, docs) => {
+      return collection.find(searchParams, {_bucketname: 0}).toArray((err2, docs) => {
         if (err2 instanceof Error) return cb(err2);
         if (!docs.length) return cb(undefined, []);
 
         const keyArrays = [];
         MongoDB.fixAllKeys(docs).forEach((doc) => {
-          keyArrays.push.apply(keyArrays, _.keys(doc));
+          keyArrays.push(..._.keys(doc));
         });
         return cb(undefined, _.without(_.union(keyArrays), 'key', '_id'));
       });
@@ -110,20 +110,20 @@ export default class MongoDB extends Common implements Store {
     const updateParams = (this.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
     const collName = (this.useSingle ? this.aclCollectionName : bucket);
     this.transaction.push((cb) => {
-      values = MongoDB.makeArray(values);
-      this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
+      const valuesTmp = MongoDB.makeArray(values);
+      return this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
 
         // Build doc from array values
         const doc = {};
-        values.forEach((value) => {
+        valuesTmp.forEach((value) => {
           doc[value] = true;
         });
 
         // Update document
-        collection.update(updateParams, {$set: doc}, {safe: true, upsert: true}, (err) => {
-          if (err instanceof Error) return cb(err);
-          cb(undefined);
+        return collection.update(updateParams, {$set: doc}, {safe: true, upsert: true}, (err2) => {
+          if (err2 instanceof Error) return cb(err2);
+          return cb(undefined);
         });
       });
     });
@@ -132,7 +132,8 @@ export default class MongoDB extends Common implements Store {
       this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
         // Create index
         collection.ensureIndex({_bucketname: 1, key: 1}, (err2) => {
-          return (err2 instanceof Error) ? cb(err2) : cb(undefined);
+          if (err2 instanceof Error) return cb(err2);
+          return cb(undefined);
         });
       });
     });
@@ -151,8 +152,9 @@ export default class MongoDB extends Common implements Store {
     this.transaction.push((cb) => {
       this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
-        collection.remove(updateParams, {safe: true}, (err2) => {
-          return (err2 instanceof Error) ? cb(err2) : cb(undefined);
+        return collection.remove(updateParams, {safe: true}, (err2) => {
+          if (err2 instanceof Error) return cb(err2);
+          return cb(undefined);
         });
       });
     });
@@ -166,13 +168,12 @@ export default class MongoDB extends Common implements Store {
    */
   remove(bucket, key, values) {
     const keyTmp = MongoDB.encodeText(key);
-    const self = this;
-    const updateParams = (self.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
-    const collName = (self.useSingle ? this.aclCollectionName : bucket);
+    const updateParams = (this.useSingle ? {_bucketname: bucket, key: keyTmp} : {key: keyTmp});
+    const collName = (this.useSingle ? this.aclCollectionName : bucket);
 
     const valuesTmp = MongoDB.makeArray(values);
     this.transaction.push((cb) => {
-      self.db.collection(self.prefix + self.removeUnsupportedChar(collName), (err, collection) => {
+      this.db.collection(this.prefix + this.removeUnsupportedChar(collName), (err, collection) => {
         if (err instanceof Error) return cb(err);
 
         // Build doc from array values
@@ -182,8 +183,9 @@ export default class MongoDB extends Common implements Store {
         });
 
         // Update document
-        collection.update(updateParams, {$unset: doc}, {safe: true, upsert: true}, (err2) => {
-          return (err2 instanceof Error) ? cb(err2) : cb(undefined);
+        return collection.update(updateParams, {$unset: doc}, {safe: true, upsert: true}, (err2) => {
+          if (err2 instanceof Error) return cb(err2);
+          return cb(undefined);
         });
       });
     });
@@ -194,7 +196,7 @@ export default class MongoDB extends Common implements Store {
    * @param text
    * @returns {*}
    */
-  removeUnsupportedChar(text) {
+  removeUnsupportedChar(text): string {
     let textTmp = text;
     if (!this.useRawCollectionNames && (typeof text === 'string' || text instanceof String)) {
       textTmp = decodeURIComponent(textTmp);
@@ -208,7 +210,7 @@ export default class MongoDB extends Common implements Store {
    * @param text
    * @returns {*}
    */
-  static encodeText(text) {
+  static encodeText(text): string {
     let textTmp = text;
     if (typeof textTmp === 'string' || textTmp instanceof String) {
       textTmp = encodeURIComponent(textTmp);
@@ -222,7 +224,7 @@ export default class MongoDB extends Common implements Store {
    * @param text
    * @returns {*}
    */
-  static decodeText(text) {
+  static decodeText(text): string {
     let textTmp = text;
     if (typeof textTmp === 'string' || textTmp instanceof String) {
       textTmp = decodeURIComponent(textTmp);
@@ -235,7 +237,7 @@ export default class MongoDB extends Common implements Store {
    * @param arr
    * @returns {*}
    */
-  static encodeAll(arr) {
+  static encodeAll(arr): Array<any> | string {
     if (Array.isArray(arr)) {
       const ret = [];
       arr.forEach((aval) => {
@@ -251,14 +253,12 @@ export default class MongoDB extends Common implements Store {
    * @param doc
    * @returns {*}
    */
-  static fixKeys(doc) {
+  static fixKeys(doc): {} {
     if (doc) {
       const ret = {};
-      for (let key in doc) {
-        if (doc.hasOwnProperty(key)) {
-          ret[MongoDB.decodeText(key)] = doc[key];
-        }
-      }
+      Object.keys(doc).forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(doc, key)) ret[MongoDB.decodeText(key)] = doc[key];
+      });
       return ret;
     }
     return doc;
@@ -269,7 +269,7 @@ export default class MongoDB extends Common implements Store {
    * @param docs
    * @returns {*}
    */
-  static fixAllKeys(docs) {
+  static fixAllKeys(docs): Array<any> {
     if (docs && docs.length) {
       const ret = [];
       docs.forEach((adoc) => {
@@ -285,7 +285,7 @@ export default class MongoDB extends Common implements Store {
    * @param arr
    * @returns {[null]}
    */
-  static makeArray(arr) {
+  static makeArray(arr): Array<any> | string {
     return Array.isArray(arr) ? MongoDB.encodeAll(arr) : [MongoDB.encodeText(arr)];
   }
 }
