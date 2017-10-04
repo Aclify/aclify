@@ -25,12 +25,7 @@ import MySQLStore from '../src/stores/mysql';
           done();
         });
       } else if (store === 'MySQL') {
-        const sequelize = new Sequelize('acl', 'root', '', {
-          dialect: 'mysql',
-          logging: null,
-          benchmark: false
-        });
-
+        const sequelize = new Sequelize('acl', 'root', '', {dialect: 'mysql', logging: null});
         sequelize.authenticate()
           .then(() => {
             acl = new Acl(new MySQLStore(sequelize), {prefix: 'acl_'});
