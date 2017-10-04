@@ -17,7 +17,7 @@ export default class Redis extends Common implements Store {
    * @description Begins a transaction
    * @returns {*}
    */
-  begin() {
+  begin(): any {
     this.transaction = this.redis.multi();
     return this.transaction;
   }
@@ -127,7 +127,7 @@ export default class Redis extends Common implements Store {
    * @param keys
    * @returns {string}
    */
-  bucketKey(bucket, keys) {
+  bucketKey(bucket, keys): Array<string> | string {
     if (Array.isArray(keys)) return keys.map((key) => `${this.redisPrefix}_${bucket}@${key}`);
     return `${this.redisPrefix}_${bucket}@${keys}`;
   }
