@@ -66,13 +66,16 @@ Create your acl module by requiring it and instantiating it with a valid store i
 var acl = require('acl');
 
 // Using redis store
-acl = new acl(new acl.redisStore(redisClient, prefix));
+acl = new acl(new acl.redis(redisClient, prefix));
 
 // Or Using the memory store
-acl = new acl(new acl.memoryStore());
+acl = new acl(new acl.memory());
 
 // Or Using the mongodb store
-acl = new acl(new acl.mongodbStore(dbInstance, prefix));
+acl = new acl(new acl.mongodb(dbInstance, prefix));
+
+// Or Using the mysql store
+acl = new acl(new acl.mysql(dbInstance, prefix));
 ```
 
 All the following functions return a promise or optionally take a callback with
@@ -490,34 +493,6 @@ __Arguments__
 ```
 
 ---------------------------------------
-
-<a name="store" />
-
-### store( db, [prefix] )
-
-Creates a store instance. All stores except Memory require driver or database instance. `useSingle` is only applicable to the MongoDB store.
-
-__Arguments__
-
-```javascript
-    db        {Object} Database instance
-    prefix    {String} Optional collection prefix
-    useSingle     {Boolean} Create one collection for all resources (defaults to false)
-```
-
-```javascript
-var mongodb = require('mongodb');
-mongodb.connect("mongodb://127.0.0.1:27017/acltest", function(error, db) {
-  var mongoStore = new acl.mongodbStore(db, 'acl_');
-});
-```
-
-Creates a new MongoDB store using database instance `db`.
-
-```javascript
-var client = require('redis').createClient(6379, '127.0.0.1', {no_ready_check: true});
-var redisStore = new acl.redisStore(client);
-```
 
 Creates a new Redis store using Redis client `client`.
 
