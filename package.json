@@ -52,8 +52,9 @@
     "lodash": "^4.17.4",
     "mongodb": "^2.0.47",
     "mysql": "^2.6.1",
+    "mysql2": "^1.4.2",
     "redis": "^2.8.0",
-    "sequelize": "^3.2.0"
+    "sequelize": "^4.13.5"
   },
   "devDependencies": {
     "babel-core": "~6.26.0",
