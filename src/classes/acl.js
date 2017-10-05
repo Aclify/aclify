@@ -389,7 +389,6 @@ export default class Acl extends Common {
               result.push(resource);
             }
           } else {
-
             result[resource] = p;
           }
         }), this))
@@ -487,12 +486,10 @@ export default class Acl extends Common {
     return this.store.unionAsync(this.allowsBucket(resource), roles)
       .then((resourcePermissions) => this.rolesParents(roles)
         .then((parents) => {
-
           if (parents && parents.length) {
             return this.resourcePermissions(parents, resource)
               .then((morePermissions) => _.union(resourcePermissions, morePermissions));
           }
-
           return resourcePermissions;
         }));
   }
