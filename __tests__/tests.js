@@ -726,7 +726,6 @@ const {Op} = Sequelize;
       it('Environment check', (done) => {
         acl.whatResources('child')
           .then((resources) => {
-            console.log('==========> resouurce', resources);
             expect(resources.x.length === 5);
             expect(resources.x).toContain('read1');
             expect(resources.x).toContain('read2');
