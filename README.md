@@ -58,6 +58,16 @@ $ npm install aclify --save
 * [middleware](#middleware)
 * [store](#store)
 
+## Stores
+
+Aclify offers several possibilities to store your data:
+
+  - Memory
+  - Redis
+  - MongoDB
+  - Sequelize (mysql, ssql, sqlite or postgresql)
+
+
 ## Examples
 
 Create your acl module by requiring it and instantiating it with a valid store instance:
@@ -74,8 +84,8 @@ acl = new acl(new acl.memory());
 // Or Using the mongodb store
 acl = new acl(new acl.mongodb(dbInstance, prefix));
 
-// Or Using the mysql store
-acl = new acl(new acl.mysql(dbInstance, prefix));
+// Or Using a sequelize store (mysql, ssql, sqlite or postgresql)
+acl = new acl(new acl.sequelize(dbInstance, prefix));
 ```
 
 All the following functions return a promise or optionally take a callback with
