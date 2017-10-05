@@ -6,9 +6,11 @@ import Acl from '../src/classes/acl';
 import MemoryStore from '../src/stores/memory';
 import RedisStore from '../src/stores/redis';
 import MongoDBStore from '../src/stores/mongodb';
-import MySQLStore from '../src/stores/mysql';
+import SequelizeStore from '../src/stores/sequelize';
 
-['Memory', 'Redis', 'MongoDB', 'MySQL'].forEach((store) => {
+const {Op} = Sequelize;
+
+['Memory', 'Redis', 'MongoDB', 'Sequelize'].forEach((store) => {
   let acl = null;
 
   describe(store, () => {
@@ -24,11 +26,15 @@ import MySQLStore from '../src/stores/mysql';
           acl = new Acl(new MongoDBStore(db, 'acl_'));
           done();
         });
-      } else if (store === 'MySQL') {
-        const sequelize = new Sequelize('acl', 'root', '', {dialect: 'mysql', logging: null});
+      } else if (store === 'Sequelize') {
+        const sequelize = new Sequelize('acl', 'root', '', {
+          operatorsAliases: {$in: Op.in},
+          dialect: 'mysql',
+          logging: null,
+        });
         sequelize.authenticate()
           .then(() => {
-            acl = new Acl(new MySQLStore(sequelize), {prefix: 'acl_'});
+            acl = new Acl(new SequelizeStore(sequelize), {prefix: 'acl_'});
             done();
           });
       }
@@ -37,7 +43,7 @@ import MySQLStore from '../src/stores/mysql';
     afterAll((done) => {
       if (store === 'Redis') acl.store.redis.quit();
       else if (store === 'MongoDB') acl.store.db.close();
-      else if (store === 'MySQL') acl.store.db.close();
+      else if (store === 'Sequelize') acl.store.db.close();
       done();
     });
 
@@ -709,13 +715,11 @@ import MySQLStore from '../src/stores/mysql';
     describe('RoleParentRemoval', () => {
       beforeAll((done) => {
         acl.allow('parent1', 'x', 'read1')
-          .then(Promise.all([
-            acl.allow('parent2', 'x', 'read2'),
-            acl.allow('parent3', 'x', 'read3'),
-            acl.allow('parent4', 'x', 'read4'),
-            acl.allow('parent5', 'x', 'read5'),
-          ]))
-          .then(acl.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']))
+          .then(() => acl.allow('parent2', 'x', 'read2'))
+          .then(() => acl.allow('parent3', 'x', 'read3'))
+          .then(() => acl.allow('parent4', 'x', 'read4'))
+          .then(() => acl.allow('parent5', 'x', 'read5'))
+          .then(() => acl.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']))
           .then(() => done());
       });
 
