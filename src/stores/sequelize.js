@@ -96,14 +96,9 @@ export default class MySQL extends Common implements Store {
           update[keyTmp] = _.union(update[keyTmp], valuesTmp);
           keyTmp = bucketTmp;
           bucketTmp = 'permissions';
-          // console.log(` dans le iiiiiiiiiiif `, update, ' ----- ', keyTmp)
         } else {
           update = _.union(row && row.value, valuesTmp);
-
-          // console.log(` dans le elseeeee `, update, ' ----- ', keyTmp)
         }
-        console.log(`result `, update, ' ----- ', keyTmp)
-
         return this.getModel(bucketTmp).upsert({key: keyTmp, value: JSON.stringify(update)});
       }));
   }
