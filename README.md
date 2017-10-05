@@ -65,7 +65,7 @@ Aclify offers several possibilities to store your data:
   - Memory
   - Redis
   - MongoDB
-  - Sequelize (mysql, ssql, sqlite or postgresql)
+  - Sequelize (mysql, mssql, sqlite or postgresql)
 
 
 ## Examples
@@ -73,7 +73,7 @@ Aclify offers several possibilities to store your data:
 Create your acl module by requiring it and instantiating it with a valid store instance:
 
 ```javascript
-var acl = require('acl');
+const acl = require('acl');
 
 // Using redis store
 acl = new acl(new acl.redis(redisClient, prefix));
@@ -84,7 +84,7 @@ acl = new acl(new acl.memory());
 // Or Using the mongodb store
 acl = new acl(new acl.mongodb(dbInstance, prefix));
 
-// Or Using a sequelize store (mysql, ssql, sqlite or postgresql)
+// Or Using a sequelize store (mysql, mssql, sqlite or postgresql)
 acl = new acl(new acl.sequelize(dbInstance, prefix));
 ```
 
