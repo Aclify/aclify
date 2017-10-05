@@ -1,6 +1,5 @@
 // @flow
 import _ from 'lodash';
-import Bluebird from 'bluebird';
 import Store from '../interfaces/store';
 import Common from '../classes/common';
 
