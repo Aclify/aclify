@@ -12,10 +12,7 @@ services:
       - redis
       - mongo
     depends_on:
-      mysql:
-        condition: service_healthy
-#      redis:
-#      mongo:
+      - mysql
     volumes:
       - .:/opt/app/:rw
     environment:
@@ -33,11 +30,6 @@ services:
     environment:
       - MYSQL_DATABASE=aclify
       - MYSQL_ROOT_PASSWORD=aclify
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   redis:
     image: redis
@@ -49,7 +41,7 @@ services:
 
   mongo:
     image: mongo
-    container_name: "mongodb"
+    container_name: "mongo"
     mem_limit: 512MB
     cpu_shares: 512
     ports:
