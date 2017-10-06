@@ -4,4 +4,8 @@ MAINTAINER Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>
 
 RUN apt-get update -y
 
-WORKDIR /opt/
+WORKDIR /opt/app
+
+RUN mkdir -p /opt/app && cd /opt/app
+
+#CMD ["npm run test-only"]
