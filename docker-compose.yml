@@ -1,0 +1,59 @@
+version: '2.1'
+
+services:
+  aclify:
+    image: node
+    container_name: "aclify"
+    build: .
+    mem_limit: 512MB
+    cpu_shares: 512
+    links:
+      - mysql
+      - redis
+      - mongo
+    depends_on:
+      mysql:
+        condition: service_healthy
+#      redis:
+#      mongo:
+    volumes:
+      - .:/opt/app/:rw
+    environment:
+      - MYSQL_HOST=mysql
+    command: sh -c 'cd /opt/app && npm install && npm run test-only'
+
+  mysql:
+    image: mysql
+    container_name: "mysql"
+    mem_limit: 512MB
+    cpu_shares: 512
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=aclify
+      - MYSQL_ROOT_PASSWORD=aclify
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis
+    container_name: "redis"
+    mem_limit: 512MB
+    cpu_shares: 512
+    ports:
+      - 6379:6379
+
+  mongo:
+    image: mongo
+    container_name: "mongodb"
+    mem_limit: 512MB
+    cpu_shares: 512
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
