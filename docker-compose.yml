@@ -17,7 +17,7 @@ services:
       - .:/opt/app/:rw
     environment:
       - MYSQL_HOST=mysql
-    command: sh -c 'cd /opt/app && npm install && npm run test-only'
+#    command: sh -c 'cd /opt/app && npm install'
 
   mysql:
     image: mysql
