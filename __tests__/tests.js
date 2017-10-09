@@ -8,9 +8,6 @@ import RedisStore from '../src/stores/redis';
 import MongoDBStore from '../src/stores/mongodb';
 import SequelizeStore from '../src/stores/sequelize';
 
-const {Op} = Sequelize;
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 jest.setTimeout(10000);
 
 ['Memory', 'MySQL', 'Redis', 'MongoDB'].forEach((store) => {
@@ -18,7 +15,6 @@ jest.setTimeout(10000);
 
   describe(store, () => {
     beforeAll((done) => {
-      jest.setTimeout(10000);
       if (store === 'Memory') {
         acl = new Acl(new MemoryStore());
         done();
@@ -33,7 +29,7 @@ jest.setTimeout(10000);
       } else if (store === 'MySQL') {
         const sequelize = new Sequelize('aclify', 'root', 'aclify', {
           host: 'mysql',
-          operatorsAliases: {$in: Op.in},
+          operatorsAliases: {$in: Sequelize.Op.in},
           dialect: 'mysql',
           logging: null,
         });
@@ -46,11 +42,10 @@ jest.setTimeout(10000);
     });
 
     afterAll((done) => {
-      jest.setTimeout(10000);
       setTimeout(() => {
         if (store === 'Redis') acl.store.redis.quit();
         else if (store === 'MongoDB') acl.store.db.close();
-        else if (store === 'Sequelize') acl.store.db.close();
+        else if (store === 'MySQL') acl.store.db.close();
         done();
       }, 5000);
     });
