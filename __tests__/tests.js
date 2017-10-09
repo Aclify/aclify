@@ -52,7 +52,7 @@ jest.setTimeout(10000);
 
     describe('Constructor', () => {
       it('Should use default `buckets` names', () => {
-        expect(acl.options.buckets.meta).toEqual('meta');
+        expect(acl.options.buckets.meta).toEqual('Meta');
         expect(acl.options.buckets.parents).toEqual('parents');
         expect(acl.options.buckets.permissions).toEqual('permissions');
         expect(acl.options.buckets.resources).toEqual('resources');
