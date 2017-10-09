@@ -1,6 +1,6 @@
 language: node_js
 env:
-  - DOCKER_COMPOSE_VERSION=1.4.2
+  - DOCKER_COMPOSE_VERSION=1.16.1
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
