@@ -8,9 +8,9 @@ import RedisStore from '../src/stores/redis';
 import MongoDBStore from '../src/stores/mongodb';
 import SequelizeStore from '../src/stores/sequelize';
 
-const {Op} = Sequelize;
+jest.setTimeout(10000);
 
-['Memory', 'Redis', 'MongoDB', 'Sequelize'].forEach((store) => {
+['Memory', 'MySQL', 'Redis', 'MongoDB'].forEach((store) => {
   let acl = null;
 
   describe(store, () => {
@@ -19,16 +19,17 @@ const {Op} = Sequelize;
         acl = new Acl(new MemoryStore());
         done();
       } else if (store === 'Redis') {
-        acl = new Acl(new RedisStore(Redis.createClient()));
+        acl = new Acl(new RedisStore(Redis.createClient({host: 'redis'})));
         done();
       } else if (store === 'MongoDB') {
-        MongoDB.connect('mongodb://localhost:27017/test', (error, db) => {
+        MongoDB.connect('mongodb://mongo/aclify', (error, db) => {
           acl = new Acl(new MongoDBStore(db, 'acl_'));
           done();
         });
-      } else if (store === 'Sequelize') {
-        const sequelize = new Sequelize('acl', 'root', '', {
-          operatorsAliases: {$in: Op.in},
+      } else if (store === 'MySQL') {
+        const sequelize = new Sequelize('aclify', 'root', 'aclify', {
+          host: 'mysql',
+          operatorsAliases: {$in: Sequelize.Op.in},
           dialect: 'mysql',
           logging: null,
         });
@@ -41,10 +42,12 @@ const {Op} = Sequelize;
     });
 
     afterAll((done) => {
-      if (store === 'Redis') acl.store.redis.quit();
-      else if (store === 'MongoDB') acl.store.db.close();
-      else if (store === 'Sequelize') acl.store.db.close();
-      done();
+      setTimeout(() => {
+        if (store === 'Redis') acl.store.redis.quit();
+        else if (store === 'MongoDB') acl.store.db.close();
+        else if (store === 'MySQL') acl.store.db.close();
+        done();
+      }, 5000);
     });
 
     describe('Constructor', () => {
