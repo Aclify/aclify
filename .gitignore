@@ -8,6 +8,7 @@ node_modules/
 
 # Coverage
 coverage/
+jest_0/
 
 # Transpiled files
 dist/
