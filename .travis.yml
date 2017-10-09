@@ -12,7 +12,4 @@ before_install:
   - sudo /etc/init.d/mysql stop
 
 script:
-  - docker-compose up --build --force-recreate
-
-after_script:
-  - docker-compose down
+  - docker-compose up --build --force-recreate --abort-on-container-exit
