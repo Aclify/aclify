@@ -3,7 +3,7 @@
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Dependencies][dev-dependencies-badge]][dev-dependencies]
 [![Code Climate score][codeclimate-score-badge]][codeclimate-score]
-[![Code Climate coverage][codeclimate-coverage-badge]][codeclimate-coverage]
+[![Coveralls][coveralls-coverage-badge]][coveralls-coverage]
 [![Code Climate coverage][codeclimate-issues-badge]][codeclimate-issues]
 [![Node.js version][nodejs-badge]][nodejs]
 [![NPM version][npm-badge]][npm]
@@ -529,8 +529,8 @@ MIT © [Dimitri DO BAIRRO](https://github.com/rimiti/aclify/blob/master/LICENSE)
 [dev-dependencies]: https://david-dm.org/rimiti/aclify?type=dev
 [codeclimate-score-badge]: https://codeclimate.com/github/rimiti/aclify/badges/gpa.svg
 [codeclimate-score]: https://codeclimate.com/github/rimiti/aclify
-[codeclimate-coverage-badge]: https://codeclimate.com/github/rimiti/aclify/badges/coverage.svg
-[codeclimate-coverage]: https://codeclimate.com/github/rimiti/aclify/coverage
+[coveralls-coverage-badge]: https://coveralls.io/repos/github/rimiti/aclify/badge.svg
+[coveralls-coverage]: https://coveralls.io/github/rimiti/aclify
 [codeclimate-issues-badge]: https://codeclimate.com/github/rimiti/aclify/badges/issue_count.svg
 [codeclimate-issues]: https://codeclimate.com/github/rimiti/aclify
 [nodejs-badge]: https://img.shields.io/badge/node->=%206.9.0-blue.svg?style=flat-square
