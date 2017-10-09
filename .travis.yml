@@ -1,16 +1,18 @@
 language: node_js
+node_js:
+  - 6
 env:
   - DOCKER_COMPOSE_VERSION=1.16.1
-
 before_install:
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - npm install --global npm@^5.3.0
   - sudo /etc/init.d/mysql stop
 
 script:
   - docker-compose up --build --force-recreate
 
-#after_script:
-#  - docker-compose down
+after_script:
+  - docker-compose down
