@@ -12,7 +12,8 @@
     "test": "npm run test-only",
     "test-only": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:watch": "jest --watch",
-    "build": "babel src/**/*.js -d dist",
+    "prepare": "npm run build",
+    "build": "babel src/**/*.js -d dist && babel index.js -d dist",
     "build:watch": "babel --watch src/**/*.js -d dist"
   },
   "repository": {
@@ -71,7 +72,7 @@
     "coveralls": "^3.0.0",
     "eslint": "~4.8.0",
     "eslint-config-airbnb-base": "~12.0.2",
-    "eslint-plugin-flowtype": "~2.39.1",
+    "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "~2.7.0",
     "flow-bin": "~0.56.0",
     "jest": "~21.2.1"
