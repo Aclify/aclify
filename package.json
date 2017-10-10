@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -13,8 +13,8 @@
     "test-only": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:watch": "jest --watch",
     "prepare": "npm run build",
-    "build": "babel src/**/*.js -d dist && babel index.js -d dist",
-    "build:watch": "babel --watch src/**/*.js -d dist"
+    "build": "babel src/**/*.js index.js -d dist",
+    "build:watch": "babel --watch src/**/*.js index.js -d dist"
   },
   "repository": {
     "type": "git",
