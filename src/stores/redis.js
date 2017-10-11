@@ -8,9 +8,10 @@ export default class Redis extends Common implements Store {
   redis: {};
   redisPrefix: string;
 
-  constructor(redis: RedisClient) {
+  constructor(redis: RedisClient, prefix: string) {
     super();
     this.redis = redis;
+    this.redisPrefix = prefix || 'acl';
   }
 
   /**
