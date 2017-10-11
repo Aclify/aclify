@@ -13,8 +13,8 @@
     "test-only": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:watch": "jest --watch",
     "prepare": "npm run build",
-    "build": "babel src/**/*.js index.js -d dist",
-    "build:watch": "babel --watch src/**/*.js index.js -d dist"
+    "build": "babel src/**/*.js src/*.js -d dist",
+    "build:watch": "babel --watch src/**/*.js src/*.js -d dist"
   },
   "repository": {
     "type": "git",
