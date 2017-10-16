@@ -525,6 +525,10 @@ __Arguments__
 
 Creates a new Redis store using Redis client `client`.
 
+## Tests
+
+  $ docker-compose up - run tests in docker-compose environment
+
 ## Scripts
 
 Run using npm run <script> command.
