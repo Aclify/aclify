@@ -78,16 +78,16 @@ Create your acl module by requiring it and instantiating it with a valid store i
 import {Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore} from 'aclify'
 
 // Using Redis store
-acl = new Acl(new RedisStore(RedisClient, prefix));
+acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
 
 // Or Using the Memory store
 acl = new Acl(new MemoryStore());
 
 // Or Using the MongoDB store
-acl = new Acl(new MongoDBStore(db, prefix));
+acl = new Acl(new MongoDBStore(db, {prefix: 'acl_'}));
 
 // Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-acl = new Acl(new SequelizeStore(db, prefix));
+acl = new Acl(new SequelizeStore(db, {prefix: 'acl_'}));
 ```
 
 **From require**
@@ -95,16 +95,16 @@ acl = new Acl(new SequelizeStore(db, prefix));
 const aclify = require('aclify');
 
 // Using Redis store
-acl = new aclify.Acl(new aclify.RedisStore(RedisClient, prefix));
+acl = new aclify.Acl(new aclify.RedisStore(RedisClient, {prefix: 'acl_'}));
 
 // Or Using the Memory store
 acl = new aclify.Acl(new aclify.MemoryStore());
 
 // Or Using the MongoDB store
-acl = new aclify.Acl(new aclify.MongoDBStore(db, prefix));
+acl = new aclify.Acl(new aclify.MongoDBStore(db, {prefix: 'acl_'}));
 
 // Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-acl = new aclify.Acl(new aclify.SequelizeStore(db, prefix));
+acl = new aclify.Acl(new aclify.SequelizeStore(db, {prefix: 'acl_'}));
 ```
 
 All the following functions return a promise or optionally take a callback with
