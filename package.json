@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -74,7 +74,7 @@
     "eslint": "~4.9.0",
     "eslint-config-airbnb-base": "~12.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
-    "eslint-plugin-import": "~2.7.0",
+    "eslint-plugin-import": "~2.8.0",
     "flow-bin": "~0.57.2",
     "jest": "~21.2.1"
   },
