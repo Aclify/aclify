@@ -42,6 +42,7 @@ $ npm install aclify --save
 
 * [addUserRoles](#addUserRoles)
 * [removeUserRoles](#removeUserRoles)
+* [removeUser](#removeUser)
 * [userRoles](#userRoles)
 * [roleUsers](#roleUsers)
 * [hasRole](#hasRole)
@@ -248,6 +249,21 @@ __Arguments__
 ```javascript
     userId   {String|Number} User id.
     roles    {String|Array} Role(s) to add to the user id.
+    callback {Function} Callback called when finished.
+```
+
+---------------------------------------
+
+<a name="removeUser"/>
+
+### removeUser( userId, function(err) )
+
+Remove user.
+
+__Arguments__
+
+```javascript
+    userId   {String|Number} User id.
     callback {Function} Callback called when finished.
 ```
 
