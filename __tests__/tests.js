@@ -208,7 +208,7 @@ jest.setTimeout(10000);
 
     describe('Add user roles', () => {
       it('Add them', (done) => {
-        acl.addUserRoles('james', 'baz', (err) => {
+        acl.addUserRoles('dimitri', 'baz', (err) => {
           expect(!err);
           done();
         });
@@ -423,7 +423,7 @@ jest.setTimeout(10000);
         });
 
         it('Can james add blogs?', (done) => {
-          acl.isAllowed('james', 'blogs', 'add', (err, allow) => {
+          acl.isAllowed('dimitri', 'blogs', 'add', (err, allow) => {
             expect(!err);
             expect(!allow);
             done();
@@ -523,7 +523,7 @@ jest.setTimeout(10000);
 
     describe('allowedPermissions', () => {
       it('What permissions has james over blogs and forums?', (done) => {
-        acl.allowedPermissions('james', ['blogs', 'forums'], (err, permissions) => {
+        acl.allowedPermissions('dimitri', ['blogs', 'forums'], (err, permissions) => {
           expect(!err);
           expect(permissions).toHaveProperty('blogs');
           expect(permissions).toHaveProperty('forums');
@@ -706,7 +706,7 @@ jest.setTimeout(10000);
         });
 
         it('What permissions has james over blogs?', (done) => {
-          acl.allowedPermissions('james', 'blogs', (err, permissions) => {
+          acl.allowedPermissions('dimitri', 'blogs', (err, permissions) => {
             expect(!err);
             expect(permissions.blogs).toContain('delete');
             done();
@@ -844,7 +844,7 @@ jest.setTimeout(10000);
 
     describe('AllowedPermissions', () => {
       it('What permissions has james over blogs?', (done) => {
-        acl.allowedPermissions('james', 'blogs', (err, permissions) => {
+        acl.allowedPermissions('dimitri', 'blogs', (err, permissions) => {
           expect(err).toBeNull();
           expect(permissions).toHaveProperty('blogs');
           expect(!permissions.blogs.length);
@@ -1010,6 +1010,13 @@ jest.setTimeout(10000);
               done();
             });
           });
+        });
+      });
+
+      it('Remove an user', (done) => {
+        acl.removeUser('dimitri', (err1) => {
+          expect(!err1);
+          done();
         });
       });
     });

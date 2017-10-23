@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -55,10 +55,10 @@
     "babel-runtime": "~6.26.0",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.31",
+    "mongodb": "^2.2.33",
     "mysql2": "^1.4.2",
     "redis": "^2.8.0",
-    "sequelize": "^4.13.8"
+    "sequelize": "^4.16.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -75,7 +75,7 @@
     "eslint-config-airbnb-base": "~12.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "~2.8.0",
-    "flow-bin": "~0.57.2",
+    "flow-bin": "~0.57.3",
     "jest": "~21.2.1"
   },
   "jest": {

@@ -58,6 +58,21 @@ export default class Acl extends Common {
   }
 
   /**
+   * @description Remove user with his associated roles.
+   * @param userId
+   * @param callback
+   */
+  removeUser(userId: string | number, callback: ?() => void): void {
+    return this.userRoles(userId)
+      .then((userRoles) => this.removeUserRoles(userId, userRoles))
+      .then(() => {
+        this.store.begin();
+        this.store.del(this.options.buckets.users, userId);
+        return this.store.endAsync().nodeify(callback);
+      });
+  }
+
+  /**
    * @description Remove roles from a given user.
    * @param userId
    * @param roles
