@@ -1,6 +1,6 @@
 // @flow
 import Redis from 'redis';
-import MongoDB from 'mongodb';
+import {MongoClient} from 'mongodb';
 import Sequelize from 'sequelize';
 import Acl from '../src/classes/acl';
 import MemoryStore from '../src/stores/memory';
@@ -9,10 +9,10 @@ import MongoDBStore from '../src/stores/mongodb';
 import SequelizeStore from '../src/stores/sequelize';
 
 jest.setTimeout(10000);
+let mongoClient = null;
 
 ['Memory', 'MySQL', 'Redis', 'MongoDB'].forEach((store) => {
   let acl = null;
-
   describe(store, () => {
     beforeAll((done) => {
       if (store === 'Memory') {
@@ -22,8 +22,9 @@ jest.setTimeout(10000);
         acl = new Acl(new RedisStore(Redis.createClient({host: 'redis'})));
         done();
       } else if (store === 'MongoDB') {
-        MongoDB.connect('mongodb://mongo/aclify', (error, db) => {
-          acl = new Acl(new MongoDBStore(db, 'acl_'));
+        MongoClient.connect('mongodb://mongo', (err, client) => {
+          acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
+          mongoClient = client;
           done();
         });
       } else if (store === 'MySQL') {
@@ -44,7 +45,7 @@ jest.setTimeout(10000);
     afterAll((done) => {
       setTimeout(() => {
         if (store === 'Redis') acl.store.redis.quit();
-        else if (store === 'MongoDB') acl.store.db.close();
+        else if (store === 'MongoDB') mongoClient.close();
         else if (store === 'MySQL') acl.store.db.close();
         done();
       }, 5000);

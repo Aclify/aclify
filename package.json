@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -55,7 +55,7 @@
     "babel-runtime": "~6.26.0",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.33",
+    "mongodb": "^3.0.1",
     "mysql2": "^1.4.2",
     "redis": "^2.8.0",
     "sequelize": "^4.16.1"
@@ -63,20 +63,20 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "~6.26.0",
-    "babel-eslint": "~8.0.1",
-    "babel-jest": "~21.2.0",
+    "babel-eslint": "~8.1.2",
+    "babel-jest": "~22.0.4",
     "babel-plugin-transform-async-to-generator": "~6.24.1",
     "babel-plugin-transform-es2015-modules-commonjs": "~6.26.0",
     "babel-plugin-transform-flow-strip-types": "~6.22.0",
     "babel-plugin-transform-runtime": "~6.23.0",
     "babel-preset-stage-3": "~6.24.1",
     "coveralls": "^3.0.0",
-    "eslint": "~4.9.0",
+    "eslint": "~4.15.0",
     "eslint-config-airbnb-base": "~12.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
     "eslint-plugin-import": "~2.8.0",
-    "flow-bin": "~0.57.3",
-    "jest": "~21.2.1"
+    "flow-bin": "~0.63.1",
+    "jest": "~22.0.4"
   },
   "jest": {
     "testEnvironment": "node",
