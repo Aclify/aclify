@@ -3,7 +3,7 @@
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Dependencies][dev-dependencies-badge]][dev-dependencies]
 [![Code Climate score][codeclimate-score-badge]][codeclimate-score]
-[![Coveralls][coveralls-coverage-badge]][coveralls-coverage]
+[![Coveralls][coverage-badge]][coverage]
 [![Code Climate coverage][codeclimate-issues-badge]][codeclimate-issues]
 [![Node.js version][nodejs-badge]][nodejs]
 [![NPM version][npm-badge]][npm]
@@ -549,15 +549,15 @@ Creates a new Redis store using Redis client `client`.
 
 Run using npm run <script> command.
 
-    clean - remove coverage data, Jest cache and transpiled files,
-    lint - lint source files and tests,
-    typecheck - check type annotations,
-    test - lint, typecheck and run tests with coverage,
-    test-only - run tests with coverage,
-    test:watch - interactive watch mode to automatically re-run tests,
-    build - compile source files,
+    clean - remove coverage data, Jest cache and transpiled files.
+    lint - lint source files and tests.
+    typecheck - check type annotations.
+    test - run tests with coverage.
+    test-only - run tests without coverage.
+    test:watch - run tests without coverage in watch mode.
+    build - compile source files.
     build:watch - interactive watch mode, compile sources on change.
-    docker:run:test - run tests into docker-compose
+    docker:run:test - run tests into docker-compose.
 
 
 ## License
@@ -569,8 +569,8 @@ MIT © [Dimitri DO BAIRRO](https://github.com/rimiti/aclify/blob/master/LICENSE)
 [dev-dependencies]: https://david-dm.org/rimiti/aclify?type=dev
 [codeclimate-score-badge]: https://codeclimate.com/github/rimiti/aclify/badges/gpa.svg
 [codeclimate-score]: https://codeclimate.com/github/rimiti/aclify
-[coveralls-coverage-badge]: https://coveralls.io/repos/github/rimiti/aclify/badge.svg
-[coveralls-coverage]: https://coveralls.io/github/rimiti/aclify
+[coverage-badge]: https://codecov.io/gh/rimiti/aclify/branch/master/graph/badge.svg
+[coverage]: https://codecov.io/gh/rimiti/aclify
 [codeclimate-issues-badge]: https://codeclimate.com/github/rimiti/aclify/badges/issue_count.svg
 [codeclimate-issues]: https://codeclimate.com/github/rimiti/aclify
 [nodejs-badge]: https://img.shields.io/badge/node->=%206.9.0-blue.svg?style=flat-square
