@@ -1,21 +1,21 @@
 {
   "name": "aclify",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
   "scripts": {
-    "clean": "rm -rf coverage dist tmp",
+    "clean": "rm -rf coverage dist tmp jest_0",
     "lint": "eslint .",
     "typecheck": "flow check",
     "pretest": "npm run lint",
-    "test": "npm run test-only",
-    "test-only": "jest --coverage",
-    "test-only-with-coverage": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "test": "jest --coverage",
+    "test-only": "jest",
     "test:watch": "jest --watch",
     "prepare": "npm run build",
     "build": "babel src/**/*.js src/*.js -d dist",
-    "build:watch": "babel --watch src/**/*.js src/*.js -d dist"
+    "build:watch": "babel --watch src/**/*.js src/*.js -d dist",
+    "docker:run:test": "docker-compose up"
   },
   "repository": {
     "type": "git",
@@ -70,7 +70,6 @@
     "babel-plugin-transform-flow-strip-types": "~6.22.0",
     "babel-plugin-transform-runtime": "~6.23.0",
     "babel-preset-stage-3": "~6.24.1",
-    "coveralls": "^3.0.0",
     "eslint": "~4.15.0",
     "eslint-config-airbnb-base": "~12.1.0",
     "eslint-plugin-flowtype": "^2.39.1",
