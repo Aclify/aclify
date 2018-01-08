@@ -543,7 +543,7 @@ Creates a new Redis store using Redis client `client`.
 
 ## Tests
 
-  $ docker-compose up - run tests in docker-compose environment
+    $ npm run docker:run:test
 
 ## Scripts
 
@@ -557,6 +557,7 @@ Run using npm run <script> command.
     test:watch - interactive watch mode to automatically re-run tests,
     build - compile source files,
     build:watch - interactive watch mode, compile sources on change.
+    docker:run:test - run tests into docker-compose
 
 
 ## License
