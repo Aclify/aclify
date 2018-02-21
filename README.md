@@ -561,26 +561,26 @@ Run using npm run <script> command.
 
 
 ## License
-MIT © [Dimitri DO BAIRRO](https://github.com/rimiti/aclify/blob/master/LICENSE)
+MIT © [Dimitri DO BAIRRO](https://github.com/Aclify/aclify/blob/master/LICENSE)
 
-[prod-dependencies-badge]: https://david-dm.org/rimiti/aclify/status.svg
-[prod-dependencies]: https://david-dm.org/rimiti/aclify
-[dev-dependencies-badge]: https://david-dm.org/rimiti/aclify/dev-status.svg
-[dev-dependencies]: https://david-dm.org/rimiti/aclify?type=dev
-[codeclimate-score-badge]: https://codeclimate.com/github/rimiti/aclify/badges/gpa.svg
-[codeclimate-score]: https://codeclimate.com/github/rimiti/aclify
-[coverage-badge]: https://codecov.io/gh/rimiti/aclify/branch/master/graph/badge.svg
-[coverage]: https://codecov.io/gh/rimiti/aclify
-[codeclimate-issues-badge]: https://codeclimate.com/github/rimiti/aclify/badges/issue_count.svg
-[codeclimate-issues]: https://codeclimate.com/github/rimiti/aclify
+[prod-dependencies-badge]: https://david-dm.org/Aclify/aclify/status.svg
+[prod-dependencies]: https://david-dm.org/Aclify/aclify
+[dev-dependencies-badge]: https://david-dm.org/Aclify/aclify/dev-status.svg
+[dev-dependencies]: https://david-dm.org/Aclify/aclify?type=dev
+[coverage-badge]: https://codecov.io/gh/Aclify/aclify/branch/master/graph/badge.svg
+[coverage]: https://codecov.io/gh/Aclify/aclify
+[codeclimate-score-badge]: https://codeclimate.com/github/Aclify/aclify/badges/gpa.svg
+[codeclimate-score]: https://codeclimate.com/github/Aclify/aclify
+[codeclimate-issues-badge]: https://codeclimate.com/github/Aclify/aclify/badges/issue_count.svg
+[codeclimate-issues]: https://codeclimate.com/github/Aclify/aclify
 [nodejs-badge]: https://img.shields.io/badge/node->=%206.9.0-blue.svg?style=flat-square
 [nodejs]: https://nodejs.org/dist/latest-v6.x/docs/api/
 [npm-badge]: https://img.shields.io/badge/npm->=%203.10.8-blue.svg?style=flat-square
 [npm]: https://docs.npmjs.com/
 [node_acl]: https://github.com/OptimalBits/node_acl
-[travis-badge]: https://travis-ci.org/rimiti/aclify.svg?branch=master
-[travis-ci]: https://travis-ci.org/rimiti/aclify
+[travis-badge]: https://travis-ci.org/Aclify/aclify.svg?branch=master
+[travis-ci]: https://travis-ci.org/Aclify/aclify
 [license-badge]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square
-[license]: https://github.com/rimiti/aclify/blob/master/LICENSE
+[license]: https://github.com/Aclify/aclify/blob/master/LICENSE
 [prs-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square
 [prs]: http://makeapullrequest.com
