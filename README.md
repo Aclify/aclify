@@ -567,6 +567,8 @@ MIT © [Dimitri DO BAIRRO](https://github.com/Aclify/aclify/blob/master/LICENSE)
 [prod-dependencies]: https://david-dm.org/Aclify/aclify
 [dev-dependencies-badge]: https://david-dm.org/Aclify/aclify/dev-status.svg
 [dev-dependencies]: https://david-dm.org/Aclify/aclify?type=dev
+[security-version-badge]: https://nodesecurity.io/orgs/aclify/projects/cbc8a28a-1a28-4f19-ada6-62e1b45ec074/badge
+[security-version]: https://nodesecurity.io/orgs/aclify/projects/cbc8a28a-1a28-4f19-ada6-62e1b45ec074
 [coverage-badge]: https://codecov.io/gh/Aclify/aclify/branch/master/graph/badge.svg
 [coverage]: https://codecov.io/gh/Aclify/aclify
 [codeclimate-score-badge]: https://codeclimate.com/github/Aclify/aclify/badges/gpa.svg
