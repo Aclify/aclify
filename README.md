@@ -2,6 +2,7 @@
 
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Dependencies][dev-dependencies-badge]][dev-dependencies]
+[![Security version][security-version-badge]][security-version]
 [![Code Climate score][codeclimate-score-badge]][codeclimate-score]
 [![Coveralls][coverage-badge]][coverage]
 [![Code Climate coverage][codeclimate-issues-badge]][codeclimate-issues]
