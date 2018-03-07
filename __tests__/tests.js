@@ -2,6 +2,7 @@
 import Redis from 'redis';
 import {MongoClient} from 'mongodb';
 import Sequelize from 'sequelize';
+import httpMocks from 'node-mocks-http';
 import Acl from '../src/classes/acl';
 import MemoryStore from '../src/stores/memory';
 import RedisStore from '../src/stores/redis';
@@ -36,7 +37,7 @@ let mongoClient = null;
         });
         sequelize.authenticate()
           .then(() => {
-            acl = new Acl(new SequelizeStore(sequelize), {prefix: 'acl_'});
+            acl = new Acl(new SequelizeStore(sequelize, {prefix: 'acl_'}));
             done();
           });
       }
@@ -133,6 +134,23 @@ let mongoClient = null;
               done();
             });
           });
+        });
+      });
+    });
+
+    describe('Middleware', () => {
+      it('should fallback to dummy logger', (done) => {
+        const request = httpMocks.createRequest({
+          method: 'GET',
+          url: '/blogs',
+        });
+
+        const response = httpMocks.createResponse();
+
+        acl.middleware(0, 'joed', 'GET')(request, response, (err) => {
+          // TODO returns HttpError 403
+          expect(err);
+          done();
         });
       });
     });
