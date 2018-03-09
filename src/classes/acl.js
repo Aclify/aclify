@@ -9,13 +9,7 @@ export default class Acl extends Common {
   store: {};
   options: {};
   logger: {
-    info: () => {},
-    error: () => {},
-    trace: () => {},
-    warn: () => {},
-    fatal: () => {},
     debug: () => {},
-    log: () => {},
   };
 
   /**
