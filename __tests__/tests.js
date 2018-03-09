@@ -135,11 +135,13 @@ let mongoClient = null;
     });
 
     describe('Middleware', () => {
-      it('should fallback to dummy logger', (done) => {
+      it('Should return 403', (done) => {
         const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
         acl.middleware(0, 'joed', 'GET')(request, response, (err) => {
-          expect(err);
+          expect(err.name).toEqual('HttpError');
+          expect(err.errorCode).toEqual(403);
+          expect(err.message).toEqual('Insufficient permissions to access resource');
           done();
         });
       });
