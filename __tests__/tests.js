@@ -3,11 +3,7 @@ import Redis from 'redis';
 import {MongoClient} from 'mongodb';
 import Sequelize from 'sequelize';
 import httpMocks from 'node-mocks-http';
-import Acl from '../src/classes/acl';
-import MemoryStore from '../src/stores/memory';
-import RedisStore from '../src/stores/redis';
-import MongoDBStore from '../src/stores/mongodb';
-import SequelizeStore from '../src/stores/sequelize';
+import {Acl, MemoryStore, RedisStore, MongoDBStore, SequelizeStore} from '../src';
 
 jest.setTimeout(10000);
 let mongoClient = null;
@@ -140,15 +136,9 @@ let mongoClient = null;
 
     describe('Middleware', () => {
       it('should fallback to dummy logger', (done) => {
-        const request = httpMocks.createRequest({
-          method: 'GET',
-          url: '/blogs',
-        });
-
+        const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
-
         acl.middleware(0, 'joed', 'GET')(request, response, (err) => {
-          // TODO returns HttpError 403
           expect(err);
           done();
         });
