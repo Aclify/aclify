@@ -145,6 +145,17 @@ let mongoClient = null;
           done();
         });
       });
+
+      it('Should return 401', (done) => {
+        const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
+        const response = httpMocks.createResponse();
+        acl.middleware(0, null, 'GET')(request, response, (err) => {
+          expect(err.name).toEqual('HttpError');
+          expect(err.errorCode).toEqual(401);
+          expect(err.message).toEqual('User not authenticated');
+          done();
+        });
+      });
     });
 
     describe('Read user\'s roles', () => {
