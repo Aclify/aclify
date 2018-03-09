@@ -8,7 +8,9 @@ import HttpError from './http_error';
 export default class Acl extends Common {
   store: {};
   options: {};
-  logger: {};
+  logger: {
+    debug: () => {},
+  };
 
   /**
    * @description Create ACL class and promisify store methods.
@@ -16,7 +18,7 @@ export default class Acl extends Common {
    * @param logger
    * @param options
    */
-  constructor(store: {}, logger: {} = {}, options: {} = {}) {
+  constructor(store: {}, logger: {}, options: {} = {}) {
     super();
     this.options = _.extend({
       buckets: {
