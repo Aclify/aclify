@@ -1,6 +1,6 @@
 {
   "name": "aclify",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -58,7 +58,7 @@
     "mongodb": "^3.0.4",
     "mysql2": "^1.5.2",
     "redis": "^2.8.0",
-    "sequelize": "^4.35.2"
+    "sequelize": "^4.36.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
