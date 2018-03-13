@@ -1,5 +1,5 @@
 {
-  "name": "aclify",
+  "name": "@aclify/aclify",
   "version": "1.3.0",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
