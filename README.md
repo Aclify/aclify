@@ -29,7 +29,7 @@ for admin kind of functionality.
 
 ## Install
 ```
-$ npm install aclify --save
+$ npm install @aclify/aclify --save
 ```
 
 ## Features
@@ -79,7 +79,7 @@ Create your acl module by requiring it and instantiating it with a valid store i
 
 **From import**
 ```javascript
-import {Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore} from 'aclify'
+import {Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore} from '@aclify/aclify'
 
 // Using Redis store
 acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
@@ -96,7 +96,7 @@ acl = new Acl(new SequelizeStore(db, {prefix: 'acl_'}));
 
 **From require**
 ```javascript
-const aclify = require('aclify');
+const aclify = require('@aclify/aclify');
 
 // Using Redis store
 acl = new aclify.Acl(new aclify.RedisStore(RedisClient, {prefix: 'acl_'}));
