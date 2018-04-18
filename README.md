@@ -384,6 +384,7 @@ __Arguments__
 ---------------------------------------
 
 <a name="removeResource" />
+
 ### removeResource( resource, function(err) )
 
 Removes a resource from the system
