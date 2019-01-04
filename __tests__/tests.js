@@ -3,7 +3,9 @@ import Redis from 'redis';
 import {MongoClient} from 'mongodb';
 import Sequelize from 'sequelize';
 import httpMocks from 'node-mocks-http';
-import {Acl, MemoryStore, RedisStore, MongoDBStore, SequelizeStore} from '../src';
+import {
+  Acl, MemoryStore, RedisStore, MongoDBStore, SequelizeStore,
+} from '../src';
 
 jest.setTimeout(10000);
 let mongoClient = null;

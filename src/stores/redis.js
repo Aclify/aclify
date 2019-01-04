@@ -5,7 +5,9 @@ import Common from '../classes/common';
 
 export default class Redis extends Common implements Store {
   transaction: Array<any>;
+
   redis: {};
+
   redisPrefix: string;
 
   constructor(redis: RedisClient, prefix: string) {

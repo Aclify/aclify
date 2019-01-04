@@ -6,6 +6,7 @@ import Common from '../classes/common';
 
 export default class MongoDB extends Common implements Store {
   transaction: Array<any>;
+
   redis: {};
 
   constructor(db, prefix, useSingle, useRawCollectionNames = 'resources') {
