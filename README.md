@@ -1,3 +1,5 @@
+# [![Aclify](media/header.png)](https://github.com/Aclify) 
+
 # @aclify/aclify
 
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
@@ -5,9 +7,6 @@
 [![Build Status][travis-badge]][travis-ci]
 [![MIT License][license-badge]][LICENSE]
 [![PRs Welcome][prs-badge]][prs]
-
-
-# [![Aclify](media/header.png)](https://github.com/Aclify)
 
 ## Description
 
