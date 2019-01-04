@@ -1,6 +1,6 @@
-[![Aclify](media/header.png)](https://github.com/Aclify) 
-
 # @aclify/aclify
+
+[![Aclify](media/header.png)](https://github.com/Aclify) 
 
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Coverage][coverage-badge]][coverage]
