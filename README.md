@@ -1,4 +1,4 @@
-# [![Aclify](media/header.png)](https://github.com/Aclify) 
+[![Aclify](media/header.png)](https://github.com/Aclify) 
 
 # @aclify/aclify
 
