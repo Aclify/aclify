@@ -1,6 +1,6 @@
 {
   "name": "@aclify/aclify",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Node Access Control List (ACL)",
   "license": "MIT",
   "main": "dist/src/index.js",
