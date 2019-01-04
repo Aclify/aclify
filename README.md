@@ -1,19 +1,12 @@
-# [![Aclify](media/header.png)](https://github.com/Aclify)
+# @aclify/aclify
 
-# aclify
+[![Aclify](media/header.png)](https://github.com/Aclify) 
 
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
-[![Dependencies][dev-dependencies-badge]][dev-dependencies]
-[![Security version][security-version-badge]][security-version]
-[![Code Climate score][codeclimate-score-badge]][codeclimate-score]
-[![Coveralls][coverage-badge]][coverage]
-[![Code Climate coverage][codeclimate-issues-badge]][codeclimate-issues]
-[![Node.js version][nodejs-badge]][nodejs]
-[![NPM version][npm-badge]][npm]
+[![Coverage][coverage-badge]][coverage]
 [![Build Status][travis-badge]][travis-ci]
 [![MIT License][license-badge]][LICENSE]
 [![PRs Welcome][prs-badge]][prs]
-
 
 ## Description
 
@@ -565,24 +558,13 @@ Run using npm run <script> command.
 
 
 ## License
+
 MIT © [Dimitri DO BAIRRO](https://github.com/Aclify/aclify/blob/master/LICENSE)
 
 [prod-dependencies-badge]: https://david-dm.org/Aclify/aclify/status.svg
 [prod-dependencies]: https://david-dm.org/Aclify/aclify
-[dev-dependencies-badge]: https://david-dm.org/Aclify/aclify/dev-status.svg
-[dev-dependencies]: https://david-dm.org/Aclify/aclify?type=dev
-[security-version-badge]: https://nodesecurity.io/orgs/aclify/projects/cbc8a28a-1a28-4f19-ada6-62e1b45ec074/badge
-[security-version]: https://nodesecurity.io/orgs/aclify/projects/cbc8a28a-1a28-4f19-ada6-62e1b45ec074
 [coverage-badge]: https://codecov.io/gh/Aclify/aclify/branch/master/graph/badge.svg
 [coverage]: https://codecov.io/gh/Aclify/aclify
-[codeclimate-score-badge]: https://codeclimate.com/github/Aclify/aclify/badges/gpa.svg
-[codeclimate-score]: https://codeclimate.com/github/Aclify/aclify
-[codeclimate-issues-badge]: https://codeclimate.com/github/Aclify/aclify/badges/issue_count.svg
-[codeclimate-issues]: https://codeclimate.com/github/Aclify/aclify
-[nodejs-badge]: https://img.shields.io/badge/node->=%206.9.0-blue.svg?style=flat-square
-[nodejs]: https://nodejs.org/dist/latest-v6.x/docs/api/
-[npm-badge]: https://img.shields.io/badge/npm->=%203.10.8-blue.svg?style=flat-square
-[npm]: https://docs.npmjs.com/
 [node_acl]: https://github.com/OptimalBits/node_acl
 [travis-badge]: https://travis-ci.org/Aclify/aclify.svg?branch=master
 [travis-ci]: https://travis-ci.org/Aclify/aclify

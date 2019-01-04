@@ -7,7 +7,9 @@ import HttpError from './http_error';
 
 export default class Acl extends Common {
   store: {};
+
   options: {};
+
   logger: {
     debug: () => {},
   };

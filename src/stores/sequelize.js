@@ -5,6 +5,7 @@ import Common from '../classes/common';
 
 export default class MySQL extends Common implements Store {
   buckets: {};
+
   transaction: Array<any>;
 
   constructor(db, options) {

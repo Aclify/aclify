@@ -12,4 +12,3 @@ export {
   MongoDBStore,
   SequelizeStore,
 };
-

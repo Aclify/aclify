@@ -5,6 +5,7 @@ import Common from '../classes/common';
 
 export default class Memory extends Common implements Store {
   buckets: {};
+
   transaction: Array<any>;
 
   constructor() {
