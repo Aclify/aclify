@@ -11,6 +11,7 @@ export interface IOptions {
   };
 }
 
+export type IRolesArray = [{ roles: string; allows: ({ resources: string; permissions: string; } | { resources: string[]; permissions: string[]; })[]; }]
 export type IRoles = string | string[];
 export type IParents = string | string[];
 export type IResources = string | string[];
