@@ -2,92 +2,52 @@
   "name": "@aclify/aclify",
   "version": "1.8.0",
   "description": "Node Access Control List (ACL)",
-  "license": "MIT",
+  "author": "Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>",
+  "license": "ISC",
   "main": "dist/src/index.js",
-  "scripts": {
-    "clean": "rm -rf coverage dist tmp jest_0",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
-    "typecheck": "flow check",
-    "pretest": "npm run lint",
-    "test": "jest --coverage",
-    "test-only": "jest",
-    "test:watch": "jest --watch",
-    "prepare": "npm run build",
-    "build": "babel src/**/*.js src/*.js -d dist",
-    "build:watch": "babel --watch src/**/*.js src/*.js -d dist",
-    "docker:run:test": "docker-compose up"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aclify/aclify.git"
   },
   "keywords": [
-    "node",
+    "acl",
     "redis",
     "mongodb",
     "mysql",
     "sqlite",
     "postgresql",
     "mssql",
-    "memory",
-    "api",
-    "apikey",
-    "key",
-    "acl",
-    "express",
-    "manager"
+    "memory"
   ],
-  "author": {
-    "name": "Dimitri DO BAIRRO",
-    "email": "dimitri.dobairro@dimsolution.com",
-    "url": "dimsolution.com"
-  },
   "bugs": {
     "url": "https://github.com/Aclify/aclify/issues"
   },
-  "engines": {
-    "node": ">=6.9"
-  },
-  "engineStrict": true,
   "homepage": "https://github.com/Aclify/aclify#readme",
   "dependencies": {
-    "async": "^2.6.1",
-    "babel-runtime": "~6.26.0",
     "bluebird": "^3.5.3",
-    "lodash": "^4.17.11",
-    "mongodb": "^3.1.10",
-    "mysql2": "^1.6.4",
-    "redis": "^2.8.0",
-    "sequelize": "^4.42.0"
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "~6.26.3",
-    "babel-eslint": "~10.0.1",
-    "babel-jest": "~23.6.0",
-    "babel-plugin-add-module-exports": "^1.0.0",
-    "babel-plugin-transform-async-to-generator": "~6.24.1",
-    "babel-plugin-transform-es2015-modules-commonjs": "~6.26.2",
-    "babel-plugin-transform-flow-strip-types": "~6.22.0",
-    "babel-plugin-transform-runtime": "~6.23.0",
-    "babel-preset-stage-3": "~6.24.1",
-    "eslint": "~5.11.1",
-    "eslint-config-airbnb-base": "~13.1.0",
-    "eslint-plugin-flowtype": "^3.2.0",
-    "eslint-plugin-import": "~2.14.0",
-    "flow-bin": "~0.89.0",
-    "jest": "~23.6.0",
-    "node-mocks-http": "^1.7.3"
+    "@types/jest": "^24.0.11",
+    "@types/node": "^11.11.3",
+    "jest": "^24.5.0",
+    "node-mocks-http": "^1.7.3",
+    "prettier": "^1.16.4",
+    "ts-jest": "^24.0.0",
+    "tslint": "^5.14.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-microsoft-contrib": "^6.1.0",
+    "typescript": "^3.3.3333"
   },
-  "jest": {
-    "testEnvironment": "node",
-    "moduleFileExtensions": [
-      "js"
-    ],
-    "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "src/**/*.js"
-    ]
+  "scripts": {
+    "clean": "rm -rf coverage dist",
+    "build": "tsc -p tsconfig.release.json",
+    "build:watch": "tsc -w -p tsconfig.release.json",
+    "lint": "tslint -t stylish --project 'tsconfig.json'",
+    "lint:fix": "tslint --fix -t stylish --project 'tsconfig.json'",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "docker:run:test": "docker-compose up"
   }
 }
