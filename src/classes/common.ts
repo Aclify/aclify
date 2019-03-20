@@ -13,7 +13,7 @@ export class Common {
    * @param value
    * @return Promise<[string]>
    */
-  static async makeArray(value: string | [string]): Promise<[string]> {
+  static async makeArray(value: string | string[]): Promise<string[]> {
     return Array.isArray(value) ? value : [value];
   }
 
