@@ -1,7 +1,8 @@
-import { IOptions, IPermissions, IResources, IRoles, IUserId, IUserRoles, IRole, IParents, IResource } from "../interfaces/IAcl";
+import { IOptions, IPermissions, IResources, IRoles, IUserId, IUserRoles, IRole, IParents, IResource, IRolesArray } from "../interfaces/IAcl";
 import * as _ from "lodash";
 import { IStore } from "../interfaces/IStore";
 import { Common } from "./common";
+import * as bluebird from "bluebird";
 
 export class Acl extends Common {
   public options: IOptions;
@@ -22,14 +23,12 @@ export class Acl extends Common {
     }, options);
   }
 
-  /**
-   * @description
-   * @param roles
-   * @param resources
-   * @param permissions
-   * @return Promise<void>
-   */
-  async allow(roles: IRoles, resources: IResources, permissions: IPermissions): Promise<void> {
+  async allow(roles: IRoles | any, resources?: IResources, permissions?: IPermissions): Promise<void> {
+
+    if(arguments.length === 1 && _.isArray(roles) && _.isObject(roles[0])) {
+      return this.allowEx(roles);
+    }
+
     const [rolesParam, resourcesParam] = await Promise.all([
       Common.makeArray(roles),
       Common.makeArray(resources),
@@ -128,4 +127,25 @@ export class Acl extends Common {
     const parents = await this.store.union(this.options.buckets.parents, roles);
     return (parents && parents.length) ? await this.checkPermissions(parents, resource, perms) : false;
   }
+
+  private async allowEx(objs: IRolesArray) {
+    // const objsTmp = await Common.makeArray(objs);
+    const objsTmp = objs;
+
+    const demuxed = [];
+    objsTmp.forEach((obj) => {
+      const roles = obj.roles;
+      obj.allows.forEach((allow) => {
+        demuxed.push({
+          roles:roles,
+          resources:allow.resources,
+          permissions:allow.permissions,
+        });
+      });
+    });
+
+    return bluebird.reduce(demuxed,(_values, obj) => {
+      return this.allow(obj.roles, obj.resources, obj.permissions);
+    }, null);
+  };
 }
