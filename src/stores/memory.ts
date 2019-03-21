@@ -1,12 +1,15 @@
-// @flow
-import * as _ from 'lodash';
-import {Common} from '../classes/common';
+import { difference, flatten, pick, union, uniq, values as lValues } from 'lodash';
+import { Common } from '../classes/common';
 import { IStore } from '../interfaces/IStore';
 
+/**
+ * {@inheritDoc}
+ * @description Memory store.
+ */
 export class MemoryStore extends Common implements IStore {
   public buckets: {};
 
-  public transaction: any[];
+  public transaction: Function[];
 
   constructor() {
     super();
@@ -15,61 +18,62 @@ export class MemoryStore extends Common implements IStore {
 
   /**
    * @description Begins a transaction.
-   * @returns {Array}
+   * @return Function[]
    */
-  public begin(): [][] {
+  public begin(): Function[] {
     this.transaction = [];
 
     return this.transaction;
   }
 
   /**
-   * @description Ends a transaction (and executes it)
+   * @description Ends a transaction (and executes it).
+   * @return Promise<void>
    */
   public async end(): Promise<void> {
-    // console.log('---> length: ', this.transaction.length);
-
-    this.transaction.forEach((transaction) => transaction());
+    this.transaction.forEach((transaction: () => void) => transaction());
 
     return;
   }
 
-  // /**
-  //  * @description Cleans the whole storage.
-  //  * @param callback
-  //  */
-  // clean(callback: () => void) {
-  //   this.buckets = {};
-  //   callback();
-  // }
+  /**
+   * @description Cleans the whole storage.
+   * @return Promise<void>
+   */
+  public async clean() {
+    this.buckets = {};
+  }
 
   /**
    * @description Gets the contents at the bucket's key.
    * @param bucket
    * @param key
+   * @return Promise<string[]>
    */
-  public async get(bucket: string, key: string | number) {
-    if(this.buckets[bucket]) {
-      return this.buckets[bucket][key] || [];
+  public async get(bucket: string, key: string | number): Promise<string[]> {
+    if (this.buckets[bucket]) {
+      return this.buckets[bucket][key] !== undefined ? this.buckets[bucket][key] : []; // tslint:disable-line no-unsafe-any
     }
 
     return [];
   }
 
   /**
-   * @description Gets the union of the keys in each of the specified buckets
+   * @description Gets the union of the keys in each of the specified buckets.
    * @param buckets
    * @param keys
+   * @return Promise<{}>
    */
-  public async unions(buckets: any[], keys: any[]) {
+  public async unions(buckets: string[], keys: string[]): Promise<{}> {
     const results = {};
-    for (let i = 0; i < buckets.length; i += 1) {
-      if (this.buckets[buckets[i]]) {
-        results[buckets[i]] = _.uniq(_.flatten(_.values(_.pick(this.buckets[buckets[i]], keys))));
+
+    buckets.forEach((bucket: string) => {
+      if (this.buckets[bucket]) {
+        results[bucket] = uniq(flatten(lValues(pick(this.buckets[bucket], keys))));
       } else {
-        results[buckets[i]] = [];
+        results[bucket] = [];
       }
-    }
+    }, this);
 
     return results;
   }
@@ -78,34 +82,35 @@ export class MemoryStore extends Common implements IStore {
    * @description Returns the union of the values in the given keys.
    * @param bucket
    * @param keys
+   * @return Promise<string[]>
    */
-  public async union(bucket: string, keys: any[]): Promise<string[]> {
-    let match;
-    let re;
-    let bucketParam = bucket;
-    if (!this.buckets[bucketParam]) {
-      Object.keys(this.buckets).some((b) => {
-        re = new RegExp(`^${b}$`);
-        match = re.test(bucketParam);
-        if (match) { bucketParam = b; }
+  public async union(bucket: string, keys: string[]): Promise<string[]> {
+    let match: boolean;
+    let re: RegExp;
+    let bucketTmp = bucket;
+
+    if (!this.buckets[bucketTmp]) {
+      Object.keys(this.buckets).some((item: string) => {
+        re = new RegExp(`^${item}$`);
+        match = re.test(bucketTmp);
+        if (match) { bucketTmp = item; }
 
         return match;
       });
     }
 
-    if (this.buckets[bucketParam]) {
+    if (this.buckets[bucketTmp]) {
       const keyArrays = [];
-      for (let i = 0, len = keys.length; i < len; i += 1) {
-        if (this.buckets[bucketParam][keys[i]]) {
-          keyArrays.push(...this.buckets[bucketParam][keys[i]]);
+      keys.forEach((key: string) => {
+        if (this.buckets[bucketTmp][key]) { // tslint:disable-line no-unsafe-any
+          keyArrays.push(...this.buckets[bucketTmp][key]); // tslint:disable-line no-unsafe-any
         }
-      }
+      }, this);
 
-      return _.union(keyArrays);
-    } else {
-
-      return [];
+      return union(keyArrays);
     }
+
+    return [];
   }
 
   /**
@@ -113,35 +118,36 @@ export class MemoryStore extends Common implements IStore {
    * @param bucket
    * @param key
    * @param values
+   * @return void
    */
   public add(bucket: string, key: string | number, values: string|[string]): void {
     const valuesArray = Common.makeArray(values);
 
     this.transaction.push(() => {
-      if(!this.buckets[bucket]){
+      if (!this.buckets[bucket]) {
         this.buckets[bucket] = {};
       }
 
-      if(!this.buckets[bucket][key]){
-        this.buckets[bucket][key] = valuesArray;
-      } else{
-        this.buckets[bucket][key] = _.union(valuesArray, this.buckets[bucket][key]);
+      if (!this.buckets[bucket][key]) { // tslint:disable-line no-unsafe-any
+        this.buckets[bucket][key] = valuesArray; // tslint:disable-line no-unsafe-any
+      } else {
+        this.buckets[bucket][key] = union(valuesArray, this.buckets[bucket][key]); // tslint:disable-line no-unsafe-any
       }
     });
   }
 
   /**
-   * @description Delete the given key(s) at the bucket.
+   * @description Delete the given key(s) at the bucket
    * @param bucket
    * @param keys
+   * @return Promise<void>
    */
-  public async del(bucket: string, keys: string | any[]) {
+  public async del(bucket: string, keys: string[]): Promise<void> {
     const keysArray = Common.makeArray(keys);
+
     this.transaction.push(() => {
       if (this.buckets[bucket]) {
-        for (let i = 0, len = keysArray.length; i < len; i += 1) {
-          delete this.buckets[bucket][keysArray[i]];
-        }
+        keysArray.forEach((key: string) => delete this.buckets[bucket][key]); // tslint:disable-line no-unsafe-any no-dynamic-delete
       }
     });
   }
@@ -151,13 +157,15 @@ export class MemoryStore extends Common implements IStore {
    * @param bucket
    * @param key
    * @param values
+   * @return Promise<void>
    */
-  public async remove(bucket: string, key: string | number, values: any): Promise<void> {
+  public async remove(bucket: string, key: string | number, values: string[]): Promise<void> {
     const valuesArray = Common.makeArray(values);
+
     this.transaction.push(() => {
-      const bucketKey = this.buckets[bucket][key];
+      const bucketKey = this.buckets[bucket][key]; // tslint:disable-line no-unsafe-any
       if (this.buckets[bucket] && bucketKey) {
-        this.buckets[bucket][key] = _.difference(bucketKey, valuesArray);
+        this.buckets[bucket][key] = difference(bucketKey, valuesArray); // tslint:disable-line no-unsafe-any
       }
     });
   }
