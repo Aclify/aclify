@@ -430,58 +430,40 @@ describe('removeRole', function () {
   });
 });
 
-//   describe('Was role removed?', function () {
-//     it('What resources have "fumanchu" some rights on after removed?', async () => {
-//
-//       acl.whatResources('fumanchu', function (err, resources) {
-//         assert(!err)
-//         assert(Object.keys(resources).length === 0)
-//         done()
-//       });
-//     });
-//
-//     it('What resources have "member" some rights on after removed?', async () => {
-//
-//       acl.whatResources('member', function (err, resources) {
-//         assert(!err)
-//         assert(Object.keys(resources).length === 0)
-//         done()
-//       });
-//     });
-//
-//     describe('allowed permissions', function () {
-//       it('What permissions has jsmith over blogs and forums?', async () => {
-//
-//         acl.allowedPermissions('jsmith', ['blogs','forums'], function (err, permissions) {
-//           assert(!err)
-//           assert(permissions.blogs.length === 0)
-//           assert(permissions.forums.length === 0)
-//           done()
-//         });
-//       });
-//
-//       it('What permissions has test@test.com over blogs and forums?', async () => {
-//
-//         acl.allowedPermissions('test@test.com', ['blogs','forums'], function (err, permissions) {
-//           assert(!err)
-//           assert(permissions.blogs.length === 0)
-//           assert(permissions.forums.length === 0)
-//           done()
-//         });
-//       });
-//
-//       it('What permissions has james over blogs?', async () => {
-//
-//         acl.allowedPermissions('james', 'blogs', function (err, permissions) {
-//           assert(!err)
-//           assert.property(permissions, 'blogs')
-//           assert.include(permissions.blogs, 'delete')
-//           done()
-//         });
-//       });
-//     });
-//   });
-// }
+describe('Was role removed?', function () {
+  it('What resources have "fumanchu" some rights on after removed?', async () => {
+    const resources = await acl.whatResources('fumanchu');
+    expect(Object.keys(resources)).toHaveLength(0);
+  });
+
+  it('What resources have "member" some rights on after removed?', async () => {
+    const resources = await acl.whatResources('member');
+    expect(Object.keys(resources)).toHaveLength(0);
+  });
+});
+
+describe('allowed permissions', function () {
+  it('What permissions has jsmith over blogs and forums?', async () => {
+    const permissions = await acl.allowedPermissions('jsmith', ['blogs','forums']);
+    expect(permissions).toHaveProperty('blogs');
+    expect(permissions.blogs).toHaveLength(0);
+    expect(permissions).toHaveProperty('forums');
+    expect(permissions.forums).toHaveLength(0);
+  });
+
+  it('What permissions has test@test.com over blogs and forums?', async () => {
+    const permissions = await acl.allowedPermissions('test@test.com', ['blogs','forums']);
+    expect(permissions).toHaveProperty('blogs');
+    expect(permissions.blogs).toHaveLength(0);
+    expect(permissions).toHaveProperty('forums');
+    expect(permissions.forums).toHaveLength(0);
+  });
+
+  it('What permissions has james over blogs?', async () => {
+    const permissions = await acl.allowedPermissions('james', 'blogs');
+    expect(permissions).toHaveProperty('blogs', ['delete']);
+  });
+});
 //
 //
 //
