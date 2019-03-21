@@ -340,53 +340,23 @@ describe('Allowance queries', function () {
       expect(isAllowed).toBeFalsy();
     });
 
-    // describe('allowedPermissions', function () {
-    //   it('What permissions has james over blogs and forums?', async () => {
-    //
-    //     acl.allowedPermissions('james', ['blogs','forums'], function (err, permissions) {
-    //       assert(!err)
-    //
-    //       assert.property(permissions, 'blogs')
-    //       assert.property(permissions, 'forums')
-    //
-    //       assert.include(permissions.blogs, 'edit')
-    //       assert.include(permissions.blogs, 'delete')
-    //       assert.include(permissions.blogs, 'view')
-    //
-    //       assert(permissions.forums.length === 0)
-    //
-    //       done()
-    //     });
-    //   });
-    //   it('What permissions has userId=3 over blogs and forums?', async () => {
-    //
-    //     acl.allowedPermissions(3, ['blogs','forums'], function (err, permissions) {
-    //       assert(!err)
-    //
-    //       assert.property(permissions, 'blogs')
-    //       assert.property(permissions, 'forums')
-    //
-    //       assert.include(permissions.blogs, 'edit')
-    //       assert.include(permissions.blogs, 'delete')
-    //       assert.include(permissions.blogs, 'view')
-    //
-    //       assert(permissions.forums.length === 0)
-    //
-    //       done()
-    //     });
-    //   });
-    //   it('What permissions has nonsenseUser over blogs and forums?', async () => {
-    //
-    //     acl.allowedPermissions('nonsense', ['blogs','forums'], function (err, permissions) {
-    //       assert(!err)
-    //
-    //       assert(permissions.forums.length === 0)
-    //       assert(permissions.blogs.length === 0)
-    //
-    //       done()
-    //     });
-    //   });
-    // });
+    describe('allowedPermissions', function () {
+      it('What permissions has james over blogs and forums?', async () => {
+        const allowedPermissions = await acl.allowedPermissions('james', ['blogs','forums']);
+        expect(allowedPermissions).toHaveProperty('blogs', [ 'edit', 'view', 'delete' ]);
+        expect(allowedPermissions).toHaveProperty('forums', []);
+      });
+    });
+    it('What permissions has userId=3 over blogs and forums?', async () => {
+      const allowedPermissions = await acl.allowedPermissions(3, ['blogs','forums']);
+      expect(allowedPermissions).toHaveProperty('blogs', [ 'edit', 'view', 'delete' ]);
+      expect(allowedPermissions).toHaveProperty('forums', [ ]);
+    });
+    it('What permissions has nonsenseUser over blogs and forums?', async () => {
+      const allowedPermissions = await acl.allowedPermissions('nonsense', ['blogs','forums']);
+      expect(allowedPermissions).toHaveProperty('blogs', []);
+      expect(allowedPermissions).toHaveProperty('forums', []);
+    });
   });
 });
 
