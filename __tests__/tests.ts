@@ -601,29 +601,17 @@ describe('Remove user roles', function () {
   });
 });
 
-// describe('Were roles removed?', function () {
-//   it('What permissions has harry over forums and blogs?', async () => {
-//
-//     const mavar = await acl.allowedPermissions('harry', ['forums','blogs']);
-//
-//       assert(!err)
-//       assert.isObject(permissions)
-//       assert(permissions.forums.length === 0)
-//       done()
-//     });
-//     it('What permissions has userId=2 over forums and blogs?', async () => {
-//
-//       const mavar = await acl.allowedPermissions(2, ['forums','blogs']);
-//
-//         assert(!err)
-//         assert.isObject(permissions)
-//         assert(permissions.forums.length === 0)
-//         done()
-//       });
-//     });
-//   });
-// });
-//
+describe('Were roles removed?', function () {
+  it('What permissions has harry over forums and blogs?', async () => {
+    const permissions = await acl.allowedPermissions('harry', ['forums','blogs']);
+    expect(permissions).toHaveProperty('forums', []);
+  });
+  it('What permissions has userId=2 over forums and blogs?', async () => {
+    const permissions = await acl.allowedPermissions(2, ['forums','blogs']);
+    expect(permissions).toHaveProperty('forums', []);
+  });
+});
+
 // exports.i55PermissionRemoval = function () {
 //   describe('Github issue #55: removeAllow is removing all permissions.', function () {
 //     it('Add roles/resources/permissions', function () {
