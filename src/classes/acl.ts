@@ -345,7 +345,72 @@ export class Acl extends Common {
 
 
 
+  removeRoleParents(role: IRole, parents?: IParents){
+    // contract(arguments)
+    //   .params('string', 'string|array', 'function')
+    //   .params('string', 'string|array')
+    //   .params('string', 'function')
+    //   .params('string')
+    //   .end();
 
+    if (_.isFunction(parents)) {
+      parents = null;
+    }
+
+    this.store.begin();
+    if (parents) {
+      this.store.remove(this.options.buckets.parents, role, parents);
+    } else  {
+      // @ts-ignore
+      this.store.del(this.options.buckets.parents, role);
+    }
+    return this.store.end();
+  };
+
+
+
+
+  async removeResource(resource: IResource) {
+    // contract(arguments)
+    //   .params('string', 'function')
+    //   .params('string')
+    //   .end();
+
+    var _this = this;
+    return this.store.get(this.options.buckets.meta, 'roles').then(function(roles){
+      _this.store.begin();
+      _this.store.del(_this.allowsBucket(resource), roles);
+      roles.forEach(function(role){
+        _this.store.remove(_this.options.buckets.resources, role, resource);
+      })
+      return _this.store.end();
+    });
+  }
+
+
+
+  async removeUserRoles(userId: IUserId, roles: IRoles){
+    // contract(arguments)
+    //   .params('string|number','string|array','function')
+    //   .params('string|number','string|array')
+    //   .end();
+
+    this.store.begin();
+    this.store.remove(this.options.buckets.users, userId, roles);
+
+    if (Array.isArray(roles)) {
+      var _this = this;
+
+      roles.forEach(function(role) {
+        _this.store.remove(_this.options.buckets.roles, role, userId);
+      });
+    }
+    else {
+      this.store.remove(this.options.buckets.roles, roles, userId);
+    }
+
+    return this.store.end();
+  }
 
 
 
