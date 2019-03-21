@@ -43,7 +43,7 @@ export interface IStore {
   //  * @description Adds values to a given key inside a bucket.
   //  * @return Promise<any>
   //  */
-  add(bucket: string, key: string | number, values: string | number | Array<any>): any;
+  add(bucket: string, key: string | number, values: string | number | Array<any>): void;
 
   // /**
   //  * @description Deletes given key(s) at the bucket.
@@ -55,6 +55,5 @@ export interface IStore {
   //  * @description Deletes values from a given key inside a bucket.
   //  * @return Promise<any>
   //  */
-  remove(bucket: string, key: string | number, values: string | number | Array<any>): Promise<any>;
-
+  remove(bucket: string, key: string | number, values: string | number | Array<any>): Promise<void>;
 }
