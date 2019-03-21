@@ -403,30 +403,19 @@ describe('removeAllow', function () {
   });
 });
 
-//   describe('See if permissions were removed', function () {
-//     it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
-//       ;
-//       acl.whatResources('fumanchu', function (err, resources) {
-//         assert.isNull(err)
-//
-//         assert.isFalse('blogs' in resources)
-//         assert.property(resources, 'news')
-//         assert.include(resources.news, 'get')
-//         assert.include(resources.news, 'put')
-//         assert.isFalse('delete' in resources.news)
-//
-//         assert.property(resources, 'forums')
-//         assert.include(resources.forums, 'delete')
-//         assert.include(resources.forums, 'put')
-//         done()
-//       });
-//     });
-//   });
-// }
-//
-//
-//
-//
+describe('See if permissions were removed', function () {
+  it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
+    const resources = await acl.whatResources('fumanchu');
+    expect(resources).not.toHaveProperty('blogs');
+    expect(resources).toHaveProperty('news', ['get', 'put']);
+    expect(resources).not.toHaveProperty('news', ['delete']);
+    expect(resources).toHaveProperty('forums', ['put', 'delete']);
+  });
+});
+
+
+
+
 // exports.RoleRemoval = function () {
 //   describe('removeRole', function () {
 //     it('Remove role fumanchu', async () => {
