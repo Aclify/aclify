@@ -23,7 +23,7 @@ export class Acl extends Common {
     }, options);
   }
 
-  public async allow(roles: IRoles | any, resources?: IResources, permissions?: IPermissions): Promise<void> {
+  public async allow(roles: IRoles | any, resources?: IResource | IResources, permissions?: IPermissions): Promise<void> {
     if(arguments.length === 1 && _.isArray(roles) && _.isObject(roles[0])) {
       return this.allowEx(roles);
     }
@@ -43,7 +43,7 @@ export class Acl extends Common {
     return this.store.end();
   }
 
-  public async addUserRoles(userId: IUserId, roles: IRoles): Promise<void> {
+  public async addUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void> {
     this.store.begin();
     const rolesParams = await Common.makeArray(roles);
 
@@ -117,7 +117,7 @@ export class Acl extends Common {
     return (parents && parents.length) ? this.checkPermissions(parents, resource, perms) : false;
   }
 
-  public async allowedPermissions(userId: IUserId, resources: IResources) {
+  public async allowedPermissions(userId: IUserId, resources: IResource | IResources) {
     if (this.store.unions) {
       return this.optimizedAllowedPermissions(userId, resources);
     }
@@ -166,7 +166,7 @@ export class Acl extends Common {
       })
   };
 
-  public async whatResources(roles: IRoles, permissions?: IPermissions){
+  public async whatResources(roles: IRole | IRoles, permissions?: IPermissions){
     let permissionsTmp = permissions;
     roles = Common.makeArray(roles);
 
@@ -200,7 +200,7 @@ export class Acl extends Common {
     });
   }
 
-  public async removeAllow(role: IRole, resources: IResources, permissions: IPermissions){
+  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermissions){
     resources = Common.makeArray(resources);
     if(permissions && !_.isFunction(permissions)){
       permissions = Common.makeArray(permissions);
@@ -300,7 +300,7 @@ export class Acl extends Common {
     });
   }
 
-  public async removeUserRoles(userId: IUserId, roles: IRoles){
+  public async removeUserRoles(userId: IUserId, roles: IRole | IRoles){
     this.store.begin();
     this.store.remove(this.options.buckets.users, userId, roles);
 
