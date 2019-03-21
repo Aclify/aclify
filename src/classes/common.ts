@@ -11,9 +11,9 @@ export class Common {
   /**
    * @description Returns an array.
    * @param value
-   * @return Promise<[string]>
+   * @return string
    */
-  static async makeArray(value: string | string[]): Promise<string[]> {
+  static makeArray(value: string | string[]): string[] {
     return Array.isArray(value) ? value : [value];
   }
 
