@@ -183,27 +183,175 @@ export class Acl extends Common {
 
     return this._allUserRoles(userId)
       .then((roles) => {
-      var buckets = resourcesTmp.map(this.allowsBucket, this);
+        var buckets = resourcesTmp.map(this.allowsBucket, this);
 
-      if (roles.length === 0) {
-        var emptyResult = {};
-        buckets.forEach(function(bucket) {
-          // @ts-ignore
-          emptyResult[bucket] = [];
+        if (roles.length === 0) {
+          var emptyResult = {};
+          buckets.forEach(function(bucket) {
+            // @ts-ignore
+            emptyResult[bucket] = [];
+          });
+          return bluebird.resolve(emptyResult);
+        }
+
+        return self.store.unions(buckets, roles);
+      }).then((response) => {
+        var result = {};
+        Object.keys(response).forEach(function(bucket) {
+          result[this.keyFromAllowsBucket(bucket)] = response[bucket];
+        }, this);
+
+        return result;
+      })
+  };
+
+
+
+  async whatResources(roles: IRoles, permissions?: IPermissions){
+    // contract(arguments)
+    //   .params('string|array')
+    //   .params('string|array','string|array')
+    //   .params('string|array','function')
+    //   .params('string|array','string|array','function')
+    //   .end();
+
+    let permissionsTmp = permissions;
+    roles = Common.makeArray(roles);
+
+    if(permissions !== undefined){
+      permissionsTmp = Common.makeArray(permissionsTmp);
+    }
+
+    return this.permittedResources(roles, permissionsTmp);
+  };
+
+
+  async permittedResources(roles, permissions){
+    var _this = this;
+    var result = permissions === undefined ? {} : [];
+
+    return this._rolesResources(roles).then(function(resources){
+      return bluebird.all(resources.map(function(resource){
+        return _this._resourcePermissions(roles, resource).then(function(p){
+
+          if(permissions !== undefined){
+            var commonPermissions = _.intersection(permissions, p);
+            if(commonPermissions.length>0){
+              // @ts-ignore
+              result.push(resource);
+            }
+          }else{
+            result[resource] = p;
+          }
         });
-        return bluebird.resolve(emptyResult);
-      }
+      })).then(function(){
+        return result;
+      });
+    });
+  }
 
-      return self.store.unions(buckets, roles);
-    }).then((response) => {
-      var result = {};
-      Object.keys(response).forEach(function(bucket) {
-        result[this.keyFromAllowsBucket(bucket)] = response[bucket];
+  async removeAllow(role: IRole, resources: IResources, permissions: IPermissions){
+    // contract(arguments)
+    //   .params('string','string|array','string|array','function')
+    //   .params('string','string|array','string|array')
+    //   .params('string','string|array','function')
+    //   .params('string','string|array')
+    //   .end();
+
+    resources = Common.makeArray(resources);
+    if(permissions && !_.isFunction(permissions)){
+      permissions = Common.makeArray(permissions);
+    }else {
+      permissions = null;
+    }
+
+    return this.removePermissions(role, resources, permissions);
+  }
+
+
+
+
+
+
+
+  async removePermissions(role, resources, permissions) {
+
+    var _this = this;
+
+    _this.store.begin();
+    resources.forEach(async function(resource){
+      var bucket = this.allowsBucket(resource);
+      if(permissions){
+        await _this.store.remove(bucket, role, permissions);
+      }else{
+        await _this.store.del(bucket, role);
+        await _this.store.remove(_this.options.buckets.resources, role, resource);
+      }
+    }, this);
+
+    // Remove resource from role if no rights for that role exists.
+    // Not fully atomic...
+    return _this.store.end().then(function(){
+      _this.store.begin();
+
+      return bluebird.all(resources.map(function(resource){
+        var bucket = _this.allowsBucket(resource);
+        return _this.store.get(bucket, role).then(async function(permissions){
+
+          // @ts-ignore
+          if(permissions.length==0){
+            await _this.store.remove(_this.options.buckets.resources, role, resource);
+          }
+        });
+      })).then(function(){
+        return _this.store.end();
+      });
+    });
+  };
+
+
+
+
+
+  async removeRole(role: IRole) {
+    // contract(arguments)
+    //   .params('string','function')
+    //   .params('string').end();
+    //
+    var _this = this;
+    // Note that this is not fully transactional.
+    return this.store.get(this.options.buckets.resources, role).then(async(resources) => {
+      _this.store.begin();
+
+      resources.forEach(function(resource){
+        var bucket = this.allowsBucket(resource);
+        // @ts-ignore
+        _this.store.del(bucket, role);
       }, this);
 
-      return result;
-    })
-  };
+      // @ts-ignore
+      await _this.store.del(this.options.buckets.resources, role);
+      // @ts-ignore
+      await _this.store.del(this.options.buckets.parents, role);
+      // @ts-ignore
+      await _this.store.del(this.options.buckets.roles, role);
+      await _this.store.remove(this.options.buckets.meta, 'roles', role);
+
+      // `users` collection keeps the removed role
+      // because we don't know what users have `role` assigned.
+      return _this.store.end();
+    });
+  }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -212,11 +360,11 @@ export class Acl extends Common {
 
     const roles = await this.userRoles(userId);
 
-      if (roles && roles.length > 0) {
-        return _this._allRoles(roles);
-      } else {
-        return [];
-      }
+    if (roles && roles.length > 0) {
+      return _this._allRoles(roles);
+    } else {
+      return [];
+    }
   };
 
 
@@ -260,4 +408,30 @@ export class Acl extends Common {
       });
     }
   };
+
+
+  async _rolesResources(roles: IRoles){
+    var _this = this;
+    const rolesTmp = Common.makeArray(roles);
+
+    return this._allRoles(rolesTmp).then(function(allRoles){
+      var result = [];
+
+      // check if bluebird.map simplifies this code
+      return bluebird.all(allRoles.map(function(role){
+        return _this.store.get(_this.options.buckets.resources, role).then(function(resources){
+          result = result.concat(resources);
+        });
+      })).then(function(){
+        return result;
+      });
+    });
+  };
+
+
+
+
+
+
+
 }
