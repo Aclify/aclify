@@ -12,6 +12,7 @@
     "no-void-expression": false,
     "no-redundant-jsdoc": false,
     "prefer-type-cast": false,
+    "no-reserved-keywords": false,
     "max-func-body-length": 120,
     "typedef": [
       true,
