@@ -24,15 +24,12 @@ export class Acl extends Common {
   }
 
   async allow(roles: IRoles | any, resources?: IResources, permissions?: IPermissions): Promise<void> {
-
     if(arguments.length === 1 && _.isArray(roles) && _.isObject(roles[0])) {
       return this.allowEx(roles);
     }
 
-    const [rolesParam, resourcesParam] = await Promise.all([
-      Common.makeArray(roles),
-      Common.makeArray(resources),
-    ]);
+    const rolesParam = Common.makeArray(roles);
+    const resourcesParam = Common.makeArray(resources);
 
     this.store.begin();
     await this.store.add(this.options.buckets.meta, 'roles', rolesParam);
@@ -40,7 +37,7 @@ export class Acl extends Common {
     resourcesParam.forEach((resource) => {
       rolesParam.forEach(async (role) => {
         await this.store.add(this.allowsBucket(resource), role, permissions);
-      });
+      }, this);
     });
 
     rolesParam.forEach(async (role) => {
@@ -85,10 +82,6 @@ export class Acl extends Common {
     return this.store.end();
   }
 
-
-
-
-
   async isAllowed(userId: IUserId, resource: IResource, permissions: IPermissions): Promise<boolean> {
     const roles = await this.store.get(this.options.buckets.users, userId);
 
@@ -100,10 +93,8 @@ export class Acl extends Common {
   }
 
   async areAnyRolesAllowed(roles: IRoles, resource: IResource, permissions: IPermissions): Promise<boolean> {
-    const [rolesParam, permissionsParam] = await Promise.all([
-      Common.makeArray(roles),
-      Common.makeArray(permissions),
-    ]);
+    const rolesParam = Common.makeArray(roles);
+    const permissionsParam = Common.makeArray(permissions);
 
     if (!rolesParam.length) {
       return false;
