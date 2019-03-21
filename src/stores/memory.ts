@@ -6,7 +6,7 @@ import {Common} from '../classes/common';
 export class MemoryStore extends Common implements IStore {
   public buckets: {};
 
-  transaction: Array<any>;
+  public transaction: Array<any>;
 
   constructor() {
     super();
@@ -26,7 +26,9 @@ export class MemoryStore extends Common implements IStore {
    * @description Ends a transaction (and executes it)
    */
   async end(): Promise<void> {
-    this.transaction.forEach(async (transaction) => await Promise.resolve(transaction()));
+    console.log('---> length: ', this.transaction.length);
+
+    this.transaction.forEach((transaction) => transaction());
 
     return;
   }
@@ -110,25 +112,19 @@ export class MemoryStore extends Common implements IStore {
    * @param values
    */
   async add(bucket: string, key: string | number, values: string|[string]): Promise<void> {
-    const valuesArray = await Common.makeArray(values);
+    const valuesArray = Common.makeArray(values);
 
     this.transaction.push(() => {
-      if (!this.buckets[bucket]) {
-        // console.log('==== 1');
-
+      if(!this.buckets[bucket]){
         this.buckets[bucket] = {};
       }
-      if (!this.buckets[bucket][key]) {
-        // console.log('==== 2');
+
+      if(!this.buckets[bucket][key]){
         this.buckets[bucket][key] = valuesArray;
-      } else {
-        // console.log('==== union');
+      } else{
         this.buckets[bucket][key] = _.union(valuesArray, this.buckets[bucket][key]);
       }
     });
-
-
-    // console.log('====>', this.buckets);
   }
 
   // /**
