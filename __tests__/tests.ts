@@ -33,10 +33,9 @@ describe('Constructor', () => {
   });
 });
 
-describe('allow', function () {
+describe('allow', () => {
   it('guest to view blogs', async (done) => {
     const guest = await acl.allow('guest', 'blogs', 'view');
-    console.log(memoryStore.buckets);
     expect(guest).toBeUndefined();
     done();
   });
@@ -52,7 +51,7 @@ describe('allow', function () {
   });
 });
 
-describe('Add user roles', function () {
+describe('Add user roles', () => {
   it('joed => guest, jsmith => member, harry => admin, test@test.com => member', async () => {
     const joed = await acl.addUserRoles('joed', 'guest');
     expect(joed).toBeUndefined();
@@ -108,7 +107,7 @@ describe('read Role Users', function() {
   });
 });
 
-describe('allow', function () {
+describe('allow', () => {
   it('admin view/add/edit/delete users', async () => {
     const admin = await acl.allow('admin', 'users', ['add','edit','view','delete']);
     expect(admin).toBeUndefined();
@@ -125,14 +124,14 @@ describe('allow', function () {
   });
 });
 
-describe('add role parents', function () {
+describe('add role parents', () => {
   it('add them', async () => {
     const addRoleParents = await acl.addRoleParents('baz', ['foo','bar']);
     expect(addRoleParents).toBeUndefined();
   });
 });
 
-describe('add user roles', function () {
+describe('add user roles', () => {
   it('add them', async () => {
     const addUserRoles = await acl.addUserRoles('james', 'baz');
     expect(addUserRoles).toBeUndefined();
@@ -144,14 +143,14 @@ describe('add user roles', function () {
   });
 });
 
-describe('allow admin to do anything', function () {
+describe('allow admin to do anything', () => {
   it('add them', async () => {
     const allow = await acl.allow('admin', ['blogs', 'forums'], '*');
     expect(allow).toBeUndefined();
   });
 });
 
-describe('Arguments in one array', function () {
+describe('Arguments in one array', () => {
   it('give role fumanchu an array of resources and permissions', async () => {
     const allow = await acl.allow(
       [
@@ -168,7 +167,7 @@ describe('Arguments in one array', function () {
   });
 });
 
-describe('Add fumanchu role to suzanne', function () {
+describe('Add fumanchu role to suzanne', () => {
   it('do it', async () => {
     const addUserRoles = await acl.addUserRoles('suzanne', 'fumanchu');
     expect(addUserRoles).toBeUndefined();
@@ -180,8 +179,8 @@ describe('Add fumanchu role to suzanne', function () {
   });
 });
 
-describe('Allowance queries', function () {
-  describe('isAllowed', function () {
+describe('Allowance queries', () => {
+  describe('isAllowed', () => {
 
     it('Can joed view blogs?', async () => {
       const isAllowed = await acl.isAllowed('joed', 'blogs', 'view');
@@ -339,7 +338,7 @@ describe('Allowance queries', function () {
       expect(isAllowed).toBeFalsy();
     });
 
-    describe('allowedPermissions', function () {
+    describe('allowedPermissions', () => {
       it('What permissions has james over blogs and forums?', async () => {
         const allowedPermissions = await acl.allowedPermissions('james', ['blogs','forums']);
         expect(allowedPermissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
@@ -359,7 +358,7 @@ describe('Allowance queries', function () {
   });
 });
 
-describe('whatResources queries', function () {
+describe('whatResources queries', () => {
   it('What resources have "bar" some rights on?', async () => {
     const resources = await acl.whatResources('bar');
     expect(resources).toHaveProperty('blogs', ['view', 'delete'])
@@ -385,7 +384,7 @@ describe('whatResources queries', function () {
   });
 });
 
-describe('removeAllow', function () {
+describe('removeAllow', () => {
   it('Remove get permissions from resources blogs and forums from role fumanchu', async () => {
     const removeAllow = await acl.removeAllow('fumanchu', ['blogs','forums'], 'get');
     expect(removeAllow).toBeUndefined();
@@ -402,7 +401,7 @@ describe('removeAllow', function () {
   });
 });
 
-describe('See if permissions were removed', function () {
+describe('See if permissions were removed', () => {
   it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
     const resources = await acl.whatResources('fumanchu');
     expect(resources).not.toHaveProperty('blogs');
@@ -412,7 +411,7 @@ describe('See if permissions were removed', function () {
   });
 });
 
-describe('removeRole', function () {
+describe('removeRole', () => {
   it('Remove role fumanchu', async () => {
     const remove = await acl.removeRole('fumanchu');
     expect(remove).toBeUndefined();
@@ -429,7 +428,7 @@ describe('removeRole', function () {
   });
 });
 
-describe('Was role removed?', function () {
+describe('Was role removed?', () => {
   it('What resources have "fumanchu" some rights on after removed?', async () => {
     const resources = await acl.whatResources('fumanchu');
     expect(Object.keys(resources)).toHaveLength(0);
@@ -441,7 +440,7 @@ describe('Was role removed?', function () {
   });
 });
 
-describe('allowed permissions', function () {
+describe('allowed permissions', () => {
   it('What permissions has jsmith over blogs and forums?', async () => {
     const permissions = await acl.allowedPermissions('jsmith', ['blogs','forums']);
     expect(permissions).toHaveProperty('blogs');
@@ -464,8 +463,7 @@ describe('allowed permissions', function () {
   });
 });
 
-
-describe('RoleParentRemoval', function () {
+describe('RoleParentRemoval', () => {
   const memoryStore2 = new MemoryStore();
   const acl2 = new Acl(memoryStore2);
 
@@ -539,11 +537,7 @@ describe('RoleParentRemoval', function () {
   });
 });
 
-
-
-
-
-describe('removeResource', function () {
+describe('removeResource', () => {
   it('Remove resource blogs', async () => {
     const removeResource = await acl.removeResource('blogs');
     expect(removeResource).toBeUndefined();
@@ -555,7 +549,7 @@ describe('removeResource', function () {
   });
 });
 
-describe('allowedPermissions', function () {
+describe('allowedPermissions', () => {
   it('What permissions has james over blogs?', async () => {
     const permissions = await acl.allowedPermissions('james', 'blogs');
     expect(permissions).toHaveProperty('blogs',[]);
@@ -566,7 +560,7 @@ describe('allowedPermissions', function () {
   });
 });
 
-describe('whatResources', function () {
+describe('whatResources', () => {
   it('What resources have "baz" some rights on after removed blogs?', async () => {
     const resources = await acl.whatResources('baz');
     expect(Object.keys(resources)).toHaveLength(0);
@@ -579,7 +573,7 @@ describe('whatResources', function () {
   });
 });
 
-describe('Remove user roles', function () {
+describe('Remove user roles', () => {
   it('Remove role guest from joed', async () => {
     const removeUserRoles = await acl.removeUserRoles('joed','guest');
     expect(removeUserRoles).toBeUndefined();
@@ -601,7 +595,7 @@ describe('Remove user roles', function () {
   });
 });
 
-describe('Were roles removed?', function () {
+describe('Were roles removed?', () => {
   it('What permissions has harry over forums and blogs?', async () => {
     const permissions = await acl.allowedPermissions('harry', ['forums','blogs']);
     expect(permissions).toHaveProperty('forums', []);
@@ -612,113 +606,69 @@ describe('Were roles removed?', function () {
   });
 });
 
-// exports.i55PermissionRemoval = function () {
-//   describe('Github issue #55: removeAllow is removing all permissions.', function () {
-//     it('Add roles/resources/permissions', function () {
-//
-//
-//       return acl.addUserRoles('jannette', 'member').then(function(){
-//         return acl.allow('member', 'blogs', ['view', 'update']);
-//       });.then(function(){
-//         return acl.isAllowed('jannette', 'blogs', 'view', function(err, allowed){
-//           expect(allowed).to.be.eql(true);
-//         });
-//       });.then(function(){
-//         return acl.removeAllow('member', 'blogs', 'update');
-//       });.then(function(){
-//         return acl.isAllowed('jannette', 'blogs', 'view', function(err, allowed){
-//           expect(allowed).to.be.eql(true);
-//         });
-//       });.then(function(){
-//         return acl.isAllowed('jannette', 'blogs', 'update', function(err, allowed){
-//           expect(allowed).to.be.eql(false);
-//         });
-//       });.then(function(){
-//         return acl.removeAllow('member', 'blogs', 'view');
-//       });.then(function(){
-//         return acl.isAllowed('jannette', 'blogs', 'view', function(err, allowed){
-//           expect(allowed).to.be.eql(false);
-//         });
-//       });
-//     });
-//   });
-// }
-//
-// exports.i32RoleRemoval = function () {
-//   describe('Github issue #32: Removing a role removes the entire "allows" document.', function () {
-//     it('Add roles/resources/permissions', async () => {
-//
-//
-//       acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3'], function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Add user roles and parent roles', async () => {
-//
-//
-//       acl.addUserRoles('user1', 'role1', function (err) {
-//         assert(!err)
-//
-//         acl.addRoleParents('role1', 'parentRole1', function (err) {
-//           assert(!err)
-//           done()
-//         });
-//       });
-//     });
-//
-//     it('Add user roles and parent roles', async () => {
-//
-//
-//       acl.addUserRoles(1, 'role1', function (err) {
-//         assert(!err)
-//
-//         acl.addRoleParents('role1', 'parentRole1', function (err) {
-//           assert(!err)
-//           done()
-//         });
-//       });
-//     });
-//     it('Verify that roles have permissions as assigned', function(done){
-//
-//
-//       acl.whatResources('role1', function (err, res) {
-//         assert(!err)
-//         assert.deepEqual(res.res1.sort(), [ 'perm1', 'perm2', 'perm3' ])
-//
-//         acl.whatResources('role2', function (err, res) {
-//           assert(!err)
-//           assert.deepEqual(res.res1.sort(), [ 'perm1', 'perm2', 'perm3' ])
-//           done()
-//         });
-//       });
-//     });
-//
-//     it('Remove role "role1"', function(done){
-//
-//
-//       acl.removeRole('role1', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Verify that "role1" has no permissions and "role2" has permissions intact', function(done){
-//
-//
-//       acl.removeRole('role1', function (err) {
-//         assert(!err)
-//
-//         acl.whatResources('role1', function (err, res) {
-//           assert(Object.keys(res).length === 0)
-//
-//           acl.whatResources('role2', function (err, res) {
-//             assert.deepEqual(res.res1.sort(), [ 'perm1', 'perm2', 'perm3' ])
-//             done()
-//           });
-//         });
-//       });
-//     });
-//   });
-// }
+describe('removeAllow is removing all permissions.', () => {
+  it('Add roles/resources/permissions', async () => {
+    await acl.addUserRoles('jannette', 'member')
+    await acl.allow('member', 'blogs', ['view', 'update']);
+    const isAllowed1 = await acl.isAllowed('jannette', 'blogs', 'view');
+    expect(isAllowed1).toBeTruthy();
+
+    await acl.removeAllow('member', 'blogs', 'update');
+    const isAllowed2 = await acl.isAllowed('jannette', 'blogs', 'view');
+    expect(isAllowed2).toBeTruthy();
+
+    const isAllowed3 = await acl.isAllowed('jannette', 'blogs', 'update');
+    expect(isAllowed3).toBeFalsy();
+
+    await acl.removeAllow('member', 'blogs', 'view');
+    const allowed4 = await acl.isAllowed('jannette', 'blogs', 'view');
+    expect(allowed4).toBeFalsy();
+  });
+});
+
+describe('Removing a role removes the entire "allows" document.', () => {
+  it('Add roles/resources/permissions', async () => {
+    const allow = await acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3']);
+    expect(allow).toBeUndefined();
+  });
+
+  it('Add user roles and parent roles', async () => {
+    const addUserRoles = await acl.addUserRoles('user1', 'role1');
+    expect(addUserRoles).toBeUndefined();
+
+    const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
+    expect(addRoleParents).toBeUndefined();
+  });
+
+  it('Add user roles and parent roles', async () => {
+    const addUserRoles = await acl.addUserRoles(1, 'role1');
+    expect(addUserRoles).toBeUndefined();
+
+    const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
+    expect(addRoleParents).toBeUndefined();
+  });
+
+  it('Verify that roles have permissions as assigned', async () => {
+    const res1 = await acl.whatResources('role1');
+    expect(res1.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+
+    const res2 = await acl.whatResources('role2');
+    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+  });
+
+  it('Remove role "role1"', async () => {
+    const removeRole = await acl.removeRole('role1');
+    expect(removeRole).toBeUndefined();
+  });
+
+  it('Verify that "role1" has no permissions and "role2" has permissions intact', async () => {
+    const removeRole = await acl.removeRole('role1');
+    expect(removeRole).toBeUndefined();
+
+    const res1 = await acl.whatResources('role1');
+    expect(Object.keys(res1)).toHaveLength(0);
+
+    const res2 = await acl.whatResources('role2');
+    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+  });
+});
