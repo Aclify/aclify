@@ -343,13 +343,13 @@ describe('Allowance queries', function () {
     describe('allowedPermissions', function () {
       it('What permissions has james over blogs and forums?', async () => {
         const allowedPermissions = await acl.allowedPermissions('james', ['blogs','forums']);
-        expect(allowedPermissions).toHaveProperty('blogs', [ 'edit', 'view', 'delete' ]);
+        expect(allowedPermissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
         expect(allowedPermissions).toHaveProperty('forums', []);
       });
     });
     it('What permissions has userId=3 over blogs and forums?', async () => {
       const allowedPermissions = await acl.allowedPermissions(3, ['blogs','forums']);
-      expect(allowedPermissions).toHaveProperty('blogs', [ 'edit', 'view', 'delete' ]);
+      expect(allowedPermissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
       expect(allowedPermissions).toHaveProperty('forums', [ ]);
     });
     it('What permissions has nonsenseUser over blogs and forums?', async () => {
@@ -360,97 +360,49 @@ describe('Allowance queries', function () {
   });
 });
 
+describe('whatResources queries', function () {
+  it('What resources have "bar" some rights on?', async () => {
+    const resources = await acl.whatResources('bar');
+    expect(resources).toHaveProperty('blogs', ['view', 'delete'])
+  });
 
+  it('What resources have "bar" view rights on?', async () => {
+    const resources = await acl.whatResources('bar', 'view');
+    expect(resources).toEqual(['blogs']);
+  });
 
+  it('What resources have "fumanchu" some rights on?', async () => {
+    const resources = await acl.whatResources('fumanchu');
+    expect(resources).toHaveProperty('blogs', ['get']);
+    expect(resources).toHaveProperty('forums', ['get', 'put', 'delete']);
+    expect(resources).toHaveProperty('news', ['get', 'put', 'delete']);
+    expect(resources['/path/file/file1.txt']).toEqual(['get', 'put', 'delete']);
+    expect(resources['/path/file/file2.txt']).toEqual(['get', 'put', 'delete']);
+  });
 
-// exports.WhatResources = function () {
-//   describe('whatResources queries', function () {
-//     it('What resources have "bar" some rights on?', async () => {
-//
-//
-//       acl.whatResources('bar', function (err, resources) {
-//         assert.isNull(err)
-//         assert.include(resources.blogs, 'view')
-//         assert.include(resources.blogs, 'delete')
-//         done()
-//       });
-//     });
-//
-//     it('What resources have "bar" view rights on?', async () => {
-//
-//
-//       acl.whatResources('bar', 'view', function (err, resources) {
-//         assert.isNull(err)
-//         assert.include(resources, 'blogs')
-//         done()
-//       });
-//     });
-//
-//     it('What resources have "fumanchu" some rights on?', async () => {
-//
-//
-//       acl.whatResources('fumanchu', function (err, resources) {
-//         assert.isNull(err)
-//         assert.include(resources.blogs, 'get')
-//         assert.include(resources.forums, 'delete')
-//         assert.include(resources.forums, 'get')
-//         assert.include(resources.forums, 'put')
-//         assert.include(resources.news, 'delete')
-//         assert.include(resources.news, 'get')
-//         assert.include(resources.news, 'put')
-//         assert.include(resources['/path/file/file1.txt'], 'delete')
-//         assert.include(resources['/path/file/file1.txt'], 'get')
-//         assert.include(resources['/path/file/file1.txt'], 'put')
-//         assert.include(resources['/path/file/file2.txt'], 'delete')
-//         assert.include(resources['/path/file/file2.txt'], 'get')
-//         assert.include(resources['/path/file/file2.txt'], 'put')
-//         done()
-//       });
-//     });
-//
-//     it('What resources have "baz" some rights on?', async () => {
-//
-//
-//       acl.whatResources('baz', function (err, resources) {
-//         assert.isNull(err)
-//         assert.include(resources.blogs, 'view')
-//         assert.include(resources.blogs, 'delete')
-//         assert.include(resources.blogs, 'edit')
-//         done()
-//       });
-//     });
-//   });
-// }
-//
-//
-//
-// exports.PermissionRemoval= function () {
-//   describe('removeAllow', function () {
-//     it('Remove get permissions from resources blogs and forums from role fumanchu', async () => {
-//
-//       acl.removeAllow('fumanchu', ['blogs','forums'], 'get', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Remove delete and put permissions from resource news from role fumanchu', async () => {
-//
-//       acl.removeAllow('fumanchu', 'news', 'delete', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Remove view permissions from resource blogs from role bar', async () => {
-//       ;
-//       acl.removeAllow('bar', 'blogs', 'view', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//   });
-//
+  it('What resources have "baz" some rights on?', async () => {
+    const resources = await acl.whatResources('baz');
+    expect(resources).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+  });
+});
+
+describe('removeAllow', function () {
+  it('Remove get permissions from resources blogs and forums from role fumanchu', async () => {
+    const removeAllow = await acl.removeAllow('fumanchu', ['blogs','forums'], 'get');
+    expect(removeAllow).toBeUndefined();
+  });
+
+  it('Remove delete and put permissions from resource news from role fumanchu', async () => {
+    const removeAllow = await acl.removeAllow('fumanchu', 'news', 'delete');
+    expect(removeAllow).toBeUndefined();
+  });
+
+  it('Remove view permissions from resource blogs from role bar', async () => {
+    const removeAllow = await acl.removeAllow('bar', 'blogs', 'view');
+    expect(removeAllow).toBeUndefined();
+  });
+});
+
 //   describe('See if permissions were removed', function () {
 //     it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
 //       ;
