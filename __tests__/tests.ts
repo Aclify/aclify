@@ -413,36 +413,23 @@ describe('See if permissions were removed', function () {
   });
 });
 
+describe('removeRole', function () {
+  it('Remove role fumanchu', async () => {
+    const remove = await acl.removeRole('fumanchu');
+    expect(remove).toBeUndefined();
+  });
 
+  it('Remove role member', async () => {
+    const remove = await acl.removeRole('member');
+    expect(remove).toBeUndefined();
+  });
 
+  it('Remove role foo', async () => {
+    const remove = await acl.removeRole('foo');
+    expect(remove).toBeUndefined();
+  });
+});
 
-// exports.RoleRemoval = function () {
-//   describe('removeRole', function () {
-//     it('Remove role fumanchu', async () => {
-//
-//       acl.removeRole('fumanchu', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Remove role member', async () => {
-//
-//       acl.removeRole('member', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//
-//     it('Remove role foo', async () => {
-//
-//       acl.removeRole('foo', function (err) {
-//         assert(!err)
-//         done()
-//       });
-//     });
-//   });
-//
 //   describe('Was role removed?', function () {
 //     it('What resources have "fumanchu" some rights on after removed?', async () => {
 //
