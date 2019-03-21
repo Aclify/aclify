@@ -40,7 +40,7 @@ export class MemoryStore extends Common implements IStore {
    * @description Cleans the whole storage.
    * @return Promise<void>
    */
-  public async clean() {
+  public async clean(): Promise<void> {
     this.buckets = {};
   }
 
