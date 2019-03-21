@@ -110,7 +110,7 @@ export class MemoryStore extends Common implements IStore {
    * @param key
    * @param values
    */
-  async add(bucket: string, key: string | number, values: string|[string]): Promise<void> {
+  add(bucket: string, key: string | number, values: string|[string]): void {
     const valuesArray = Common.makeArray(values);
 
     this.transaction.push(() => {
@@ -148,7 +148,7 @@ export class MemoryStore extends Common implements IStore {
    * @param key
    * @param values
    */
-  async remove(bucket: string, key: string | number, values: any) {
+  async remove(bucket: string, key: string | number, values: any): Promise<void> {
     const valuesArray = Common.makeArray(values);
     this.transaction.push(() => {
       const bucketKey = this.buckets[bucket][key];
