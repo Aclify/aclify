@@ -2,7 +2,7 @@
  * @description Common.
  */
 export class Common {
-  prefix: string;
+  public prefix: string;
 
   constructor() {
     this.prefix = 'allows_';
@@ -13,15 +13,15 @@ export class Common {
    * @param value
    * @return string
    */
-  static makeArray(value: string | string[]): string[] {
+  public static makeArray(value: string | string[]): string[] {
     return Array.isArray(value) ? value : [value];
   }
 
-  allowsBucket(role: string): string {
+  public allowsBucket(role: string): string {
     return this.prefix + role;
   }
 
-  keyFromAllowsBucket(str: string): string {
+  public keyFromAllowsBucket(str: string): string {
     return str.replace(new RegExp(`^${this.prefix}`), '');
   }
 }

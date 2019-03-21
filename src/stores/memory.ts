@@ -1,12 +1,12 @@
 // @flow
 import * as _ from 'lodash';
-import { IStore } from '../interfaces/IStore';
 import {Common} from '../classes/common';
+import { IStore } from '../interfaces/IStore';
 
 export class MemoryStore extends Common implements IStore {
   public buckets: {};
 
-  public transaction: Array<any>;
+  public transaction: any[];
 
   constructor() {
     super();
@@ -17,15 +17,16 @@ export class MemoryStore extends Common implements IStore {
    * @description Begins a transaction.
    * @returns {Array}
    */
-  begin(): Array<[]> {
+  public begin(): [][] {
     this.transaction = [];
+
     return this.transaction;
   }
 
   /**
    * @description Ends a transaction (and executes it)
    */
-  async end(): Promise<void> {
+  public async end(): Promise<void> {
     // console.log('---> length: ', this.transaction.length);
 
     this.transaction.forEach((transaction) => transaction());
@@ -47,7 +48,7 @@ export class MemoryStore extends Common implements IStore {
    * @param bucket
    * @param key
    */
-  async get(bucket: string, key: string | number) {
+  public async get(bucket: string, key: string | number) {
     if(this.buckets[bucket]) {
       return this.buckets[bucket][key] || [];
     }
@@ -60,7 +61,7 @@ export class MemoryStore extends Common implements IStore {
    * @param buckets
    * @param keys
    */
-  async unions(buckets: Array<any>, keys: Array<any>) {
+  public async unions(buckets: any[], keys: any[]) {
     const results = {};
     for (let i = 0; i < buckets.length; i += 1) {
       if (this.buckets[buckets[i]]) {
@@ -69,6 +70,7 @@ export class MemoryStore extends Common implements IStore {
         results[buckets[i]] = [];
       }
     }
+
     return results;
   }
 
@@ -77,7 +79,7 @@ export class MemoryStore extends Common implements IStore {
    * @param bucket
    * @param keys
    */
-  async union(bucket: string, keys: Array<any>): Promise<string[]> {
+  public async union(bucket: string, keys: any[]): Promise<string[]> {
     let match;
     let re;
     let bucketParam = bucket;
@@ -85,7 +87,8 @@ export class MemoryStore extends Common implements IStore {
       Object.keys(this.buckets).some((b) => {
         re = new RegExp(`^${b}$`);
         match = re.test(bucketParam);
-        if (match) bucketParam = b;
+        if (match) { bucketParam = b; }
+
         return match;
       });
     }
@@ -97,6 +100,7 @@ export class MemoryStore extends Common implements IStore {
           keyArrays.push(...this.buckets[bucketParam][keys[i]]);
         }
       }
+
       return _.union(keyArrays);
     } else {
 
@@ -110,7 +114,7 @@ export class MemoryStore extends Common implements IStore {
    * @param key
    * @param values
    */
-  add(bucket: string, key: string | number, values: string|[string]): void {
+  public add(bucket: string, key: string | number, values: string|[string]): void {
     const valuesArray = Common.makeArray(values);
 
     this.transaction.push(() => {
@@ -131,7 +135,7 @@ export class MemoryStore extends Common implements IStore {
    * @param bucket
    * @param keys
    */
-  async del(bucket: string, keys: string | Array<any>) {
+  public async del(bucket: string, keys: string | any[]) {
     const keysArray = Common.makeArray(keys);
     this.transaction.push(() => {
       if (this.buckets[bucket]) {
@@ -148,7 +152,7 @@ export class MemoryStore extends Common implements IStore {
    * @param key
    * @param values
    */
-  async remove(bucket: string, key: string | number, values: any): Promise<void> {
+  public async remove(bucket: string, key: string | number, values: any): Promise<void> {
     const valuesArray = Common.makeArray(values);
     this.transaction.push(() => {
       const bucketKey = this.buckets[bucket][key];
