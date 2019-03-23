@@ -1,6 +1,6 @@
 import * as bluebird from "bluebird";
-import * as _ from "lodash";
-import { IOptions, IParents, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IUserId, IUserRoles } from "../interfaces/IAcl";
+import { extend, isObject, intersection, isFunction, union } from "lodash";
+import { IOptions, IParents, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IUserId, IUserRoles } from "../interfaces/IAcl";
 import { IStore } from "../interfaces/IStore";
 import { Common } from "./common";
 
@@ -11,7 +11,7 @@ export class Acl extends Common {
   constructor(store: IStore, options?: IOptions) {
     super();
     this.store = store;
-    this.options = _.extend({
+    this.options = extend({
       buckets: {
         meta: 'meta',
         parents: 'parents',
@@ -23,12 +23,12 @@ export class Acl extends Common {
     }, options);
   }
 
-  public async allow(roles: IRoles | any, resources?: IResource | IResources, permissions?: IPermissions): Promise<void> {
-    if(arguments.length === 1 && _.isArray(roles) && _.isObject(roles[0])) {
-      return this.allowEx(roles);
+  public async allow(roles: IRole | IRoles | IRolesArray, resources?: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
+    if(arguments.length === 1 && Array.isArray(roles) && isObject(roles[0])) {
+      return this.allowEx(roles as IRolesArray);
     }
 
-    const rolesTmp = Common.makeArray(roles);
+    const rolesTmp = Common.makeArray(roles as IRole|IRoles);
     const resourcesTmp = Common.makeArray(resources);
 
     this.store.begin();
@@ -78,7 +78,7 @@ export class Acl extends Common {
     return this.store.end();
   }
 
-  public async isAllowed(userId: IUserId, resource: IResource, permissions: IPermissions): Promise<boolean> {
+  public async isAllowed(userId: IUserId, resource: IResource, permissions: IPermission | IPermissions): Promise<boolean> {
     const roles = await this.store.get(this.options.buckets.users, userId);
 
     if (roles.length) {
@@ -88,7 +88,7 @@ export class Acl extends Common {
     return false;
   }
 
-  public async areAnyRolesAllowed(roles: IRoles, resource: IResource, permissions: IPermissions): Promise<boolean> {
+  public async areAnyRolesAllowed(roles: IRole | IRoles, resource: IResource, permissions: IPermission | IPermissions): Promise<boolean> {
     const rolesParam = Common.makeArray(roles);
     const permissionsParam = Common.makeArray(permissions);
 
@@ -128,7 +128,7 @@ export class Acl extends Common {
     return _this.userRoles(userId).then(function(roles){
       const result = {};
 
-      return bluebird.all(resourcesTmp.map(function(resource){
+      return Promise.all(resourcesTmp.map(function(resource){
         return _this.resourcePermissions(roles, resource).then(function(permissions){
           result[resource] = permissions;
         });
@@ -166,7 +166,7 @@ export class Acl extends Common {
       })
   };
 
-  public async whatResources(roles: IRole | IRoles, permissions?: IPermissions){
+  public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions){
     let permissionsTmp = permissions;
     roles = Common.makeArray(roles);
 
@@ -186,7 +186,7 @@ export class Acl extends Common {
         return _this.resourcePermissions(roles, resource).then(function(p){
 
           if(Array.isArray(result)){
-            const commonPermissions = _.intersection(permissions, p);
+            const commonPermissions = intersection(permissions, p);
             if(commonPermissions.length>0){
               result.push(resource);
             }
@@ -200,25 +200,31 @@ export class Acl extends Common {
     });
   }
 
-  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermissions){
-    resources = Common.makeArray(resources);
-    if(permissions && !_.isFunction(permissions)){
+  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions){
+
+    const resourcesTmp = Common.makeArray(resources);
+
+    if(permissions && !isFunction(permissions)){
       permissions = Common.makeArray(permissions);
     }else {
       permissions = null;
     }
 
-    return this.removePermissions(role, resources, permissions);
+    return this.removePermissions(role, resourcesTmp, permissions);
   }
 
-  public async removePermissions(role: IRole, resources: IResources, permissions: IPermissions) {
+  public async removePermissions(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions) {
     const _this = this;
 
+    const resourcesTmp = Common.makeArray(resources);
+    const permissionsTmp = Common.makeArray(permissions);
+
+
     _this.store.begin();
-    resources.forEach(async function(resource){
+    resourcesTmp.forEach(async function(resource){
       const bucket = this.allowsBucket(resource);
-      if(permissions){
-        await _this.store.remove(bucket, role, permissions);
+      if(permissionsTmp){
+        await _this.store.remove(bucket, role, permissionsTmp);
       }else{
         await _this.store.del(bucket, role);
         await _this.store.remove(_this.options.buckets.resources, role, resource);
@@ -230,7 +236,7 @@ export class Acl extends Common {
     return _this.store.end().then(function(){
       _this.store.begin();
 
-      return bluebird.all(resources.map(function(resource){
+      return bluebird.all(resourcesTmp.map(function(resource){
         const bucket = _this.allowsBucket(resource);
 
         return _this.store.get(bucket, role).then(function(permissions){
@@ -272,7 +278,7 @@ export class Acl extends Common {
   }
 
   public removeRoleParents(role: IRole, parents?: IParents){
-    if (_.isFunction(parents)) {
+    if (isFunction(parents)) {
       parents = null;
     }
 
@@ -336,7 +342,7 @@ export class Acl extends Common {
     return this.rolesParents(roleNames).then(function(parents){
       if(parents.length > 0){
         return _this.allRoles(parents).then(function(parentRoles){
-          return _.union(roleNames, parentRoles);
+          return union(roleNames, parentRoles);
         });
       }else{
         return roleNames;
@@ -379,7 +385,7 @@ export class Acl extends Common {
         return _this.rolesParents(roles).then(function(parents){
           if(parents && parents.length){
             return _this.resourcePermissions(parents, resource).then(function(morePermissions){
-              return _.union(resourcePermissions, morePermissions);
+              return union(resourcePermissions, morePermissions);
             });
           }else{
             return resourcePermissions;
