@@ -11,13 +11,14 @@ export interface IOptions {
   };
 }
 
-export type IRolesArray = [{ roles: string; allows: ({ resources: string; permissions: string; } | { resources: string[]; permissions: string[]; })[]; }]
+export type IRolesArray = { roles: string; allows: ({ resources: string; permissions: string; } | { resources: string[]; permissions: string[]; })[]; }[]
 
-
-
-export type IParents = string | string[];
+export type IRolesParent = string;
+export type IRolesParents = IRolesParent[];
 
 export type IUserId = string | number;
+export type IUserIds = IUserId[];
+
 
 export type IUserRoles = string[];
 
@@ -27,8 +28,13 @@ export type IResources = IResource[];
 export type IRole = string;
 export type IRoles = IRole[];
 
-export type IPermissions = string | string[];
+export type IPermission = string;
+export type IPermissions = IPermission[];
 
+
+export interface IDynamicObject {
+  [key: string]: any // tslint:disable-line no-any
+}
 
 export interface IAcl {
   store: IStore;
