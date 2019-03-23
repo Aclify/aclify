@@ -20,11 +20,10 @@
     "memory"
   ],
   "bugs": {
-    "url": "https://github.com/Aclify/aclify/issues"
+    "url": "https://github.com/aclify/aclify/issues"
   },
-  "homepage": "https://github.com/Aclify/aclify#readme",
+  "homepage": "https://github.com/aclify/aclify#readme",
   "dependencies": {
-    "bluebird": "^3.5.3",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
