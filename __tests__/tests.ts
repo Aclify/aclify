@@ -34,10 +34,9 @@ describe('Constructor', () => {
 });
 
 describe('allow', () => {
-  it('guest to view blogs', async (done) => {
+  it('guest to view blogs', async () => {
     const guest = await acl.allow('guest', 'blogs', 'view');
     expect(guest).toBeUndefined();
-    done();
   });
 
   it('guest to view forums', async () => {
@@ -81,7 +80,7 @@ describe('Add user roles', () => {
   });
 });
 
-describe('read User Roles', function() {
+describe('read User Roles', () => {
   it('run userRoles function', async () => {
     const addUserRole = await acl.addUserRoles('harry', 'admin');
     expect(addUserRole).toBeUndefined();
@@ -97,7 +96,7 @@ describe('read User Roles', function() {
   });
 });
 
-describe('read Role Users', function() {
+describe('read Role Users', () => {
   it('run roleUsers function', async () => {
     const addUserRoles = await acl.addUserRoles('harry', 'admin');
     expect(addUserRoles).toBeUndefined();
@@ -467,14 +466,13 @@ describe('RoleParentRemoval', () => {
   const memoryStore2 = new MemoryStore();
   const acl2 = new Acl(memoryStore2);
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     await acl2.allow('parent1', 'x', 'read1');
     await acl2.allow('parent2', 'x', 'read2');
     await acl2.allow('parent3', 'x', 'read3');
     await acl2.allow('parent4', 'x', 'read4');
     await acl2.allow('parent5', 'x', 'read5');
     await acl2.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']);
-    done();
   });
 
   it('Environment check', async () => {
@@ -650,10 +648,10 @@ describe('Removing a role removes the entire "allows" document.', () => {
 
   it('Verify that roles have permissions as assigned', async () => {
     const res1 = await acl.whatResources('role1');
-    expect(res1.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+    expect(res1.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]); // tslint:disable-line no-unsafe-any
 
     const res2 = await acl.whatResources('role2');
-    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]); // tslint:disable-line no-unsafe-any
   });
 
   it('Remove role "role1"', async () => {
@@ -669,6 +667,6 @@ describe('Removing a role removes the entire "allows" document.', () => {
     expect(Object.keys(res1)).toHaveLength(0);
 
     const res2 = await acl.whatResources('role2');
-    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]);
+    expect(res2.res1.sort()).toStrictEqual([ 'perm1', 'perm2', 'perm3' ]); // tslint:disable-line no-unsafe-any
   });
 });
