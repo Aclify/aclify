@@ -53,7 +53,7 @@ export interface IStore {
    * @param values
    * @return void
    */
-  add(bucket: string, key: string | number, values: string|[string]): void;
+  add(bucket: string, key: string | number, values: number | number[] | string | string[]): void;
 
   /**
    * @description Delete the given key(s) at the bucket
@@ -61,7 +61,7 @@ export interface IStore {
    * @param keys
    * @return Promise<void>
    */
-  del(bucket: string, keys: string[]): Promise<void>;
+  del(bucket: string, keys: string | string[]): Promise<void>;
 
   /**
    * @description Removes values from a given key inside a bucket.
@@ -70,5 +70,5 @@ export interface IStore {
    * @param values
    * @return Promise<void>
    */
-  remove(bucket: string, key: string | number, values: string[]): Promise<void>;
+  remove(bucket: string, key: string | number, values: number | number[] | string | string[]): Promise<void>;
 }
