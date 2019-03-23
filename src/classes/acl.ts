@@ -1,6 +1,5 @@
-import * as bluebird from "bluebird";
-import { extend, isObject, intersection, isFunction, union } from "lodash";
-import { IOptions, IParents, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IUserId, IUserRoles } from "../interfaces/IAcl";
+import { extend, intersection, isFunction, union } from "lodash";
+import { IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
 import { IStore } from "../interfaces/IStore";
 import { Common } from "./common";
 
@@ -24,7 +23,7 @@ export class Acl extends Common {
   }
 
   public async allow(roles: IRole | IRoles | IRolesArray, resources?: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
-    if(arguments.length === 1 && Array.isArray(roles) && isObject(roles[0])) {
+    if(arguments.length === 1) {
       return this.allowEx(roles as IRolesArray);
     }
 
@@ -66,11 +65,11 @@ export class Acl extends Common {
     return roles.indexOf(rolename) !== -1;
   }
 
-  public async roleUsers(roleName: IRole): Promise<IUserId[]> {
+  public async roleUsers(roleName: IRole): Promise<IUserIds> {
     return this.store.get(this.options.buckets.roles, roleName);
   }
 
-  public async addRoleParents(role: IRole, parents: IParents): Promise<void> {
+  public async addRoleParents(role: IRole, parents: IRolesParents): Promise<void> {
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'roles', role);
     this.store.add(this.options.buckets.parents, role, parents);
@@ -117,7 +116,7 @@ export class Acl extends Common {
     return (parents && parents.length) ? this.checkPermissions(parents, resource, perms) : false;
   }
 
-  public async allowedPermissions(userId: IUserId, resources: IResource | IResources) {
+  public async allowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
     if (this.store.unions) {
       return this.optimizedAllowedPermissions(userId, resources);
     }
@@ -138,7 +137,7 @@ export class Acl extends Common {
     })
   };
 
-  public async optimizedAllowedPermissions(userId: IUserId, resources: IResource | IResources){
+  public async optimizedAllowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
     const resourcesTmp = Common.makeArray(resources);
     const self = this;
 
@@ -152,7 +151,7 @@ export class Acl extends Common {
             emptyResult[bucket] = [];
           });
 
-          return bluebird.resolve(emptyResult);
+          return emptyResult;
         }
 
         return self.store.unions(buckets, roles);
@@ -166,7 +165,7 @@ export class Acl extends Common {
       })
   };
 
-  public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions){
+  public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions): Promise<IDynamicObject> {
     let permissionsTmp = permissions;
     roles = Common.makeArray(roles);
 
@@ -177,12 +176,12 @@ export class Acl extends Common {
     return this.permittedResources(roles, permissionsTmp);
   };
 
-  public async permittedResources(roles, permissions){
+  public async permittedResources(roles, permissions): Promise<IResources>{
     const _this = this;
     const result = permissions === undefined ? {} : [];
 
     return this.rolesResources(roles).then(function(resources){
-      return bluebird.all(resources.map(function(resource){
+      return Promise.all(resources.map(function(resource){
         return _this.resourcePermissions(roles, resource).then(function(p){
 
           if(Array.isArray(result)){
@@ -200,7 +199,7 @@ export class Acl extends Common {
     });
   }
 
-  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions){
+  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
 
     const resourcesTmp = Common.makeArray(resources);
 
@@ -213,7 +212,7 @@ export class Acl extends Common {
     return this.removePermissions(role, resourcesTmp, permissions);
   }
 
-  public async removePermissions(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions) {
+  public async removePermissions(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
     const _this = this;
 
     const resourcesTmp = Common.makeArray(resources);
@@ -236,7 +235,7 @@ export class Acl extends Common {
     return _this.store.end().then(function(){
       _this.store.begin();
 
-      return bluebird.all(resourcesTmp.map(function(resource){
+      return Promise.all(resourcesTmp.map(function(resource){
         const bucket = _this.allowsBucket(resource);
 
         return _this.store.get(bucket, role).then(function(permissions){
@@ -252,7 +251,7 @@ export class Acl extends Common {
     });
   };
 
-  public async removeRole(role: IRole) {
+  public async removeRole(role: IRole): Promise<void> {
     // contract(arguments)
     //   .params('string','function')
     //   .params('string').end();
@@ -277,7 +276,7 @@ export class Acl extends Common {
     });
   }
 
-  public removeRoleParents(role: IRole, parents?: IParents){
+  public removeRoleParents(role: IRole, parents?: IRolesParents): Promise<void> {
     if (isFunction(parents)) {
       parents = null;
     }
@@ -292,7 +291,7 @@ export class Acl extends Common {
     return this.store.end();
   };
 
-  public async removeResource(resource: IResource) {
+  public async removeResource(resource: IResource): Promise<void> {
     const _this = this;
 
     return this.store.get(this.options.buckets.meta, 'roles').then(function(roles){
@@ -306,7 +305,7 @@ export class Acl extends Common {
     });
   }
 
-  public async removeUserRoles(userId: IUserId, roles: IRole | IRoles){
+  public async removeUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void>{
     this.store.begin();
     this.store.remove(this.options.buckets.users, userId, roles);
 
@@ -324,7 +323,7 @@ export class Acl extends Common {
     return this.store.end();
   }
 
-  private async allUserRoles(userId: IUserId) {
+  private async allUserRoles(userId: IUserId): Promise<IRoles> {
     const _this = this;
 
     const roles = await this.userRoles(userId);
@@ -336,7 +335,7 @@ export class Acl extends Common {
     }
   };
 
-  private async allRoles (roleNames) {
+  private async allRoles(roleNames): Promise<IRoles> {
     const _this = this;
 
     return this.rolesParents(roleNames).then(function(parents){
@@ -350,7 +349,7 @@ export class Acl extends Common {
     });
   };
 
-  private async rolesParents(roles: IRoles) {
+  private async rolesParents(roles: IRoles): Promise<IRolesParents> {
     return this.store.union(this.options.buckets.parents, roles);
   };
 
@@ -370,16 +369,16 @@ export class Acl extends Common {
       });
     });
 
-    return bluebird.reduce(demuxed,(_values, obj) => {
+    return demuxed.reduce((_values, obj) => {
       return this.allow(obj.roles, obj.resources, obj.permissions);
     }, null);
   };
 
-  private async resourcePermissions(roles: IRoles, resource: IResource){
+  private async resourcePermissions(roles: IRoles, resource: IResource): Promise<IPermissions>{
     const _this = this;
 
     if(roles.length===0){
-      return bluebird.resolve([]);
+      return [];
     } else{
       return this.store.union(this.allowsBucket(resource), roles).then(function(resourcePermissions){
         return _this.rolesParents(roles).then(function(parents){
@@ -395,14 +394,14 @@ export class Acl extends Common {
     }
   };
 
-  private async rolesResources(roles: IRoles){
+  private async rolesResources(roles: IRoles): Promise<IResources> {
     const _this = this;
     const rolesTmp = Common.makeArray(roles);
 
     return this.allRoles(rolesTmp).then(function(allRoles){
       let result = [];
 
-      return bluebird.all(allRoles.map(function(role){
+      return Promise.all(allRoles.map(function(role){
         return _this.store.get(_this.options.buckets.resources, role).then(function(resources){
           result = result.concat(resources);
         });
