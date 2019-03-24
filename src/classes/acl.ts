@@ -203,236 +203,260 @@ export class Acl extends Common {
    */
   public async optimizedAllowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
     const resourcesParam = Common.MAKE_ARRAY(resources);
-    const self = this;
+    const roles: IRoles = await this.allUserRoles(userId);
+    const buckets = resourcesParam.map(this.allowsBucket, this);
+    let response = {};
 
-    return this.allUserRoles(userId)
-      .then((roles) => {
-        const buckets = resourcesParam.map(this.allowsBucket, this);
-
-        if (roles.length === 0) {
-          const emptyResult = {};
-          buckets.forEach(function(bucket) {
-            emptyResult[bucket] = [];
-          });
-
-          return emptyResult;
-        }
-
-        return self.store.unions(buckets, roles);
-      }).then((response) => {
-        const result = {};
-        Object.keys(response).forEach(function(bucket) {
-          result[this.keyFromAllowsBucket(bucket)] = response[bucket];
-        }, this);
-
-        return result;
-      })
-  }
-
-  public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions): Promise<IDynamicObject> {
-    let permissionsTmp = permissions;
-    roles = Common.MAKE_ARRAY(roles);
-
-    if(permissions !== undefined){
-      permissionsTmp = Common.MAKE_ARRAY(permissionsTmp);
-      return this.permittedResources(roles, permissionsTmp);
+    if (roles.length === 0) {
+      const emptyResult = {};
+      buckets.forEach((bucket: string) => emptyResult[bucket] = []);
+      response = emptyResult;
     }
 
-    return this.permittedResources(roles);
+    response = await this.store.unions(buckets, roles);
 
-    // return this.permittedResources(roles, permissionsTmp);
-  };
+    const result = {};
+    Object.keys(response).forEach((bucket: string) => result[this.keyFromAllowsBucket(bucket)] = response[bucket], this);
 
+    return result;
+  }
+
+  /**
+   * @description Promise<IDynamicObject>
+   * @param roles
+   * @param permissions
+   * @return Promise<IDynamicObject>
+   */
+  public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions): Promise<IDynamicObject> {
+    const rolesParam = Common.MAKE_ARRAY(roles);
+
+    if(permissions === undefined){
+      return this.permittedResources(rolesParam);
+    }
+
+    return this.permittedResources(rolesParam, Common.MAKE_ARRAY(permissions));
+  }
+
+  /**
+   * @description
+   * @param roles
+   * @param permissions
+   * @return Promise<IResources>
+   */
   public async permittedResources(roles: IRoles, permissions?: IPermission | IPermissions): Promise<IResources> {
-    const _this = this;
-    // const result = [];
     const result = permissions === undefined ? {} : [];
 
-    const rolesTmp = Common.MAKE_ARRAY(roles);
+    const rolesParam = Common.MAKE_ARRAY(roles);
 
-    return this.rolesResources(rolesTmp)
-      .then(function(resources: IResources){
-        return Promise.all(resources.map(function(resource: IResource){
-          return _this.resourcePermissions(rolesTmp, resource).then(function(p){
+    const resources: IResources = await this.rolesResources(rolesParam);
 
-            if(Array.isArray(result)){
-              const commonPermissions = intersection(permissions, p);
-              if(commonPermissions.length>0){
-                result.push(resource);
-              }
-            } else{
-              result[resource] = p;
-            }
-          });
-        })).then(function(){
-          if(isObject(result)) {
-            const resultArray = [];
-            Object.entries(result).forEach((item) => resultArray[item[0]] = item[1]);
-            return resultArray;
-          }
+    await Promise.all(resources.map(async (resource: IResource) => {
+      const resourcePermissions: IPermissions = await this.resourcePermissions(rolesParam, resource);
 
-          return result;
-        });
-      });
-  }
+      if (Array.isArray(result)) {
+        const commonPermissions = intersection(permissions, resourcePermissions);
+        if(commonPermissions.length > 0) {
+          result.push(resource);
+        }
+      } else {
+        result[resource] = resourcePermissions;
+      }
+    }));
 
-  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
-
-    const resourcesTmp = Common.MAKE_ARRAY(resources);
-
-    if(permissions && !isFunction(permissions)){
-      permissions = Common.MAKE_ARRAY(permissions);
-    }else {
-      permissions = null;
+    if(isObject(result)) {
+      const resultArray = [];
+      Object.entries(result).forEach((item) => resultArray[item[0]] = item[1]);
+      return resultArray;
     }
 
-    return this.removePermissions(role, resourcesTmp, permissions);
+    return result;
   }
 
-  public async removePermissions(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
-    const _this = this;
+  /**
+   * @description
+   * @param role
+   * @param resources
+   * @param permissions
+   * @return Promise<void>
+   */
+  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
+    const resourcesParam = Common.MAKE_ARRAY(resources);
 
-    const resourcesTmp = Common.MAKE_ARRAY(resources);
-    const permissionsTmp = Common.MAKE_ARRAY(permissions);
+    if(permissions && !isFunction(permissions)){
+      return this.removePermissions(role, resourcesParam, Common.MAKE_ARRAY(permissions));
+    }
 
+    return this.removePermissions(role, resourcesParam);
+  }
 
-    _this.store.begin();
-    resourcesTmp.forEach(async function(resource){
+  /**
+   * @description
+   * @param role
+   * @param resources
+   * @param permissions
+   * @return Promise<void>
+   */
+  public async removePermissions(role: IRole, resources: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
+    const resourcesParams = Common.MAKE_ARRAY(resources);
+    const permissionsParams = Common.MAKE_ARRAY(permissions);
+
+    this.store.begin();
+
+    resourcesParams.forEach(async (resource: IResource) => {
       const bucket = this.allowsBucket(resource);
-      if(permissionsTmp){
-        await _this.store.remove(bucket, role, permissionsTmp);
-      }else{
-        await _this.store.del(bucket, role);
-        await _this.store.remove(_this.options.buckets.resources, role, resource);
+
+      if (permissionsParams) {
+        await this.store.remove(bucket, role, permissionsParams);
+      } else {
+        await this.store.del(bucket, role);
+        await this.store.remove(this.options.buckets.resources, role, resource);
       }
     }, this);
 
-    // Remove resource from role if no rights for that role exists.
-    // Not fully atomic...
-    return _this.store.end().then(function(){
-      _this.store.begin();
+    await this.store.end();
+    this.store.begin();
 
-      return Promise.all(resourcesTmp.map(function(resource){
-        const bucket = _this.allowsBucket(resource);
+    await Promise.all(resourcesParams.map(async (resource: IResource) => {
+      const bucket = this.allowsBucket(resource);
+      const permissions: IPermissions = await this.store.get(bucket, role);
 
-        return _this.store.get(bucket, role).then(function(permissions){
+      if(permissions.length === 0){
+        await this.store.remove(this.options.buckets.resources, role, resource);
+      }
+    }, this));
 
-          // @ts-ignore
-          if(permissions.length === 0){
-            _this.store.remove(_this.options.buckets.resources, role, resource);
-          }
-        });
-      })).then(function(){
-        return _this.store.end();
-      });
-    });
-  };
-
-  public async removeRole(role: IRole): Promise<void> {
-    // contract(arguments)
-    //   .params('string','function')
-    //   .params('string').end();
-    //
-    const _this = this;
-
-    // Note that this is not fully transactional.
-    return this.store.get(this.options.buckets.resources, role).then(async(resources) => {
-      _this.store.begin();
-
-      resources.forEach(function(resource){
-        const bucket = this.allowsBucket(resource);
-        _this.store.del(bucket, role);
-      }, this);
-
-      await _this.store.del(this.options.buckets.resources, role);
-      await _this.store.del(this.options.buckets.parents, role);
-      await _this.store.del(this.options.buckets.roles, role);
-      await _this.store.remove(this.options.buckets.meta, 'roles', role);
-
-      return _this.store.end();
-    });
+    return this.store.end();
   }
 
-  public removeRoleParents(role: IRole, parents?: IRolesParent | IRolesParents): Promise<void> {
-    if (isFunction(parents)) {
-      parents = null;
+  /**
+   * @description
+   * @param role
+   * @return Promise<void>
+   */
+  public async removeRole(role: IRole): Promise<void> {
+    const resources: IResources = await this.store.get(this.options.buckets.resources, role);
+
+    this.store.begin();
+
+    resources.forEach(async (resource) => {
+      const bucket = this.allowsBucket(resource);
+      await this.store.del(bucket, role);
+    }, this);
+
+    await this.store.del(this.options.buckets.resources, role);
+    await this.store.del(this.options.buckets.parents, role);
+    await this.store.del(this.options.buckets.roles, role);
+    await this.store.remove(this.options.buckets.meta, 'roles', role);
+
+    return this.store.end();
+  }
+
+  /**
+   * @description
+   * @param role
+   * @param parents
+   * @return Promise<void>
+   */
+  public async removeRoleParents(role: IRole, parents?: IRolesParent | IRolesParents): Promise<void> {
+    let parentsParams = parents;
+
+    if (isFunction(parentsParams)) {
+      parentsParams = null;
     }
 
     this.store.begin();
-    if (parents) {
-      this.store.remove(this.options.buckets.parents, role, parents);
+
+    if (parentsParams) {
+      await this.store.remove(this.options.buckets.parents, role, parentsParams);
     } else  {
-      this.store.del(this.options.buckets.parents, role);
+      await this.store.del(this.options.buckets.parents, role);
     }
 
     return this.store.end();
-  };
-
-  public async removeResource(resource: IResource): Promise<void> {
-    const _this = this;
-
-    return this.store.get(this.options.buckets.meta, 'roles').then(function(roles){
-      _this.store.begin();
-      _this.store.del(_this.allowsBucket(resource), roles);
-      roles.forEach(function(role){
-        _this.store.remove(_this.options.buckets.resources, role, resource);
-      });
-
-      return _this.store.end();
-    });
   }
 
-  public async removeUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void>{
+  /**
+   * @description
+   * @param resource
+   * @return Promise<void>
+   */
+  public async removeResource(resource: IResource): Promise<void> {
+    const roles: IRoles = await this.store.get(this.options.buckets.meta, 'roles');
+
     this.store.begin();
-    this.store.remove(this.options.buckets.users, userId, roles);
+    await this.store.del(this.allowsBucket(resource), roles);
+
+    roles.forEach(async (role: IRole) => await this.store.remove(this.options.buckets.resources, role, resource), this);
+
+    return this.store.end();
+  }
+
+  /**
+   * @description
+   * @param userId
+   * @param roles
+   * @return Promise<void>
+   */
+  public async removeUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void> {
+    this.store.begin();
+    await this.store.remove(this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      const _this = this;
-
-      roles.forEach(function(role) {
-        _this.store.remove(_this.options.buckets.roles, role, userId);
-      });
-    }
-    else {
-      this.store.remove(this.options.buckets.roles, roles, userId);
+      roles.forEach(async (role: IRole) => await this.store.remove(this.options.buckets.roles, role, userId), this);
+    } else {
+      await this.store.remove(this.options.buckets.roles, roles, userId);
     }
 
     return this.store.end();
   }
 
+  /**
+   * @description
+   * @param userId
+   * @return Promise<IRoles>
+   */
   private async allUserRoles(userId: IUserId): Promise<IRoles> {
-    const _this = this;
-
     const roles = await this.userRoles(userId);
 
-    if (roles && roles.length > 0) {
-      return _this.allRoles(roles);
-    } else {
-      return [];
+    if (roles.length > 0) {
+      return this.allRoles(roles);
     }
-  };
 
-  private async allRoles(roleNames): Promise<IRoles> {
-    const _this = this;
+    return [];
+  }
 
-    return this.rolesParents(roleNames).then(function(parents){
-      if(parents.length > 0){
-        return _this.allRoles(parents).then(function(parentRoles){
-          return union(roleNames, parentRoles);
-        });
-      }else{
-        return roleNames;
-      }
-    });
-  };
+  /**
+   * @description
+   * @param roles
+   * @return Promise<IRoles>
+   */
+  private async allRoles(roles: IRoles): Promise<IRoles> {
+    const parents = await this.rolesParents(roles);
 
+    if(parents.length > 0) {
+      const parentRoles = await this.allRoles(parents);
+      return union(roles, parentRoles);
+    }
+
+    return roles;
+  }
+
+  /**
+   * @description
+   * @param roles
+   * @return Promise<IRolesParents>
+   */
   private async rolesParents(roles: IRoles): Promise<IRolesParents> {
     return this.store.union(this.options.buckets.parents, roles);
-  };
+  }
 
-  private async allowEx(objs: IRolesArray) {
-    // const objsTmp = await Common.MAKE_ARRAY(objs);
-    const objsTmp = objs;
+  /**
+   * @description
+   * @param rolesArray
+   * @return
+   */
+  private async allowEx(rolesArray: IRolesArray): Promise<void> {
+    const objsTmp = rolesArray;
 
     const demuxed = [];
     objsTmp.forEach((obj) => {
@@ -446,46 +470,49 @@ export class Acl extends Common {
       });
     });
 
-    return demuxed.reduce((_values, obj) => {
-      return this.allow(obj.roles, obj.resources, obj.permissions);
-    }, null);
-  };
+    demuxed.reduce(async (_values, obj) => await this.allow(obj.roles, obj.resources, obj.permissions), null);
+  }
 
+  /**
+   * @description
+   * @param roles
+   * @param resource
+   * @return Promise<IPermissions>
+   */
   private async resourcePermissions(roles: IRoles, resource: IResource): Promise<IPermissions> {
-    const _this = this;
     const rolesTmp = Common.MAKE_ARRAY(roles);
 
-    if(rolesTmp.length===0){
+    if(rolesTmp.length ===0 ){
       return [];
-    } else{
-      return this.store.union(this.allowsBucket(resource), rolesTmp).then(function(resourcePermissions){
-        return _this.rolesParents(rolesTmp).then(function(parents){
-          if(parents && parents.length){
-            return _this.resourcePermissions(parents, resource).then(function(morePermissions){
-              return union(resourcePermissions, morePermissions);
-            });
-          }else{
-            return resourcePermissions;
-          }
-        });
-      });
     }
-  };
 
+    const resourcePermissions = await this.store.union(this.allowsBucket(resource), rolesTmp);
+    const parents = await this.rolesParents(rolesTmp);
+
+    if(parents && parents.length) {
+      const morePermissions = await this.resourcePermissions(parents, resource);
+      return union(resourcePermissions, morePermissions);
+    }
+
+    return resourcePermissions;
+  }
+
+  /**
+   * @description
+   * @param roles
+   * @description Promise<IResources>
+   */
   private async rolesResources(roles: IRole | IRoles): Promise<IResources> {
-    const _this = this;
     const rolesTmp = Common.MAKE_ARRAY(roles);
 
-    return this.allRoles(rolesTmp).then(function(allRoles){
-      let result = [];
+    const allRoles = await this.allRoles(rolesTmp);
+    let result = [];
 
-      return Promise.all(allRoles.map(function(role){
-        return _this.store.get(_this.options.buckets.resources, role).then(function(resources){
-          result = result.concat(resources);
-        });
-      })).then(function(){
-        return result;
-      });
-    });
-  };
+    await Promise.all(allRoles.map(async (role: IRole) => {
+      const resources: IResources = await this.store.get(this.options.buckets.resources, role);
+      result = result.concat(resources);
+    }));
+
+    return result;
+  }
 }
