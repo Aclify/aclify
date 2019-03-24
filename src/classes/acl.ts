@@ -22,53 +22,88 @@ export class Acl extends Common {
     }, options);
   }
 
+  /**
+   * @description
+   * @param roles
+   * @param resources
+   * @param permissions
+   * @return Promise<void>
+   */
   public async allow(roles: IRole | IRoles | IRolesArray, resources?: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
     if(arguments.length === 1) {
       return this.allowEx(roles as IRolesArray);
     }
 
-    const rolesTmp = Common.MAKE_ARRAY(roles as IRole|IRoles);
-    const resourcesTmp = Common.MAKE_ARRAY(resources);
+    const rolesParam = Common.MAKE_ARRAY(roles as IRole | IRoles);
+    const resourcesParam = Common.MAKE_ARRAY(resources);
 
     this.store.begin();
-    this.store.add(this.options.buckets.meta, 'roles', rolesTmp);
+    this.store.add(this.options.buckets.meta, 'roles', rolesParam);
 
-    resourcesTmp.forEach((resource) => {
-      rolesTmp.forEach((role) => this.store.add(this.allowsBucket(resource), role, permissions), this);
+    resourcesParam.forEach((resource: IResource) => {
+      rolesParam.forEach((role: IRole) => this.store.add(this.allowsBucket(resource), role, permissions), this);
     });
 
-    rolesTmp.forEach((role) => this.store.add(this.options.buckets.resources, role, resourcesTmp));
+    rolesParam.forEach((role: IRole) => this.store.add(this.options.buckets.resources, role, resourcesParam));
 
     return this.store.end();
   }
 
+  /**
+   * @description
+   * @param userId
+   * @param roles
+   * @return Promise<void>
+   */
   public async addUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void> {
     this.store.begin();
-    const rolesParams = await Common.MAKE_ARRAY(roles);
+
+    const rolesParams = Common.MAKE_ARRAY(roles);
 
     this.store.add(this.options.buckets.meta, 'users', userId);
     this.store.add(this.options.buckets.users, userId, roles);
 
-    const promises = rolesParams.map((role) => this.store.add(this.options.buckets.roles, role, userId), this);
-    await Promise.all(promises);
+    rolesParams.map((role: IRole) => this.store.add(this.options.buckets.roles, role, userId), this);
 
     return this.store.end();
   }
 
+  /**
+   * @description
+   * @param userId
+   * @return Promise<IUserRoles>
+   */
   public async userRoles(userId: IUserId): Promise<IUserRoles> {
     return this.store.get(this.options.buckets.users, userId);
   }
 
-  public async hasRole(userId: IUserId, rolename: IRole): Promise<boolean> {
+  /**
+   * @description
+   * @param userId
+   * @param role
+   * @return Promise<boolean>
+   */
+  public async hasRole(userId: IUserId, role: IRole): Promise<boolean> {
     const roles = await this.userRoles(userId);
 
-    return roles.indexOf(rolename) !== -1;
+    return roles.indexOf(role) !== -1;
   }
 
-  public async roleUsers(roleName: IRole): Promise<IUserIds> {
-    return this.store.get(this.options.buckets.roles, roleName);
+  /**
+   * @description
+   * @param role
+   * @return Promise<IUserIds>
+   */
+  public async roleUsers(role: IRole): Promise<IUserIds> {
+    return this.store.get(this.options.buckets.roles, role);
   }
 
+  /**
+   * @description
+   * @param role
+   * @param parents
+   * @return Promise<void>
+   */
   public async addRoleParents(role: IRole, parents: IRolesParent | IRolesParents): Promise<void> {
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'roles', role);
@@ -77,73 +112,102 @@ export class Acl extends Common {
     return this.store.end();
   }
 
+  /**
+   * @description
+   * @param userId
+   * @param resource
+   * @param permissions
+   * @return Promise<boolean>
+   */
   public async isAllowed(userId: IUserId, resource: IResource, permissions: IPermission | IPermissions): Promise<boolean> {
     const roles = await this.store.get(this.options.buckets.users, userId);
 
-    if (roles.length) {
+    if (roles.length > 0) {
       return this.areAnyRolesAllowed(roles, resource, permissions);
     }
 
     return false;
   }
 
+  /**
+   * @description
+   * @param roles
+   * @param resource
+   * @param permissions
+   * @return Promise<boolean>
+   */
   public async areAnyRolesAllowed(roles: IRole | IRoles, resource: IResource, permissions: IPermission | IPermissions): Promise<boolean> {
     const rolesParam = Common.MAKE_ARRAY(roles);
     const permissionsParam = Common.MAKE_ARRAY(permissions);
 
-    if (!rolesParam.length) {
+    if (rolesParam.length === 0) {
       return false;
     }
 
     return this.checkPermissions(rolesParam, resource, permissionsParam);
   }
 
-  public async checkPermissions(roles, resource, permissions): Promise<boolean> {
+  /**
+   * @description
+   * @param roles
+   * @param resource
+   * @param permissions
+   * @return Promise<boolean>
+   */
+  public async checkPermissions(roles: IRoles, resource: IResource, permissions: IPermissions): Promise<boolean> {
     const resourcePermissions = await this.store.union(this.allowsBucket(resource), roles);
 
     if (resourcePermissions.indexOf('*') !== -1) {
       return true;
     }
 
-    const perms = permissions.filter((p) => resourcePermissions.indexOf(p) === -1);
+    const permissionsFiltered = permissions.filter((p: IPermission) => resourcePermissions.indexOf(p) === -1);
 
-    if (!perms.length) {
+    if (permissionsFiltered.length === 0) {
       return true;
     }
 
     const parents = await this.store.union(this.options.buckets.parents, roles);
 
-    return (parents && parents.length) ? this.checkPermissions(parents, resource, perms) : false;
+    return (parents && parents.length) ? this.checkPermissions(parents, resource, permissionsFiltered) : false;
   }
 
+  /**
+   * @description
+   * @param userId
+   * @param resources
+   * @return Promise<IDynamicObject>
+   */
   public async allowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
     if (this.store.unions) {
       return this.optimizedAllowedPermissions(userId, resources);
     }
 
-    const _this = this;
-    const resourcesTmp = Common.MAKE_ARRAY(resources);
+    const resourcesParams = Common.MAKE_ARRAY(resources);
 
-    return _this.userRoles(userId).then(function(roles){
-      const result = {};
+    const roles: IRoles  = await this.userRoles(userId);
+    const result = {};
 
-      return Promise.all(resourcesTmp.map(function(resource){
-        return _this.resourcePermissions(roles, resource).then(function(permissions){
-          result[resource] = permissions;
-        });
-      })).then(function(){
-        return result;
-      });
-    })
-  };
+    await Promise.all(resourcesParams.map(async (resource: IResource) => {
+      result[resource] = await this.resourcePermissions(roles, resource);
+    }));
 
+    return result;
+  }
+
+  /**
+   * @description
+   * @param userId
+   * @param resources
+   * @return Promise<IDynamicObject>
+   */
   public async optimizedAllowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
-    const resourcesTmp = Common.MAKE_ARRAY(resources);
+    const resourcesParam = Common.MAKE_ARRAY(resources);
     const self = this;
 
     return this.allUserRoles(userId)
       .then((roles) => {
-        const buckets = resourcesTmp.map(this.allowsBucket, this);
+        const buckets = resourcesParam.map(this.allowsBucket, this);
 
         if (roles.length === 0) {
           const emptyResult = {};
@@ -163,7 +227,7 @@ export class Acl extends Common {
 
         return result;
       })
-  };
+  }
 
   public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions): Promise<IDynamicObject> {
     let permissionsTmp = permissions;
