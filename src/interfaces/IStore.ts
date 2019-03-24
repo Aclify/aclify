@@ -36,7 +36,7 @@ export interface IStore {
    * @param keys
    * @return Promise<{}>
    */
-  unions(buckets: string[], keys: string[]): Promise<{}>;
+  unions?(buckets: string[], keys: string[]): Promise<{}>;
 
   /**
    * @description Returns the union of the values in the given keys.
