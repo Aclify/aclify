@@ -26,9 +26,8 @@ export type IRoles = IRole[];
 export type IPermission = string;
 export type IPermissions = IPermission[];
 
-export type IRolesObjectAllow = { resources: IResource; permissions: IPermission; };
-export type IRolesObjectAllows = { resources: IResources; permissions: IPermissions; };
-export type IRolesObject = { roles: IRole | IRoles; allows: (IRolesObjectAllow | IRolesObjectAllows)[] };
+export type IRolesObjectAllows = { resources: IResource | IResources; permissions: IPermission | IPermissions; };
+export type IRolesObject = { roles: IRole | IRoles; allows: IRolesObjectAllows[] };
 export type IRolesObjects = IRolesObject[];
 
 export type IBucket = string
