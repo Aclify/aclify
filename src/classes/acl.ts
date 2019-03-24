@@ -1,5 +1,5 @@
-import { extend, intersection, isFunction, union } from "lodash";
-import { IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
+import { extend, intersection, isFunction, isObject, union } from "lodash";
+import { IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
 import { IStore } from "../interfaces/IStore";
 import { Common } from "./common";
 
@@ -27,8 +27,8 @@ export class Acl extends Common {
       return this.allowEx(roles as IRolesArray);
     }
 
-    const rolesTmp = Common.makeArray(roles as IRole|IRoles);
-    const resourcesTmp = Common.makeArray(resources);
+    const rolesTmp = Common.MAKE_ARRAY(roles as IRole|IRoles);
+    const resourcesTmp = Common.MAKE_ARRAY(resources);
 
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'roles', rolesTmp);
@@ -44,7 +44,7 @@ export class Acl extends Common {
 
   public async addUserRoles(userId: IUserId, roles: IRole | IRoles): Promise<void> {
     this.store.begin();
-    const rolesParams = await Common.makeArray(roles);
+    const rolesParams = await Common.MAKE_ARRAY(roles);
 
     this.store.add(this.options.buckets.meta, 'users', userId);
     this.store.add(this.options.buckets.users, userId, roles);
@@ -69,7 +69,7 @@ export class Acl extends Common {
     return this.store.get(this.options.buckets.roles, roleName);
   }
 
-  public async addRoleParents(role: IRole, parents: IRolesParents): Promise<void> {
+  public async addRoleParents(role: IRole, parents: IRolesParent | IRolesParents): Promise<void> {
     this.store.begin();
     this.store.add(this.options.buckets.meta, 'roles', role);
     this.store.add(this.options.buckets.parents, role, parents);
@@ -88,8 +88,8 @@ export class Acl extends Common {
   }
 
   public async areAnyRolesAllowed(roles: IRole | IRoles, resource: IResource, permissions: IPermission | IPermissions): Promise<boolean> {
-    const rolesParam = Common.makeArray(roles);
-    const permissionsParam = Common.makeArray(permissions);
+    const rolesParam = Common.MAKE_ARRAY(roles);
+    const permissionsParam = Common.MAKE_ARRAY(permissions);
 
     if (!rolesParam.length) {
       return false;
@@ -122,7 +122,7 @@ export class Acl extends Common {
     }
 
     const _this = this;
-    const resourcesTmp = Common.makeArray(resources);
+    const resourcesTmp = Common.MAKE_ARRAY(resources);
 
     return _this.userRoles(userId).then(function(roles){
       const result = {};
@@ -138,7 +138,7 @@ export class Acl extends Common {
   };
 
   public async optimizedAllowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
-    const resourcesTmp = Common.makeArray(resources);
+    const resourcesTmp = Common.MAKE_ARRAY(resources);
     const self = this;
 
     return this.allUserRoles(userId)
@@ -167,44 +167,57 @@ export class Acl extends Common {
 
   public async whatResources(roles: IRole | IRoles, permissions?: IPermission | IPermissions): Promise<IDynamicObject> {
     let permissionsTmp = permissions;
-    roles = Common.makeArray(roles);
+    roles = Common.MAKE_ARRAY(roles);
 
     if(permissions !== undefined){
-      permissionsTmp = Common.makeArray(permissionsTmp);
+      permissionsTmp = Common.MAKE_ARRAY(permissionsTmp);
+      return this.permittedResources(roles, permissionsTmp);
     }
 
-    return this.permittedResources(roles, permissionsTmp);
+    return this.permittedResources(roles);
+
+    // return this.permittedResources(roles, permissionsTmp);
   };
 
-  public async permittedResources(roles, permissions): Promise<IResources>{
+  public async permittedResources(roles: IRoles, permissions?: IPermission | IPermissions): Promise<IResources> {
     const _this = this;
+    // const result = [];
     const result = permissions === undefined ? {} : [];
 
-    return this.rolesResources(roles).then(function(resources){
-      return Promise.all(resources.map(function(resource){
-        return _this.resourcePermissions(roles, resource).then(function(p){
+    const rolesTmp = Common.MAKE_ARRAY(roles);
 
-          if(Array.isArray(result)){
-            const commonPermissions = intersection(permissions, p);
-            if(commonPermissions.length>0){
-              result.push(resource);
+    return this.rolesResources(rolesTmp)
+      .then(function(resources: IResources){
+        return Promise.all(resources.map(function(resource: IResource){
+          return _this.resourcePermissions(rolesTmp, resource).then(function(p){
+
+            if(Array.isArray(result)){
+              const commonPermissions = intersection(permissions, p);
+              if(commonPermissions.length>0){
+                result.push(resource);
+              }
+            } else{
+              result[resource] = p;
             }
-          }else{
-            result[resource] = p;
+          });
+        })).then(function(){
+          if(isObject(result)) {
+            const resultArray = [];
+            Object.entries(result).forEach((item) => resultArray[item[0]] = item[1]);
+            return resultArray;
           }
+
+          return result;
         });
-      })).then(function(){
-        return result;
       });
-    });
   }
 
   public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
 
-    const resourcesTmp = Common.makeArray(resources);
+    const resourcesTmp = Common.MAKE_ARRAY(resources);
 
     if(permissions && !isFunction(permissions)){
-      permissions = Common.makeArray(permissions);
+      permissions = Common.MAKE_ARRAY(permissions);
     }else {
       permissions = null;
     }
@@ -215,8 +228,8 @@ export class Acl extends Common {
   public async removePermissions(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
     const _this = this;
 
-    const resourcesTmp = Common.makeArray(resources);
-    const permissionsTmp = Common.makeArray(permissions);
+    const resourcesTmp = Common.MAKE_ARRAY(resources);
+    const permissionsTmp = Common.MAKE_ARRAY(permissions);
 
 
     _this.store.begin();
@@ -276,7 +289,7 @@ export class Acl extends Common {
     });
   }
 
-  public removeRoleParents(role: IRole, parents?: IRolesParents): Promise<void> {
+  public removeRoleParents(role: IRole, parents?: IRolesParent | IRolesParents): Promise<void> {
     if (isFunction(parents)) {
       parents = null;
     }
@@ -354,7 +367,7 @@ export class Acl extends Common {
   };
 
   private async allowEx(objs: IRolesArray) {
-    // const objsTmp = await Common.makeArray(objs);
+    // const objsTmp = await Common.MAKE_ARRAY(objs);
     const objsTmp = objs;
 
     const demuxed = [];
@@ -374,14 +387,15 @@ export class Acl extends Common {
     }, null);
   };
 
-  private async resourcePermissions(roles: IRoles, resource: IResource): Promise<IPermissions>{
+  private async resourcePermissions(roles: IRoles, resource: IResource): Promise<IPermissions> {
     const _this = this;
+    const rolesTmp = Common.MAKE_ARRAY(roles);
 
-    if(roles.length===0){
+    if(rolesTmp.length===0){
       return [];
     } else{
-      return this.store.union(this.allowsBucket(resource), roles).then(function(resourcePermissions){
-        return _this.rolesParents(roles).then(function(parents){
+      return this.store.union(this.allowsBucket(resource), rolesTmp).then(function(resourcePermissions){
+        return _this.rolesParents(rolesTmp).then(function(parents){
           if(parents && parents.length){
             return _this.resourcePermissions(parents, resource).then(function(morePermissions){
               return union(resourcePermissions, morePermissions);
@@ -394,9 +408,9 @@ export class Acl extends Common {
     }
   };
 
-  private async rolesResources(roles: IRoles): Promise<IResources> {
+  private async rolesResources(roles: IRole | IRoles): Promise<IResources> {
     const _this = this;
-    const rolesTmp = Common.makeArray(roles);
+    const rolesTmp = Common.MAKE_ARRAY(roles);
 
     return this.allRoles(rolesTmp).then(function(allRoles){
       let result = [];
