@@ -1,6 +1,6 @@
 import { extend, intersection, isFunction, isObject, union } from "lodash";
 import { IStore } from "..";
-import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllow, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../types";
+import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../types";
 import { Common } from "./common";
 
 /**
@@ -462,7 +462,7 @@ export class Acl extends Common {
 
     rolesArrayParam.forEach((obj: IRolesObject) => {
       const roles = obj.roles;
-      obj.allows.forEach((allow: IRolesObjectAllow | IRolesObjectAllows) => {
+      obj.allows.forEach((allow: IRolesObjectAllows) => {
         demuxed.push({
           roles:roles,
           resources:allow.resources,
