@@ -11,7 +11,13 @@ export interface IOptions {
   };
 }
 
-export type IRolesArray = { roles: string; allows: ({ resources: string; permissions: string; } | { resources: string[]; permissions: string[]; })[]; }[]
+export type IRolesObjectAllow = { resources: string; permissions: string; };
+export type IRolesObjectAllows = { resources: string[]; permissions: string[]; };
+
+export type IDemuxed = { roles: IRole | IRoles, resources: IResource | IResources, permissions: IPermission | IPermissions };
+
+export type IRolesObject = { roles: string; allows: IRolesObjectAllow[] | IRolesObjectAllows[]; };
+export type IRolesObjects = IRolesObject[];
 
 export type IRolesParent = string;
 export type IRolesParents = IRolesParent[];
@@ -30,6 +36,8 @@ export type IRoles = IRole[];
 
 export type IPermission = string;
 export type IPermissions = IPermission[];
+
+export type IBucket = string
 
 
 export interface IDynamicObject {
