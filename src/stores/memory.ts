@@ -1,6 +1,6 @@
 import { difference, flatten, pick, union, uniq, values as lValues } from 'lodash';
 import { Common } from '../classes/common';
-import { IStore } from '../interfaces/IStore';
+import { IStore } from '..';
 
 /**
  * {@inheritDoc}
