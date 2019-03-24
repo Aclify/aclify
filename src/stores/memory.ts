@@ -8,7 +8,6 @@ import { IStore } from '../interfaces/IStore';
  */
 export class MemoryStore extends Common implements IStore {
   public buckets: {};
-
   public transaction: Function[];
 
   constructor() {
@@ -121,7 +120,7 @@ export class MemoryStore extends Common implements IStore {
    * @return void
    */
   public add(bucket: string, key: string | number, values: string|[string]): void {
-    const valuesArray = Common.makeArray(values);
+    const valuesArray = Common.MAKE_ARRAY(values);
 
     this.transaction.push(() => {
       if (!this.buckets[bucket]) {
@@ -143,7 +142,7 @@ export class MemoryStore extends Common implements IStore {
    * @return Promise<void>
    */
   public async del(bucket: string, keys: string[]): Promise<void> {
-    const keysArray = Common.makeArray(keys);
+    const keysArray = Common.MAKE_ARRAY(keys);
 
     this.transaction.push(() => {
       if (this.buckets[bucket]) {
@@ -160,7 +159,7 @@ export class MemoryStore extends Common implements IStore {
    * @return Promise<void>
    */
   public async remove(bucket: string, key: string | number, values: string[]): Promise<void> {
-    const valuesArray = Common.makeArray(values);
+    const valuesArray = Common.MAKE_ARRAY(values);
 
     this.transaction.push(() => {
       const bucketKey = this.buckets[bucket][key]; // tslint:disable-line no-unsafe-any
