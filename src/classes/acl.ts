@@ -1,8 +1,12 @@
 import { extend, intersection, isFunction, isObject, union } from "lodash";
-import { IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesArray, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
+import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllow, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
 import { IStore } from "../interfaces/IStore";
 import { Common } from "./common";
 
+/**
+ * {@inheritDoc}
+ * @description Acl class.
+ */
 export class Acl extends Common {
   public options: IOptions;
   public store: IStore;
@@ -29,9 +33,9 @@ export class Acl extends Common {
    * @param permissions
    * @return Promise<void>
    */
-  public async allow(roles: IRole | IRoles | IRolesArray, resources?: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
+  public async allow(roles: IRole | IRoles | IRolesObjects, resources?: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
     if(arguments.length === 1) {
-      return this.allowEx(roles as IRolesArray);
+      return this.allowEx(roles as IRolesObjects);
     }
 
     const rolesParam = Common.MAKE_ARRAY(roles as IRole | IRoles);
@@ -169,7 +173,7 @@ export class Acl extends Common {
 
     const parents = await this.store.union(this.options.buckets.parents, roles);
 
-    return (parents && parents.length) ? this.checkPermissions(parents, resource, permissionsFiltered) : false;
+    return (parents.length > 0) ? this.checkPermissions(parents, resource, permissionsFiltered) : false;
   }
 
   /**
@@ -179,7 +183,7 @@ export class Acl extends Common {
    * @return Promise<IDynamicObject>
    */
   public async allowedPermissions(userId: IUserId, resources: IResource | IResources): Promise<IDynamicObject> {
-    if (this.store.unions) {
+    if (isFunction(this.store.unions)) {
       return this.optimizedAllowedPermissions(userId, resources);
     }
 
@@ -209,14 +213,16 @@ export class Acl extends Common {
 
     if (roles.length === 0) {
       const emptyResult = {};
-      buckets.forEach((bucket: string) => emptyResult[bucket] = []);
+      buckets.forEach((bucket: IBucket) => emptyResult[bucket] = []);
       response = emptyResult;
     }
 
     response = await this.store.unions(buckets, roles);
 
     const result = {};
-    Object.keys(response).forEach((bucket: string) => result[this.keyFromAllowsBucket(bucket)] = response[bucket], this);
+    Object.keys(response).forEach((bucket: IBucket) => {
+      result[this.keyFromAllowsBucket(bucket)] = response[bucket]
+    }, this);
 
     return result;
   }
@@ -265,7 +271,8 @@ export class Acl extends Common {
 
     if(isObject(result)) {
       const resultArray = [];
-      Object.entries(result).forEach((item) => resultArray[item[0]] = item[1]);
+      Object.entries(result).forEach((item: [string, string]) => resultArray[item[0]] = item[1]);
+
       return resultArray;
     }
 
@@ -279,10 +286,10 @@ export class Acl extends Common {
    * @param permissions
    * @return Promise<void>
    */
-  public async removeAllow(role: IRole, resources: IResource | IResources, permissions: IPermission | IPermissions): Promise<void> {
+  public async removeAllow(role: IRole, resources: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
     const resourcesParam = Common.MAKE_ARRAY(resources);
 
-    if(permissions && !isFunction(permissions)){
+    if(permissions !== undefined && !isFunction(permissions)){
       return this.removePermissions(role, resourcesParam, Common.MAKE_ARRAY(permissions));
     }
 
@@ -298,15 +305,14 @@ export class Acl extends Common {
    */
   public async removePermissions(role: IRole, resources: IResource | IResources, permissions?: IPermission | IPermissions): Promise<void> {
     const resourcesParams = Common.MAKE_ARRAY(resources);
-    const permissionsParams = Common.MAKE_ARRAY(permissions);
 
     this.store.begin();
 
     resourcesParams.forEach(async (resource: IResource) => {
       const bucket = this.allowsBucket(resource);
 
-      if (permissionsParams) {
-        await this.store.remove(bucket, role, permissionsParams);
+      if (permissions !== undefined) {
+        await this.store.remove(bucket, role, Common.MAKE_ARRAY(permissions));
       } else {
         await this.store.del(bucket, role);
         await this.store.remove(this.options.buckets.resources, role, resource);
@@ -317,10 +323,10 @@ export class Acl extends Common {
     this.store.begin();
 
     await Promise.all(resourcesParams.map(async (resource: IResource) => {
-      const bucket = this.allowsBucket(resource);
-      const permissions: IPermissions = await this.store.get(bucket, role);
+      const bucket: IBucket = this.allowsBucket(resource);
+      const permissionsRetrieved: IPermissions = await this.store.get(bucket, role);
 
-      if(permissions.length === 0){
+      if(permissionsRetrieved.length === 0){
         await this.store.remove(this.options.buckets.resources, role, resource);
       }
     }, this));
@@ -338,7 +344,7 @@ export class Acl extends Common {
 
     this.store.begin();
 
-    resources.forEach(async (resource) => {
+    resources.forEach(async (resource: IResource) => {
       const bucket = this.allowsBucket(resource);
       await this.store.del(bucket, role);
     }, this);
@@ -358,16 +364,10 @@ export class Acl extends Common {
    * @return Promise<void>
    */
   public async removeRoleParents(role: IRole, parents?: IRolesParent | IRolesParents): Promise<void> {
-    let parentsParams = parents;
-
-    if (isFunction(parentsParams)) {
-      parentsParams = null;
-    }
-
     this.store.begin();
 
-    if (parentsParams) {
-      await this.store.remove(this.options.buckets.parents, role, parentsParams);
+    if (parents !== undefined) {
+      await this.store.remove(this.options.buckets.parents, role, parents);
     } else  {
       await this.store.del(this.options.buckets.parents, role);
     }
@@ -386,7 +386,7 @@ export class Acl extends Common {
     this.store.begin();
     await this.store.del(this.allowsBucket(resource), roles);
 
-    roles.forEach(async (role: IRole) => await this.store.remove(this.options.buckets.resources, role, resource), this);
+    roles.forEach(async (role: IRole) => this.store.remove(this.options.buckets.resources, role, resource), this);
 
     return this.store.end();
   }
@@ -402,7 +402,7 @@ export class Acl extends Common {
     await this.store.remove(this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      roles.forEach(async (role: IRole) => await this.store.remove(this.options.buckets.roles, role, userId), this);
+      roles.forEach(async (role: IRole) => this.store.remove(this.options.buckets.roles, role, userId), this);
     } else {
       await this.store.remove(this.options.buckets.roles, roles, userId);
     }
@@ -435,6 +435,7 @@ export class Acl extends Common {
 
     if(parents.length > 0) {
       const parentRoles = await this.allRoles(parents);
+
       return union(roles, parentRoles);
     }
 
@@ -455,13 +456,13 @@ export class Acl extends Common {
    * @param rolesArray
    * @return
    */
-  private async allowEx(rolesArray: IRolesArray): Promise<void> {
-    const objsTmp = rolesArray;
-
+  private async allowEx(rolesArray: IRolesObjects): Promise<void> {
+    const rolesArrayParam = rolesArray;
     const demuxed = [];
-    objsTmp.forEach((obj) => {
+
+    rolesArrayParam.forEach((obj: IRolesObject) => {
       const roles = obj.roles;
-      obj.allows.forEach((allow) => {
+      obj.allows.forEach((allow: IRolesObjectAllow | IRolesObjectAllows) => {
         demuxed.push({
           roles:roles,
           resources:allow.resources,
@@ -470,7 +471,9 @@ export class Acl extends Common {
       });
     });
 
-    demuxed.reduce(async (_values, obj) => await this.allow(obj.roles, obj.resources, obj.permissions), null);
+    demuxed.reduce(async (_: undefined, obj: IDemuxed) => {
+      await this.allow(obj.roles, obj.resources, obj.permissions)
+    }, undefined);
   }
 
   /**
@@ -489,8 +492,9 @@ export class Acl extends Common {
     const resourcePermissions = await this.store.union(this.allowsBucket(resource), rolesTmp);
     const parents = await this.rolesParents(rolesTmp);
 
-    if(parents && parents.length) {
+    if(parents.length > 0) {
       const morePermissions = await this.resourcePermissions(parents, resource);
+
       return union(resourcePermissions, morePermissions);
     }
 
