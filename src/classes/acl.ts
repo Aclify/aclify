@@ -1,6 +1,6 @@
 import { extend, intersection, isFunction, isObject, union } from "lodash";
-import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllow, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../interfaces/IAcl";
-import { IStore } from "../interfaces/IStore";
+import { IStore } from "..";
+import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllow, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../types";
 import { Common } from "./common";
 
 /**
