@@ -24,21 +24,24 @@
   },
   "homepage": "https://github.com/aclify/aclify#readme",
   "dependencies": {
-    "lodash": "^4.17.11"
+    "bluebird": "^3.5.4",
+    "lodash": "^4.17.11",
+    "redis": "^2.2.5"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.26",
     "@types/jest": "^24.0.11",
     "@types/lodash": "^4.14.123",
-    "@types/node": "^11.11.3",
+    "@types/node": "^11.13.4",
     "@types/redis": "^2.8.12",
-    "jest": "^24.5.0",
+    "jest": "^24.7.1",
     "node-mocks-http": "^1.7.3",
     "prettier": "^1.16.4",
-    "ts-jest": "^24.0.0",
-    "tslint": "^5.14.0",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.15.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-microsoft-contrib": "^6.1.0",
-    "typescript": "^3.3.3333"
+    "typescript": "^3.4.3"
   },
   "scripts": {
     "clean": "rm -rf coverage dist",
