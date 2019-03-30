@@ -1,3 +1,5 @@
+import { Multi } from 'redis';
+
 export interface IStore {
   /**
    * @description Store.
@@ -8,7 +10,7 @@ export interface IStore {
    * @description Begins a transaction.
    * @return Function[]
    */
-  begin(): Function[];
+  begin(): Function[] | Multi;
 
   /**
    * @description Ends a transaction (and executes it).
