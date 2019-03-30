@@ -30,6 +30,7 @@
     "@types/jest": "^24.0.11",
     "@types/lodash": "^4.14.123",
     "@types/node": "^11.11.3",
+    "@types/redis": "^2.8.12",
     "jest": "^24.5.0",
     "node-mocks-http": "^1.7.3",
     "prettier": "^1.16.4",
@@ -49,5 +50,8 @@
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "docker:run:test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit"
+  },
+  "peerDependencies": {
+    "redis": "^2.8.0"
   }
 }
