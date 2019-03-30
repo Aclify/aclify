@@ -2,44 +2,49 @@ version: '3.3'
 
 services:
   aclify:
-    container_name: "aclify"
+    container_name: aclify
     build: .
-    depends_on:
-      - mysql
-      - redis
-      - mongo
+#    depends_on:
+#      - aclify-mysql
+#      - aclify-redis
+#      - aclify-mongo
     networks:
       - aclify-network
     volumes:
       - .:/opt/app/:rw
-    command: sh -c 'cd /opt/app && npm install && npm run test'
+#    command: sh -c 'cd /opt/app && yarn && yarn test:coverage'
+    command: sh -c 'cd /opt/app && yarn test:coverage'
+#
+#  aclify-mysql:
+#    image: mysql:5.7
+#    container_name: aclify-mysql
+#    ports:
+#      - 3306:3306
+#    environment:
+#      - MYSQL_DATABASE=aclify
+#      - MYSQL_ROOT_PASSWORD=aclify
+#    networks:
+#      - aclify-network
+#
+#  aclify-redis:
+#    image: library/redis:4
+#    container_name: aclify-redis
+#    ports:
+#      - 6379:6379
+#    networks:
+#      - aclify-network
+#
+#  aclify-mongo:
+#    image: mongo:3.6
+#    container_name: aclify-mongo
+#    ports:
+#      - 27017:27017
+#    environment:
+#      - MONGO_DATA_DIR=/data/db
+#      - MONGO_LOG_DIR=/dev/null
+#    networks:
+#      - aclify-network
 
-  mysql:
-    image: mysql:5.7
-    container_name: "mysql"
-    ports:
-      - 3306:3306
-    environment:
-      - MYSQL_DATABASE=aclify
-      - MYSQL_ROOT_PASSWORD=aclify
-    networks:
-      - aclify-network
-
-  redis:
-    image: redis:4.0
-    container_name: "redis"
-    ports:
-      - 6379:6379
-    networks:
-      - aclify-network
-
-  mongo:
-    image: mongo:3.6
-    container_name: "mongo"
-    ports:
-      - 27017:27017
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-    networks:
-      - aclify-network
+networks:
+  aclify-network:
+    driver: bridge
