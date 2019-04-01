@@ -32,7 +32,7 @@ export default class MySQL extends Common implements Store {
    */
   end(cb): any {
     // Execute transaction
-    return this.db.Promise.reduce(this.transaction, (res, func) => func(), null)
+    return this.db.Sequelize.Promise.reduce(this.transaction, (res, func) => func(), null)
       .then()
       .nodeify(cb);
   }
