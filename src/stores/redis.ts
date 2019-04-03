@@ -48,10 +48,6 @@ export class RedisStore extends Common implements IStore {
    Gets the contents at the bucket's key.
    */
   public async get(bucket: IBucket, key): Promise<string[]> {
-    // contract(arguments)
-    //   .params('string', 'string|number', 'function')
-    //   .end();
-
     const keyParam = this.bucketKey(bucket, key);
 
     this.redis.smembers(keyParam);
@@ -63,12 +59,11 @@ export class RedisStore extends Common implements IStore {
   public async unions(buckets, keys, cb) {
     const redisKeys = {};
     const batch = this.redis.batch();
-    const self = this;
 
     buckets.forEach(bucket => {
-      redisKeys[bucket] = self.bucketKey(bucket, keys);
+      redisKeys[bucket] = this.bucketKey(bucket, keys);
       batch.sunion(redisKeys[bucket], noop);
-    });
+    }, this);
 
     batch.exec((err, replies) => {
       if (!Array.isArray(replies)) {
@@ -91,10 +86,6 @@ export class RedisStore extends Common implements IStore {
    Returns the union of the values in the given keys.
    */
   public async union(bucket, keys) {
-    // contract(arguments)
-    //   .params('string', 'array', 'function')
-    //   .end();
-    //
     keys = this.bucketKey(bucket, keys);
     this.redis.sunion(keys);
   }
@@ -103,16 +94,12 @@ export class RedisStore extends Common implements IStore {
    Adds values to a given key inside a bucket.
    */
   public add(bucket, key, values) {
-    // contract(arguments)
-    //   .params('object', 'string', 'string|number','string|array|number')
-    //   .end();
-    //
     key = this.bucketKey(bucket, key);
 
     if (Array.isArray(values)){
       values.forEach(value => {
         this.transaction.sadd(key, value);
-      });
+      }, this);
     }else{
       this.transaction.sadd(key, values);
     }
@@ -122,15 +109,9 @@ export class RedisStore extends Common implements IStore {
    Delete the given key(s) at the bucket
    */
   public async del(bucket, keys) {
-    // contract(arguments)
-    //   .params('object', 'string', 'string|array')
-    //   .end();
-    //
-    const self = this;
-
     keys = Array.isArray(keys) ? keys : [keys];
 
-    keys = keys.map(key => self.bucketKey(bucket, key));
+    keys = keys.map((key) => this.bucketKey(bucket, key), this);
 
     this.transaction.del(keys);
   }
