@@ -59,7 +59,7 @@
     "mongodb": "^3.1.10",
     "mysql2": "^1.6.4",
     "redis": "^2.8.0",
-    "sequelize": "^4.42.0"
+    "sequelize": "^5.2.9"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

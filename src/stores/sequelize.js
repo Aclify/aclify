@@ -224,7 +224,14 @@ export default class MySQL extends Common implements Store {
   findRows(bucket, keys): Array<any> {
     if (bucket.indexOf('allows_') === 0) return this.findRow(bucket);
     return this.getModel(bucket)
-      .findAll({where: {key: {[this.db.Sequelize.Op.in]: keys.map((key) => key.toString())}}, attributes: ['key', 'value']})
+      .findAll({
+        where: {
+          key: {
+            [this.db.Sequelize.Op.in]: keys.map((key) => key.toString()),
+          },
+        },
+        attributes: ['key', 'value'],
+      })
       .then((rows) => rows.map((row) => {
         const rowTmp = row;
         if (row.value && JSON.parse(row.value)) {
