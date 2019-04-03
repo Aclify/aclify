@@ -29,7 +29,6 @@ let mongoClient = null;
       } else if (store === 'MySQL') {
         const sequelize = new Sequelize('aclify', 'root', 'aclify', {
           host: 'mysql',
-          operatorsAliases: {$in: Sequelize.Op.in},
           dialect: 'mysql',
           logging: null,
         });
