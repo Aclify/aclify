@@ -549,13 +549,9 @@ Run using npm run <script> command.
     clean - remove coverage data, Jest cache and transpiled files.
     lint - lint source files and tests.
     typecheck - check type annotations.
-    test - run tests with coverage.
-    test-only - run tests without coverage.
-    test:watch - run tests without coverage in watch mode.
+    test -  run tests into docker-compose.
+    test:coverage - run tests without coverage.
     build - compile source files.
-    build:watch - interactive watch mode, compile sources on change.
-    docker:run:test - run tests into docker-compose.
-
 
 ## License
 
