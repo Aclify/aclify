@@ -10,7 +10,7 @@
     "lint:fix": "eslint --fix .",
     "typecheck": "flow check",
     "pretest": "npm run lint",
-    "test": "docker-compose up",
+    "test": "docker-compose up --abort-on-container-exit",
     "test:coverage": "jest --coverage",
     "prepare": "npm run build",
     "build": "babel src/**/*.js src/*.js -d dist"
