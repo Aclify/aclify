@@ -10,13 +10,12 @@
     "lint:fix": "eslint --fix .",
     "typecheck": "flow check",
     "pretest": "npm run lint",
-    "test": "jest --coverage",
-    "test-only": "jest",
+    "test": "docker-compose up",
+    "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "prepare": "npm run build",
     "build": "babel src/**/*.js src/*.js -d dist",
-    "build:watch": "babel --watch src/**/*.js src/*.js -d dist",
-    "docker:run:test": "docker-compose up"
+    "build:watch": "babel --watch src/**/*.js src/*.js -d dist"
   },
   "repository": {
     "type": "git",
