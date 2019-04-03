@@ -15,7 +15,7 @@ services:
       - mysql
     volumes:
       - .:/opt/app/:rw
-    command: sh -c 'cd /opt/app && npm install && npm run test'
+    command: sh -c 'cd /opt/app && npm install && npm run test:coverage'
 
   mysql:
     image: mysql:5.7
