@@ -1,4 +1,4 @@
-FROM node:boron
+FROM node:lts
 
 MAINTAINER Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>
 
