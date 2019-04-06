@@ -1,7 +1,7 @@
 import { RedisClient, Multi } from 'redis';
 import { Common } from '../classes/common';
 import { IStore } from '..';
-import {IBucket} from "../types";
+import { IBucket } from "../types";
 
 function noop(){}
 
@@ -12,6 +12,7 @@ function noop(){}
 export class RedisStore extends Common implements IStore {
   private redis: RedisClient;
   private transaction: Multi;
+  public buckets: {};
 
   constructor(redis: RedisClient, prefix?: string) {
     super();
@@ -48,15 +49,33 @@ export class RedisStore extends Common implements IStore {
    Gets the contents at the bucket's key.
    */
   public async get(bucket: IBucket, key): Promise<string[]> {
+    const output: string[] = [];
     const keyParam = this.bucketKey(bucket, key);
 
-    this.redis.smembers(keyParam);
+    if (Array.isArray(keyParam)) {
+      keyParam.forEach((key: string) => {
+        this.redis.smembers(key, (_err, values: string[]) => {
+          values.forEach((val: string) => {
+            output.push(val);
+          });
+        });
+      });
+    }
+
+    this.redis.smembers(keyParam as string, (_err, values: string[]) => {
+      values.forEach((val: string) => {
+        output.push(val);
+      });
+    });
+
+    // FIXME: return output; added (WIP)
+    return output;
   }
 
   /**
    Gets an object mapping each passed bucket to the union of the specified keys inside that bucket.
    */
-  public async unions(buckets, keys, cb) {
+  public async unions(buckets, keys): Promise<string[]> {
     const redisKeys = {};
     const batch = this.redis.batch();
 
@@ -65,7 +84,7 @@ export class RedisStore extends Common implements IStore {
       batch.sunion(redisKeys[bucket], noop);
     }, this);
 
-    batch.exec((err, replies) => {
+    batch.exec((_err, replies) => {
       if (!Array.isArray(replies)) {
         return {};
       }
@@ -78,16 +97,20 @@ export class RedisStore extends Common implements IStore {
 
         result[buckets[index]] = reply;
       });
-      cb(err, result);
+
+      return result;
+      // cb(err, result);
     });
+
+    // FIXME: return []; added
+    return [];
   }
 
   /**
    Returns the union of the values in the given keys.
    */
   public async union(bucket, keys) {
-    keys = this.bucketKey(bucket, keys);
-    this.redis.sunion(keys);
+    return this.redis.sunion(this.bucketKey(bucket, keys));
   }
 
   /**
