@@ -15,6 +15,7 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         acl = new Acl(new MemoryStore());
         done();
       } else if (store === 'Redis') {
+
         acl = new Acl(new RedisStore(Redis.createClient({host: 'redis'})));
         done();
       // } else if (store === 'MongoDB') {
