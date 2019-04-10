@@ -139,6 +139,15 @@ export class RedisStore extends Common implements IStore {
   }
 
   /**
+   * @description Closes connection.
+   * @return Promise<void>
+   */
+  public async close(): Promise<void> {
+    // @ts-ignore
+    await this.redis.quitAsync(); // tslint:disable-line no-unsafe-any
+  }
+
+  /**
    * @description Returns bucket key(s).
    * @param bucket
    * @param keys
