@@ -20,7 +20,7 @@ export class RedisStore extends Common implements IStore {
   constructor(redis: RedisClient, prefix?: string) {
     super();
     this.redis = redis;
-    this.prefix = prefix || 'acl';
+    this.prefix = prefix !== undefined ? prefix : 'acl';
   }
 
   /**
@@ -44,11 +44,12 @@ export class RedisStore extends Common implements IStore {
    * @return Promise<void>
    */
   public async clean(): Promise<void> {
-    this.redis.keys(`${this.prefix}*`, (_err, keys: string[]) => {
-      if (keys.length) {
-        this.redis.del(keys);
-      }
-    });
+    // @ts-ignore
+    const keys: string[] = await this.redis.keysAsync(`${this.prefix}*`); // tslint:disable-line no-unsafe-any
+    if (keys.length > 0) {
+      // @ts-ignore
+      await this.redis.delAsync(keys); // tslint:disable-line no-unsafe-any
+    }
   }
 
   /**
@@ -57,20 +58,20 @@ export class RedisStore extends Common implements IStore {
    * @param key
    * @return Promise<string[]>
    */
-  public async get(bucket: IBucket, key): Promise<string[]> {
+  public async get(bucket: IBucket, key: string | number): Promise<string[]> {
     const output: string[] = [];
     const keyParam = this.bucketKey(bucket, key);
 
     if (Array.isArray(keyParam)) {
-      keyParam.forEach(async (key: string) => {
+      keyParam.forEach(async (keyItem: string) => {
         // @ts-ignore
-        const values = await this.redis.smembersAsync(key);
-        values.forEach((val: string) => output.push(val));
+        const smembers: string[] = await this.redis.smembersAsync(keyItem); // tslint:disable-line no-unsafe-any
+        smembers.forEach((val: string) => output.push(val));
       });
     }
 
     // @ts-ignore
-    const values = await this.redis.smembersAsync(keyParam as string);
+    const values: string[] = await this.redis.smembersAsync(keyParam as string); // tslint:disable-line no-unsafe-any
     values.forEach((val: string) => output.push(val));
 
     return output;
@@ -82,9 +83,9 @@ export class RedisStore extends Common implements IStore {
    * @param keys
    * @return Promise<string[]>
    */
-  public async union(bucket, keys) {
+  public async union(bucket: string, keys: string[]): Promise<string[]> {
     // @ts-ignore
-    return this.redis.sunionAsync(this.bucketKey(bucket, keys));
+    return this.redis.sunionAsync(this.bucketKey(bucket, keys)); // tslint:disable-line no-unsafe-any
   }
 
   /**
@@ -94,15 +95,15 @@ export class RedisStore extends Common implements IStore {
    * @param values
    * @return Promise<void>
    */
-  public add(bucket, key, values) {
-    key = this.bucketKey(bucket, key);
+  public add(bucket: string, key: string | number, values: number | number[] | string | string[]): void {
+    const keyParam = this.bucketKey(bucket, key);
 
     if (Array.isArray(values)) {
-      values.forEach(value => {
-        this.transaction.sadd(key, value);
+      values.forEach((value: number | string) => {
+        this.transaction.sadd(keyParam as string, value as string);
       }, this);
     } else {
-      this.transaction.sadd(key, values);
+      this.transaction.sadd(keyParam as string, values as string);
     }
   }
 
@@ -112,10 +113,10 @@ export class RedisStore extends Common implements IStore {
    * @param keys
    * @return Promise<void>
    */
-  public async del(bucket, keys) {
-    keys = Array.isArray(keys) ? keys : [keys];
-    keys = keys.map((key) => this.bucketKey(bucket, key), this);
-    this.transaction.del(keys);
+  public async del(bucket: string, keys: string | string[]): Promise<void> {
+    const keysParam: string[] = Array.isArray(keys) ? keys : [keys];
+    const keysToRemove = keysParam.map((keyItem: string) => this.bucketKey(bucket, keyItem) as string, this);
+    this.transaction.del(keysToRemove);
   }
 
   /**
@@ -125,15 +126,15 @@ export class RedisStore extends Common implements IStore {
    * @param values
    * @return Promise<void>
    */
-  public async remove(bucket, key, values) {
-    key = this.bucketKey(bucket, key);
+  public async remove(bucket: string, key: string | number, values: number | number[] | string | string[]): Promise<void> {
+    const keyParam: string | string[] = this.bucketKey(bucket, key);
 
     if (Array.isArray(values)) {
-      values.forEach(value => {
-        this.transaction.srem(key, value);
+      values.forEach((value: string | number) => {
+        this.transaction.srem(keyParam as string, value as string);
       }, this);
     } else {
-      this.transaction.srem(key, values);
+      this.transaction.srem(keyParam as string, values as string);
     }
   }
 
@@ -143,9 +144,9 @@ export class RedisStore extends Common implements IStore {
    * @param keys
    * @return string|string[]
    */
-  private bucketKey(bucket, keys) {
+  private bucketKey(bucket: string, keys: number | string) {
     if (Array.isArray(keys)) {
-      return keys.map((key) => `${this.prefix}_${bucket}@${key}`, this);
+      return keys.map((keyItem: string) => `${this.prefix}_${bucket}@${keyItem}`, this);
     }
 
     return `${this.prefix}_${bucket}@${keys}`;
