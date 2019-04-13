@@ -1,12 +1,16 @@
-import Redis from 'redis';
+import * as Redis from 'redis';
 import { Acl, MemoryStore, RedisStore } from '../src';
+import * as bluebird from "bluebird";
+
+bluebird.promisifyAll(Redis.RedisClient.prototype);
+bluebird.promisifyAll(Redis.Multi.prototype);
 
 // const memoryStore = new MemoryStore();
 // const acl = new Acl(memoryStore);
 
 
 // ['Memory', 'MySQL', 'Redis', 'MongoDB'].forEach((store) => {
-['Memory', 'Redis'].forEach((store) => {
+['Redis'].forEach((store) => {
 
   let acl = null;
   describe(store, () => {
@@ -16,26 +20,27 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         done();
       } else if (store === 'Redis') {
 
-        acl = new Acl(new RedisStore(Redis.createClient({host: 'redis'})));
+        // @ts-ignore
+        acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
         done();
-      // } else if (store === 'MongoDB') {
-      //   MongoClient.connect('mongodb://mongo', (err, client) => {
-      //     acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
-      //     mongoClient = client;
-      //     done();
-      //   });
-      // } else if (store === 'MySQL') {
-      //   const sequelize = new Sequelize('aclify', 'root', 'aclify', {
-      //     host: 'mysql',
-      //     operatorsAliases: {$in: Sequelize.Op.in},
-      //     dialect: 'mysql',
-      //     logging: null,
-      //   });
-      //   sequelize.authenticate()
-      //     .then(() => {
-      //       acl = new Acl(new SequelizeStore(sequelize, {prefix: 'acl_'}));
-      //       done();
-      //     });
+        // } else if (store === 'MongoDB') {
+        //   MongoClient.connect('mongodb://mongo', (err, client) => {
+        //     acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
+        //     mongoClient = client;
+        //     done();
+        //   });
+        // } else if (store === 'MySQL') {
+        //   const sequelize = new Sequelize('aclify', 'root', 'aclify', {
+        //     host: 'mysql',
+        //     operatorsAliases: {$in: Sequelize.Op.in},
+        //     dialect: 'mysql',
+        //     logging: null,
+        //   });
+        //   sequelize.authenticate()
+        //     .then(() => {
+        //       acl = new Acl(new SequelizeStore(sequelize, {prefix: 'acl_'}));
+        //       done();
+        //     });
       }
     });
 
@@ -230,7 +235,6 @@ import { Acl, MemoryStore, RedisStore } from '../src';
 
     describe('Allowance queries', () => {
       describe('isAllowed', () => {
-
         it('Can joed view blogs?', async () => {
           const isAllowed = await acl.isAllowed('joed', 'blogs', 'view');
           expect(isAllowed).toBeTruthy();
@@ -270,7 +274,6 @@ import { Acl, MemoryStore, RedisStore } from '../src';
           const isAllowed = await acl.isAllowed('jsmith', 'forums', 'edit');
           expect(isAllowed).toBeFalsy();
         });
-
 
         it('Can jsmith edit blogs?', async () => {
           const isAllowed = await acl.isAllowed('jsmith', 'blogs', 'edit');
@@ -390,15 +393,19 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         describe('allowedPermissions', () => {
           it('What permissions has james over blogs and forums?', async () => {
             const allowedPermissions = await acl.allowedPermissions('james', ['blogs', 'forums']);
-            expect(allowedPermissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+            expect(allowedPermissions).toHaveProperty('blogs');// ['edit', 'view', 'delete']);
             expect(allowedPermissions).toHaveProperty('forums', []);
+            expect(allowedPermissions.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort())
           });
         });
+
         it('What permissions has userId=3 over blogs and forums?', async () => {
           const allowedPermissions = await acl.allowedPermissions(3, ['blogs', 'forums']);
-          expect(allowedPermissions).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+          expect(allowedPermissions).toHaveProperty('blogs');
           expect(allowedPermissions).toHaveProperty('forums', []);
+          expect(allowedPermissions.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort())
         });
+
         it('What permissions has nonsenseUser over blogs and forums?', async () => {
           const allowedPermissions = await acl.allowedPermissions('nonsense', ['blogs', 'forums']);
           expect(allowedPermissions).toHaveProperty('blogs', []);
@@ -410,7 +417,8 @@ import { Acl, MemoryStore, RedisStore } from '../src';
     describe('whatResources queries', () => {
       it('What resources have "bar" some rights on?', async () => {
         const resources = await acl.whatResources('bar');
-        expect(resources).toHaveProperty('blogs', ['view', 'delete'])
+        expect(resources).toHaveProperty('blogs');
+        expect(resources.blogs.sort()).toEqual(['view', 'delete'].sort());
       });
 
       it('What resources have "bar" view rights on?', async () => {
@@ -420,16 +428,20 @@ import { Acl, MemoryStore, RedisStore } from '../src';
 
       it('What resources have "fumanchu" some rights on?', async () => {
         const resources = await acl.whatResources('fumanchu');
-        expect(resources).toHaveProperty('blogs', ['get']);
-        expect(resources).toHaveProperty('forums', ['get', 'put', 'delete']);
-        expect(resources).toHaveProperty('news', ['get', 'put', 'delete']);
-        expect(resources['/path/file/file1.txt']).toEqual(['get', 'put', 'delete']);
-        expect(resources['/path/file/file2.txt']).toEqual(['get', 'put', 'delete']);
+        expect(resources).toHaveProperty('blogs');
+        expect(resources).toHaveProperty('forums');
+        expect(resources).toHaveProperty('news');
+        expect(resources['/path/file/file1.txt'].sort()).toEqual(['get', 'put', 'delete'].sort());
+        expect(resources['/path/file/file2.txt'].sort()).toEqual(['get', 'put', 'delete'].sort());
+        expect(resources.blogs.sort()).toEqual(['get']);
+        expect(resources.forums.sort()).toEqual(['get', 'put', 'delete'].sort());
+        expect(resources.news.sort()).toEqual(['get', 'put', 'delete'].sort());
       });
 
       it('What resources have "baz" some rights on?', async () => {
         const resources = await acl.whatResources('baz');
-        expect(resources).toHaveProperty('blogs', ['edit', 'view', 'delete']);
+        expect(resources).toHaveProperty('blogs', );
+        expect(resources.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort());
       });
     });
 
@@ -454,9 +466,11 @@ import { Acl, MemoryStore, RedisStore } from '../src';
       it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
         const resources = await acl.whatResources('fumanchu');
         expect(resources).not.toHaveProperty('blogs');
-        expect(resources).toHaveProperty('news', ['get', 'put']);
+        expect(resources).toHaveProperty('news');
         expect(resources).not.toHaveProperty('news', ['delete']);
-        expect(resources).toHaveProperty('forums', ['put', 'delete']);
+        expect(resources).toHaveProperty('forums');
+        expect(resources.news.sort()).toEqual(['get', 'put'].sort());
+        expect(resources.forums.sort()).toEqual(['put', 'delete'].sort());
       });
     });
 
@@ -527,7 +541,8 @@ import { Acl, MemoryStore, RedisStore } from '../src';
 
       it('Environment check', async () => {
         const resources = await acl2.whatResources('child');
-        expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+        expect(resources).toHaveProperty('x');
+        expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
       });
 
       it('Operation uses a callback when removing a specific parent role', async () => {
@@ -543,15 +558,18 @@ import { Acl, MemoryStore, RedisStore } from '../src';
       it('Remove parent role "parentX" from role "child"', async () => {
         await acl2.removeRoleParents('child', 'parentX');
         const resources = await acl2.whatResources('child');
-        expect(resources).toHaveProperty('x', ['read1', 'read2', 'read3', 'read4', 'read5']);
+        expect(resources).toHaveProperty('x');
         expect(resources.x).toHaveLength(5);
+        expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
+
       });
 
       it('Remove parent role "parent1" from role "child"', async () => {
         await acl2.removeRoleParents('child', 'parent1');
         const resources = await acl2.whatResources('child');
-        expect(resources).toHaveProperty('x', ['read2', 'read3', 'read4', 'read5']);
+        expect(resources).toHaveProperty('x');
         expect(resources.x).toHaveLength(4);
+        expect(resources.x.sort()).toEqual(['read2', 'read3', 'read4', 'read5'].sort());
       });
 
       it('Remove parent roles "parent2" & "parent3" from role "child"', async () => {
@@ -559,6 +577,7 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         const resources = await acl2.whatResources('child');
         expect(resources).toHaveProperty('x', ['read4', 'read5']);
         expect(resources.x).toHaveLength(2);
+        expect(resources.x.sort()).toEqual(['read4', 'read5'].sort());
       });
 
       it('Remove all parent roles from role "child"', async () => {
@@ -698,10 +717,10 @@ import { Acl, MemoryStore, RedisStore } from '../src';
 
       it('Verify that roles have permissions as assigned', async () => {
         const res1 = await acl.whatResources('role1');
-        expect(res1.res1.sort()).toStrictEqual(['perm1', 'perm2', 'perm3']); // tslint:disable-line no-unsafe-any
+        expect(res1.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
 
         const res2 = await acl.whatResources('role2');
-        expect(res2.res1.sort()).toStrictEqual(['perm1', 'perm2', 'perm3']); // tslint:disable-line no-unsafe-any
+        expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
       });
 
       it('Remove role "role1"', async () => {
@@ -717,7 +736,7 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         expect(Object.keys(res1)).toHaveLength(0);
 
         const res2 = await acl.whatResources('role2');
-        expect(res2.res1.sort()).toStrictEqual(['perm1', 'perm2', 'perm3']); // tslint:disable-line no-unsafe-any
+        expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
       });
     });
   });
