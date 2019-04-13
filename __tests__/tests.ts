@@ -2,19 +2,17 @@ import * as bluebird from 'bluebird';
 import * as Redis from 'redis';
 import { Acl, MemoryStore, RedisStore } from '../src';
 
-bluebird.promisifyAll(Redis.RedisClient.prototype);
-bluebird.promisifyAll(Redis.Multi.prototype);
-
 ['Memory', 'Redis'].forEach((store: string) => {
-
   let acl: Acl;
+
   describe(`${store} store`, () => {
     beforeAll((done: Function) => {
       if (store === 'Memory') {
         acl = new Acl(new MemoryStore());
         done();
       } else if (store === 'Redis') {
-
+        bluebird.promisifyAll(Redis.RedisClient.prototype);
+        bluebird.promisifyAll(Redis.Multi.prototype);
         acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
         done();
         // } else if (store === 'MongoDB') {
