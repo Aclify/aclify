@@ -26,13 +26,13 @@ services:
 #    networks:
 #      - aclify-network
 #
-#  aclify-redis:
-#    image: library/redis:4
-#    container_name: aclify-redis
-#    ports:
-#      - 6379:6379
-#    networks:
-#      - aclify-network
+  aclify-redis:
+    image: redis:4
+    container_name: aclify-redis
+    ports:
+      - 6379:6379
+    networks:
+      - aclify-network
 #
 #  aclify-mongo:
 #    image: mongo:3.6
