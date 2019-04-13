@@ -1,19 +1,22 @@
-import { RedisClient, Multi } from 'redis';
-import { Common } from '../classes/common';
+import { Multi, RedisClient } from 'redis';
 import { IStore } from '..';
+import { Common } from '../classes/common';
 import { IBucket } from "../types";
-
-function noop(){}
 
 /**
  * {@inheritDoc}
  * @description Redis store.
  */
 export class RedisStore extends Common implements IStore {
-  private redis: RedisClient;
-  private transaction: Multi;
   public buckets: {};
+  private readonly redis: RedisClient;
+  private transaction: Multi;
 
+  /**
+   * @description constructor
+   * @param redis
+   * @param prefix
+   */
   constructor(redis: RedisClient, prefix?: string) {
     super();
     this.redis = redis;
@@ -21,141 +24,127 @@ export class RedisStore extends Common implements IStore {
   }
 
   /**
-   Begins a transaction
+   * @description Begins a transaction.
+   * @return void
    */
-  public begin(): Multi {
-    return this.redis.multi();
+  public begin(): void {
+    this.transaction = this.redis.multi();
   }
 
   /**
-   Ends a transaction (and executes it)
+   * @description Ends a transaction (and executes it).
+   * @return Promise<void>
    */
   public async end(): Promise<void> {
     this.transaction.exec();
   }
 
   /**
-   Cleans the whole storage.
+   * @description Cleans the whole storage.
+   * @return Promise<void>
    */
   public async clean(): Promise<void> {
     this.redis.keys(`${this.prefix}*`, (_err, keys: string[]) => {
-      if(keys.length){
+      if (keys.length) {
         this.redis.del(keys);
       }
     });
   }
 
   /**
-   Gets the contents at the bucket's key.
+   * @description Gets the contents at the bucket's key.
+   * @param bucket
+   * @param key
+   * @return Promise<string[]>
    */
   public async get(bucket: IBucket, key): Promise<string[]> {
     const output: string[] = [];
     const keyParam = this.bucketKey(bucket, key);
 
     if (Array.isArray(keyParam)) {
-      keyParam.forEach((key: string) => {
-        this.redis.smembers(key, (_err, values: string[]) => {
-          values.forEach((val: string) => {
-            output.push(val);
-          });
-        });
+      keyParam.forEach(async (key: string) => {
+        // @ts-ignore
+        const values = await this.redis.smembersAsync(key);
+        values.forEach((val: string) => output.push(val));
       });
     }
 
-    this.redis.smembers(keyParam as string, (_err, values: string[]) => {
-      values.forEach((val: string) => {
-        output.push(val);
-      });
-    });
+    // @ts-ignore
+    const values = await this.redis.smembersAsync(keyParam as string);
+    values.forEach((val: string) => output.push(val));
 
-    // FIXME: return output; added (WIP)
     return output;
   }
 
   /**
-   Gets an object mapping each passed bucket to the union of the specified keys inside that bucket.
-   */
-  public async unions(buckets, keys): Promise<string[]> {
-    const redisKeys = {};
-    const batch = this.redis.batch();
-
-    buckets.forEach(bucket => {
-      redisKeys[bucket] = this.bucketKey(bucket, keys);
-      batch.sunion(redisKeys[bucket], noop);
-    }, this);
-
-    batch.exec((_err, replies) => {
-      if (!Array.isArray(replies)) {
-        return {};
-      }
-
-      const result = {};
-      replies.forEach((reply, index) => {
-        if (reply instanceof Error) {
-          throw reply;
-        }
-
-        result[buckets[index]] = reply;
-      });
-
-      return result;
-      // cb(err, result);
-    });
-
-    // FIXME: return []; added
-    return [];
-  }
-
-  /**
-   Returns the union of the values in the given keys.
+   * @description Returns the union of the values in the given keys.
+   * @param bucket
+   * @param keys
+   * @return Promise<string[]>
    */
   public async union(bucket, keys) {
-    return this.redis.sunion(this.bucketKey(bucket, keys));
+    // @ts-ignore
+    return this.redis.sunionAsync(this.bucketKey(bucket, keys));
   }
 
   /**
-   Adds values to a given key inside a bucket.
+   * @description Adds values to a given key inside a bucket.
+   * @param bucket
+   * @param key
+   * @param values
+   * @return Promise<void>
    */
   public add(bucket, key, values) {
     key = this.bucketKey(bucket, key);
 
-    if (Array.isArray(values)){
+    if (Array.isArray(values)) {
       values.forEach(value => {
         this.transaction.sadd(key, value);
       }, this);
-    }else{
+    } else {
       this.transaction.sadd(key, values);
     }
   }
 
   /**
-   Delete the given key(s) at the bucket
+   * @description Delete the given key(s) at the bucket.
+   * @param bucket
+   * @param keys
+   * @return Promise<void>
    */
   public async del(bucket, keys) {
     keys = Array.isArray(keys) ? keys : [keys];
-
     keys = keys.map((key) => this.bucketKey(bucket, key), this);
-
     this.transaction.del(keys);
   }
 
   /**
-   Removes values from a given key inside a bucket.
+   * @description Removes values from a given key inside a bucket.
+   * @param bucket
+   * @param key
+   * @param values
+   * @return Promise<void>
    */
   public async remove(bucket, key, values) {
     key = this.bucketKey(bucket, key);
 
-    if (Array.isArray(values)){
+    if (Array.isArray(values)) {
       values.forEach(value => {
         this.transaction.srem(key, value);
       }, this);
-    }else{
+    } else {
       this.transaction.srem(key, values);
     }
   }
 
+  /**
+   * @description Returns bucket key(s).
+   * @param bucket
+   * @param keys
+   * @return string|string[]
+   */
   private bucketKey(bucket, keys) {
-    if(Array.isArray(keys)){
+    if (Array.isArray(keys)) {
       return keys.map((key) => `${this.prefix}_${bucket}@${key}`, this);
     }
 
