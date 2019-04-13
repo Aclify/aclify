@@ -1,26 +1,20 @@
+import * as bluebird from 'bluebird';
 import * as Redis from 'redis';
 import { Acl, MemoryStore, RedisStore } from '../src';
-import * as bluebird from "bluebird";
 
 bluebird.promisifyAll(Redis.RedisClient.prototype);
 bluebird.promisifyAll(Redis.Multi.prototype);
 
-// const memoryStore = new MemoryStore();
-// const acl = new Acl(memoryStore);
+['Memory', 'Redis'].forEach((store: string) => {
 
-
-// ['Memory', 'MySQL', 'Redis', 'MongoDB'].forEach((store) => {
-['Redis'].forEach((store) => {
-
-  let acl = null;
-  describe(store, () => {
-    beforeAll((done) => {
+  let acl: Acl;
+  describe(`${store} store`, () => {
+    beforeAll((done: Function) => {
       if (store === 'Memory') {
         acl = new Acl(new MemoryStore());
         done();
       } else if (store === 'Redis') {
 
-        // @ts-ignore
         acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
         done();
         // } else if (store === 'MongoDB') {
@@ -44,19 +38,16 @@ bluebird.promisifyAll(Redis.Multi.prototype);
       }
     });
 
-    afterAll((done) => {
-      setTimeout(() => {
-        if (store === 'Redis') acl.store.redis.quit();
-        else if (store === 'MySQL') acl.store.db.close();
+    afterAll((done: Function) => {
+      setTimeout(async () => {
+        if (store === 'Redis') {
+          await acl.store.close();
+        } else if (store === 'MySQL') {
+          // acl.store.close();
+        }
         done();
       }, 14000);
     });
-
-
-
-
-
-
 
     describe('Constructor', () => {
       it('Should use default `buckets` names', () => {
@@ -392,15 +383,27 @@ bluebird.promisifyAll(Redis.Multi.prototype);
 
         describe('allowedPermissions', () => {
           it('What permissions has james over blogs and forums?', async () => {
-            const allowedPermissions = await acl.allowedPermissions('james', ['blogs', 'forums']);
-            expect(allowedPermissions).toHaveProperty('blogs');// ['edit', 'view', 'delete']);
+            interface IResult {
+              blogs: string[],
+              forums: string[],
+            }
+
+            // @ts-ignore
+            const allowedPermissions: IResult = await acl.allowedPermissions('james', ['blogs', 'forums']);
+            expect(allowedPermissions).toHaveProperty('blogs');
             expect(allowedPermissions).toHaveProperty('forums', []);
             expect(allowedPermissions.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort())
           });
         });
 
         it('What permissions has userId=3 over blogs and forums?', async () => {
-          const allowedPermissions = await acl.allowedPermissions(3, ['blogs', 'forums']);
+          interface IResult {
+            blogs: string[],
+            forums: string[],
+          }
+
+          // @ts-ignore
+          const allowedPermissions: IResult = await acl.allowedPermissions(3, ['blogs', 'forums']);
           expect(allowedPermissions).toHaveProperty('blogs');
           expect(allowedPermissions).toHaveProperty('forums', []);
           expect(allowedPermissions.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort())
@@ -416,7 +419,12 @@ bluebird.promisifyAll(Redis.Multi.prototype);
 
     describe('whatResources queries', () => {
       it('What resources have "bar" some rights on?', async () => {
-        const resources = await acl.whatResources('bar');
+        interface IResult {
+          blogs: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl.whatResources('bar');
         expect(resources).toHaveProperty('blogs');
         expect(resources.blogs.sort()).toEqual(['view', 'delete'].sort());
       });
@@ -427,7 +435,16 @@ bluebird.promisifyAll(Redis.Multi.prototype);
       });
 
       it('What resources have "fumanchu" some rights on?', async () => {
-        const resources = await acl.whatResources('fumanchu');
+        interface IResult {
+          blogs: string[],
+          forums: string[],
+          news: string[],
+          '/path/file/file1.txt': string[],
+          '/path/file/file2.txt': string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl.whatResources('fumanchu');
         expect(resources).toHaveProperty('blogs');
         expect(resources).toHaveProperty('forums');
         expect(resources).toHaveProperty('news');
@@ -439,7 +456,12 @@ bluebird.promisifyAll(Redis.Multi.prototype);
       });
 
       it('What resources have "baz" some rights on?', async () => {
-        const resources = await acl.whatResources('baz');
+        interface IResult {
+          blogs: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl.whatResources('baz');
         expect(resources).toHaveProperty('blogs', );
         expect(resources.blogs.sort()).toEqual(['edit', 'view', 'delete'].sort());
       });
@@ -464,7 +486,14 @@ bluebird.promisifyAll(Redis.Multi.prototype);
 
     describe('See if permissions were removed', () => {
       it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
-        const resources = await acl.whatResources('fumanchu');
+        interface IResult {
+          blogs: string[],
+          news: string[],
+          forums: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl.whatResources('fumanchu');
         expect(resources).not.toHaveProperty('blogs');
         expect(resources).toHaveProperty('news');
         expect(resources).not.toHaveProperty('news', ['delete']);
@@ -540,7 +569,12 @@ bluebird.promisifyAll(Redis.Multi.prototype);
       });
 
       it('Environment check', async () => {
-        const resources = await acl2.whatResources('child');
+        interface IResult {
+          x: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
         expect(resources).toHaveProperty('x');
         expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
       });
@@ -556,25 +590,42 @@ bluebird.promisifyAll(Redis.Multi.prototype);
       });
 
       it('Remove parent role "parentX" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
         await acl2.removeRoleParents('child', 'parentX');
-        const resources = await acl2.whatResources('child');
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
         expect(resources).toHaveProperty('x');
         expect(resources.x).toHaveLength(5);
         expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
-
       });
 
       it('Remove parent role "parent1" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
         await acl2.removeRoleParents('child', 'parent1');
-        const resources = await acl2.whatResources('child');
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
         expect(resources).toHaveProperty('x');
         expect(resources.x).toHaveLength(4);
         expect(resources.x.sort()).toEqual(['read2', 'read3', 'read4', 'read5'].sort());
       });
 
       it('Remove parent roles "parent2" & "parent3" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
         await acl2.removeRoleParents('child', ['parent2', 'parent3']);
-        const resources = await acl2.whatResources('child');
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
         expect(resources).toHaveProperty('x', ['read4', 'read5']);
         expect(resources.x).toHaveLength(2);
         expect(resources.x.sort()).toEqual(['read4', 'read5'].sort());
