@@ -8,3 +8,4 @@ coverage
 .idea
 .npm
 .DS_Store
+jest_0
