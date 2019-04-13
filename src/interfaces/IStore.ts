@@ -1,5 +1,3 @@
-import { Multi } from 'redis';
-
 export interface IStore {
   /**
    * @description Store.
@@ -10,7 +8,7 @@ export interface IStore {
    * @description Begins a transaction.
    * @return Function[]
    */
-  begin(): Function[] | Multi;
+  begin(): Function[] | void;
 
   /**
    * @description Ends a transaction (and executes it).
@@ -73,4 +71,10 @@ export interface IStore {
    * @return Promise<void>
    */
   remove(bucket: string, key: string | number, values: number | number[] | string | string[]): Promise<void>;
+
+  /**
+   * @description Closes store connection.
+   * @return Promise<void>
+   */
+  close?(): Promise<void>
 }
