@@ -1,6 +1,6 @@
+import Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { IStore } from '..';
-import Bluebird from 'bluebird';
 
 const aclCollectionName = 'resources';
 
