@@ -3,6 +3,7 @@ import { IStore } from "./interfaces/IStore";
 import { MemoryStore } from "./stores/memory";
 import { MongoDBStore } from "./stores/mongodb";
 import { RedisStore } from "./stores/redis";
+import { SequelizeStore } from "./stores/sequelize";
 
 export {
   Acl,
@@ -10,4 +11,5 @@ export {
   MemoryStore,
   RedisStore,
   MongoDBStore,
+  SequelizeStore,
 }
