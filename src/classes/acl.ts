@@ -310,7 +310,6 @@ export class Acl extends Common {
 
     resourcesParams.forEach(async (resource: IResource) => {
       const bucket = this.allowsBucket(resource);
-
       if (permissions !== undefined) {
         await this.store.remove(bucket, role, Common.MAKE_ARRAY(permissions));
       } else {

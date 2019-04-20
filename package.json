@@ -26,6 +26,7 @@
   "dependencies": {
     "bluebird": "^3.5.4",
     "lodash": "^4.17.11",
+    "mongodb": "^2.0.47",
     "redis": "^2.2.5"
   },
   "devDependencies": {
