@@ -144,7 +144,7 @@ export class MongoDBStore implements IStore {
       return [];
     }
 
-    return without(lodashKeys(MongoDBStore.fixKeys(document)),'keyParam','_id');
+    return without(lodashKeys(MongoDBStore.fixKeys(document)),'key','_id');
   }
 
   /**
@@ -170,7 +170,7 @@ export class MongoDBStore implements IStore {
       keyArrays.push.apply(keyArrays, lodashKeys(document));
     });
 
-    return without(union(keyArrays),"key","_id");
+    return without(union(keyArrays),'key','_id');
   }
 
   /**
@@ -182,7 +182,7 @@ export class MongoDBStore implements IStore {
    */
   public add(bucket: string, key: string | number, values: number | number[] | string | string[]): void {
     if(key === 'key') {
-      throw new Error('Key name \'keyParam\' is not allowed.');
+      throw new Error('Key name \'key\' is not allowed.');
     }
 
     const keyParam = MongoDBStore.encodeValue(key);
