@@ -1,10 +1,5 @@
 export interface IStore {
   /**
-   * @description Store.
-   */
-  buckets: {};
-
-  /**
    * @description Begins a transaction.
    * @return Function[]
    */
