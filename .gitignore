@@ -9,3 +9,4 @@ coverage
 .npm
 .DS_Store
 jest_0
+dist
