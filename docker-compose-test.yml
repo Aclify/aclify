@@ -4,28 +4,28 @@ services:
   aclify:
     container_name: aclify
     build: .
-#    depends_on:
-#      - aclify-mysql
-#      - aclify-redis
-#      - aclify-mongo
+    #    depends_on:
+    #      - aclify-mysql
+    #      - aclify-redis
+    #      - aclify-mongo
     networks:
       - aclify-network
     volumes:
       - .:/opt/app/:rw
-#    command: sh -c 'cd /opt/app && yarn && yarn test:coverage'
+    #    command: sh -c 'cd /opt/app && yarn && yarn test:coverage'
     command: sh -c 'cd /opt/app && yarn test:coverage'
-#
-#  aclify-mysql:
-#    image: mysql:5.7
-#    container_name: aclify-mysql
-#    ports:
-#      - 3306:3306
-#    environment:
-#      - MYSQL_DATABASE=aclify
-#      - MYSQL_ROOT_PASSWORD=aclify
-#    networks:
-#      - aclify-network
-#
+  #
+  #  aclify-mysql:
+  #    image: mysql:5.7
+  #    container_name: aclify-mysql
+  #    ports:
+  #      - 3306:3306
+  #    environment:
+  #      - MYSQL_DATABASE=aclify
+  #      - MYSQL_ROOT_PASSWORD=aclify
+  #    networks:
+  #      - aclify-network
+  #
   aclify-redis:
     image: redis:4
     container_name: aclify-redis
@@ -34,7 +34,7 @@ services:
     networks:
       - aclify-network
 
-  aclify-mongo:
+  aclify-mongodb:
     image: mongo:3.6
     container_name: aclify-mongo
     ports:
