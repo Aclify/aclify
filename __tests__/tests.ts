@@ -7,7 +7,7 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
   let acl: Acl;
 
   describe(`${store} store`, () => {
-    beforeAll((done: Function) => {
+    beforeAll(async (done: Function) => {
       if (store === 'Memory') {
         acl = new Acl(new MemoryStore());
         done();
@@ -17,10 +17,9 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
         acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
         done();
       } else if (store === 'MongoDB') {
-        MongoClient.connect('mongodb://aclify-mongodb', (_err, client) => {
-          acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
-          done();
-        });
+        const client = await MongoClient.connect('mongodb://aclify-mongodb'); // tslint:disable-line no-unsafe-any
+        acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_')); // tslint:disable-line no-unsafe-any
+        done();
         // } else if (store === 'MySQL') {
         //   const sequelize = new Sequelize('aclify', 'root', 'aclify', {
         //     host: 'mysql',
@@ -36,7 +35,7 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
       }
     });
 
-    afterAll((done) => {
+    afterAll((done: Function) => {
       setTimeout(async () => {
         if (['Redis', 'MongoDB'].includes(store)) {
           await acl.store.close();
