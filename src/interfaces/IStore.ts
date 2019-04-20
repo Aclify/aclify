@@ -1,9 +1,9 @@
 export interface IStore {
   /**
    * @description Begins a transaction.
-   * @return Function[]
+   * @return void
    */
-  begin(): Function[] | void;
+  begin(): void;
 
   /**
    * @description Ends a transaction (and executes it).
