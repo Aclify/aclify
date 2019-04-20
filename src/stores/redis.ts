@@ -13,7 +13,7 @@ export class RedisStore extends Common implements IStore {
   private transaction: Multi;
 
   /**
-   * @description constructor
+   * @description Constructor.
    * @param redis
    * @param prefix
    */
