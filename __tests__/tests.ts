@@ -1,8 +1,9 @@
 import * as bluebird from 'bluebird';
+import { MongoClient } from 'mongodb';
 import * as Redis from 'redis';
-import { Acl, MemoryStore, RedisStore } from '../src';
+import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
 
-['Memory', 'Redis'].forEach((store: string) => {
+['Memory', 'Redis', 'MongoDB'].forEach((store: string) => {
   let acl: Acl;
 
   describe(`${store} store`, () => {
@@ -15,12 +16,11 @@ import { Acl, MemoryStore, RedisStore } from '../src';
         bluebird.promisifyAll(Redis.Multi.prototype);
         acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
         done();
-        // } else if (store === 'MongoDB') {
-        //   MongoClient.connect('mongodb://mongo', (err, client) => {
-        //     acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
-        //     mongoClient = client;
-        //     done();
-        //   });
+      } else if (store === 'MongoDB') {
+        MongoClient.connect('mongodb://aclify-mongodb', (_err, client) => {
+          acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_'));
+          done();
+        });
         // } else if (store === 'MySQL') {
         //   const sequelize = new Sequelize('aclify', 'root', 'aclify', {
         //     host: 'mysql',
@@ -36,12 +36,10 @@ import { Acl, MemoryStore, RedisStore } from '../src';
       }
     });
 
-    afterAll((done: Function) => {
+    afterAll((done) => {
       setTimeout(async () => {
-        if (store === 'Redis') {
+        if (['Redis', 'MongoDB'].includes(store)) {
           await acl.store.close();
-        } else if (store === 'MySQL') {
-          // acl.store.close();
         }
         done();
       }, 14000);
