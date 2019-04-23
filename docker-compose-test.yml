@@ -6,8 +6,8 @@ services:
     build: .
     depends_on:
       - aclify-mysql
-      - aclify-redis
-      - aclify-mongodb
+#      - aclify-redis
+#      - aclify-mongodb
     networks:
       - aclify-network
     volumes:
@@ -26,24 +26,24 @@ services:
     networks:
       - aclify-network
 
-  aclify-redis:
-    image: redis:4
-    container_name: aclify-redis
-    ports:
-      - 6379:6379
-    networks:
-      - aclify-network
-
-  aclify-mongodb:
-    image: mongo:3.6
-    container_name: aclify-mongo
-    ports:
-      - 27017:27017
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-    networks:
-      - aclify-network
+#  aclify-redis:
+#    image: redis:4
+#    container_name: aclify-redis
+#    ports:
+#      - 6379:6379
+#    networks:
+#      - aclify-network
+#
+#  aclify-mongodb:
+#    image: mongo:3.6
+#    container_name: aclify-mongo
+#    ports:
+#      - 27017:27017
+#    environment:
+#      - MONGO_DATA_DIR=/data/db
+#      - MONGO_LOG_DIR=/dev/null
+#    networks:
+#      - aclify-network
 
 networks:
   aclify-network:
