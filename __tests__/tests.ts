@@ -1,45 +1,35 @@
 import * as bluebird from 'bluebird';
 import { MongoClient } from 'mongodb';
 import * as Redis from 'redis';
-import { Sequelize } from 'sequelize';
-import { Acl, MemoryStore, MongoDBStore, RedisStore, SequelizeStore } from '../src';
+import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
 
-// ['Memory', 'Redis', 'MongoDB', 'MySQL'].forEach((store: string) => {
-['MySQL'].forEach((store: string) => {
+['Memory', 'Redis', 'MongoDB'].forEach((store: string) => {
   let acl: Acl;
+  let redis: Redis.RedisClient;
+  let mongodb: MongoClient;
 
   describe(`${store} store`, () => {
     beforeAll(async (done: Function) => {
       if (store === 'Memory') {
         acl = new Acl(new MemoryStore());
-        done();
       } else if (store === 'Redis') {
         bluebird.promisifyAll(Redis.RedisClient.prototype);
         bluebird.promisifyAll(Redis.Multi.prototype);
-        acl = new Acl(new RedisStore(Redis.createClient({host: 'aclify-redis'})));
-        done();
+        redis = Redis.createClient({host: 'aclify-redis'});
+        acl = new Acl(new RedisStore(redis));
       } else if (store === 'MongoDB') {
-        const client = await MongoClient.connect('mongodb://aclify-mongodb'); // tslint:disable-line no-unsafe-any
-        acl = new Acl(new MongoDBStore(client.db('aclify'), 'acl_')); // tslint:disable-line no-unsafe-any
-        done();
-      } else if (store === 'MySQL') {
-        const sequelize = new Sequelize('aclify', 'root', 'aclify', {
-          host: 'aclify-mysql',
-          // @ts-ignore
-          operatorsAliases: {$in: Sequelize.Op.in},
-          dialect: 'mysql',
-          logging: null,
-        });
-        await sequelize.authenticate();
-        acl = new Acl(new SequelizeStore(sequelize, {prefix: 'acl_'}));
-        done();
+        mongodb = await MongoClient.connect('mongodb://aclify-mongodb'); // tslint:disable-line no-unsafe-any
+        acl = new Acl(new MongoDBStore(mongodb.db('aclify'), 'acl_')); // tslint:disable-line no-unsafe-any
       }
+      done();
     });
 
     afterAll((done: Function) => {
-      setTimeout(async () => {
-        if (['Redis', 'MongoDB'].includes(store)) {
-          await acl.store.close();
+      setTimeout(() => {
+        if (store === 'Redis') {
+          redis.quit();
+        } else if (store === 'MongoDB') {
+          mongodb.close(); // tslint:disable-line no-unsafe-any
         }
         done();
       }, 14000);
