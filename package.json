@@ -27,9 +27,7 @@
     "bluebird": "^3.5.4",
     "lodash": "^4.17.11",
     "mongodb": "^2.0.47",
-    "mysql2": "^1.6.5",
-    "redis": "^2.2.5",
-    "sequelize": "^5.7.1"
+    "redis": "^2.2.5"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.26",
@@ -58,6 +56,7 @@
     "docker:run:test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit"
   },
   "peerDependencies": {
-    "redis": "^2.8.0"
+    "mongodb": "^2.0.47",
+    "redis": "^2.2.5"
   }
 }
