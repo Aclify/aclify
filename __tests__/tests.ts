@@ -453,328 +453,328 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
       });
     });
 
-    // describe('removeAllow', () => {
-    //   it('Remove get permissions from resources blogs and forums from role fumanchu', async () => {
-    //     const removeAllow = await acl.removeAllow('fumanchu', ['blogs', 'forums'], 'get');
-    //     expect(removeAllow).toBeUndefined();
-    //   });
-    //
-    //   it('Remove delete and put permissions from resource news from role fumanchu', async () => {
-    //     const removeAllow = await acl.removeAllow('fumanchu', 'news', 'delete');
-    //     expect(removeAllow).toBeUndefined();
-    //   });
-    //
-    //   it('Remove view permissions from resource blogs from role bar', async () => {
-    //     const removeAllow = await acl.removeAllow('bar', 'blogs', 'view');
-    //     expect(removeAllow).toBeUndefined();
-    //   });
-    // });
-    //
-    // describe('See if permissions were removed', () => {
-    //   it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
-    //     interface IResult {
-    //       blogs: string[],
-    //       news: string[],
-    //       forums: string[],
-    //     }
-    //
-    //     // @ts-ignore
-    //     const resources: IResult = await acl.whatResources('fumanchu');
-    //     expect(resources).not.toHaveProperty('blogs');
-    //     expect(resources).toHaveProperty('news');
-    //     expect(resources).not.toHaveProperty('news', ['delete']);
-    //     expect(resources).toHaveProperty('forums');
-    //     expect(resources.news.sort()).toEqual(['get', 'put'].sort());
-    //     expect(resources.forums.sort()).toEqual(['put', 'delete'].sort());
-    //   });
-    // });
-    //
-    // describe('removeRole', () => {
-    //   it('Remove role fumanchu', async () => {
-    //     const remove = await acl.removeRole('fumanchu');
-    //     expect(remove).toBeUndefined();
-    //   });
-    //
-    //   it('Remove role member', async () => {
-    //     const remove = await acl.removeRole('member');
-    //     expect(remove).toBeUndefined();
-    //   });
-    //
-    //   it('Remove role foo', async () => {
-    //     const remove = await acl.removeRole('foo');
-    //     expect(remove).toBeUndefined();
-    //   });
-    // });
-    //
-    // describe('Was role removed?', () => {
-    //   it('What resources have "fumanchu" some rights on after removed?', async () => {
-    //     const resources = await acl.whatResources('fumanchu');
-    //     expect(Object.keys(resources)).toHaveLength(0);
-    //   });
-    //
-    //   it('What resources have "member" some rights on after removed?', async () => {
-    //     const resources = await acl.whatResources('member');
-    //     expect(Object.keys(resources)).toHaveLength(0);
-    //   });
-    // });
-    //
-    // describe('allowed permissions', () => {
-    //   it('What permissions has jsmith over blogs and forums?', async () => {
-    //     const permissions = await acl.allowedPermissions('jsmith', ['blogs', 'forums']);
-    //     expect(permissions).toHaveProperty('blogs');
-    //     expect(permissions.blogs).toHaveLength(0);
-    //     expect(permissions).toHaveProperty('forums');
-    //     expect(permissions.forums).toHaveLength(0);
-    //   });
-    //
-    //   it('What permissions has test@test.com over blogs and forums?', async () => {
-    //     const permissions = await acl.allowedPermissions('test@test.com', ['blogs', 'forums']);
-    //     expect(permissions).toHaveProperty('blogs');
-    //     expect(permissions.blogs).toHaveLength(0);
-    //     expect(permissions).toHaveProperty('forums');
-    //     expect(permissions.forums).toHaveLength(0);
-    //   });
-    //
-    //   it('What permissions has james over blogs?', async () => {
-    //     const permissions = await acl.allowedPermissions('james', 'blogs');
-    //     expect(permissions).toHaveProperty('blogs', ['delete']);
-    //   });
-    // });
-    //
-    // describe('RoleParentRemoval', () => {
-    //   const memoryStore2 = new MemoryStore();
-    //   const acl2 = new Acl(memoryStore2);
-    //
-    //   beforeAll(async () => {
-    //     await acl2.allow('parent1', 'x', 'read1');
-    //     await acl2.allow('parent2', 'x', 'read2');
-    //     await acl2.allow('parent3', 'x', 'read3');
-    //     await acl2.allow('parent4', 'x', 'read4');
-    //     await acl2.allow('parent5', 'x', 'read5');
-    //     await acl2.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']);
-    //   });
-    //
-    //   it('Environment check', async () => {
-    //     interface IResult {
-    //       x: string[],
-    //     }
-    //
-    //     // @ts-ignore
-    //     const resources: IResult = await acl2.whatResources('child');
-    //     expect(resources).toHaveProperty('x');
-    //     expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
-    //   });
-    //
-    //   it('Operation uses a callback when removing a specific parent role', async () => {
-    //     const removeRoleParents = await acl2.removeRoleParents('child', 'parentX');
-    //     expect(removeRoleParents).toBeUndefined();
-    //   });
-    //
-    //   it('Operation uses a callback when removing multiple specific parent roles', async () => {
-    //     const removeRoleParents = await acl2.removeRoleParents('child', ['parentX', 'parentY']);
-    //     expect(removeRoleParents).toBeUndefined();
-    //   });
-    //
-    //   it('Remove parent role "parentX" from role "child"', async () => {
-    //     interface IResult {
-    //       x: string[],
-    //     }
-    //
-    //     await acl2.removeRoleParents('child', 'parentX');
-    //
-    //     // @ts-ignore
-    //     const resources: IResult = await acl2.whatResources('child');
-    //     expect(resources).toHaveProperty('x');
-    //     expect(resources.x).toHaveLength(5);
-    //     expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
-    //   });
-    //
-    //   it('Remove parent role "parent1" from role "child"', async () => {
-    //     interface IResult {
-    //       x: string[],
-    //     }
-    //
-    //     await acl2.removeRoleParents('child', 'parent1');
-    //
-    //     // @ts-ignore
-    //     const resources: IResult = await acl2.whatResources('child');
-    //     expect(resources).toHaveProperty('x');
-    //     expect(resources.x).toHaveLength(4);
-    //     expect(resources.x.sort()).toEqual(['read2', 'read3', 'read4', 'read5'].sort());
-    //   });
-    //
-    //   it('Remove parent roles "parent2" & "parent3" from role "child"', async () => {
-    //     interface IResult {
-    //       x: string[],
-    //     }
-    //
-    //     await acl2.removeRoleParents('child', ['parent2', 'parent3']);
-    //
-    //     // @ts-ignore
-    //     const resources: IResult = await acl2.whatResources('child');
-    //     expect(resources).toHaveProperty('x', ['read4', 'read5']);
-    //     expect(resources.x).toHaveLength(2);
-    //     expect(resources.x.sort()).toEqual(['read4', 'read5'].sort());
-    //   });
-    //
-    //   it('Remove all parent roles from role "child"', async () => {
-    //     await acl2.removeRoleParents('child');
-    //     const resources = await acl2.whatResources('child');
-    //     expect(resources).not.toHaveProperty('x');
-    //   });
-    //
-    //   it('Remove all parent roles from role "child" with no parents', async () => {
-    //     await acl2.removeRoleParents('child');
-    //     const resources = await acl2.whatResources('child');
-    //     expect(resources).not.toHaveProperty('x');
-    //   });
-    //
-    //   it('Remove parent role "parent1" from role "child" with no parents', async () => {
-    //     await acl2.removeRoleParents('child', 'parent1');
-    //     const resources = await acl2.whatResources('child');
-    //     expect(resources).not.toHaveProperty('x');
-    //   });
-    //
-    //   it('Operation uses a callback when removing all parent roles', async () => {
-    //     const removeRoleParents = await acl2.removeRoleParents('child');
-    //     expect(removeRoleParents).toBeUndefined()
-    //   });
-    // });
-    //
-    // describe('removeResource', () => {
-    //   it('Remove resource blogs', async () => {
-    //     const removeResource = await acl.removeResource('blogs');
-    //     expect(removeResource).toBeUndefined();
-    //   });
-    //
-    //   it('Remove resource users', async () => {
-    //     const removeResource = await acl.removeResource('users');
-    //     expect(removeResource).toBeUndefined();
-    //   });
-    // });
-    //
-    // describe('allowedPermissions', () => {
-    //   it('What permissions has james over blogs?', async () => {
-    //     const permissions = await acl.allowedPermissions('james', 'blogs');
-    //     expect(permissions).toHaveProperty('blogs', []);
-    //   });
-    //   it('What permissions has userId=4 over blogs?', async () => {
-    //     const permissions = await acl.allowedPermissions(4, 'blogs');
-    //     expect(permissions).toHaveProperty('blogs', []);
-    //   });
-    // });
-    //
-    // describe('whatResources', () => {
-    //   it('What resources have "baz" some rights on after removed blogs?', async () => {
-    //     const resources = await acl.whatResources('baz');
-    //     expect(Object.keys(resources)).toHaveLength(0);
-    //   });
-    //
-    //   it('What resources have "admin" some rights on after removed users resource?', async () => {
-    //     const resources = await acl.whatResources('admin');
-    //     expect(resources).not.toHaveProperty('users');
-    //     expect(resources).not.toHaveProperty('blogs');
-    //   });
-    // });
-    //
-    // describe('Remove user roles', () => {
-    //   it('Remove role guest from joed', async () => {
-    //     const removeUserRoles = await acl.removeUserRoles('joed', 'guest');
-    //     expect(removeUserRoles).toBeUndefined();
-    //   });
-    //
-    //   it('Remove role guest from userId=0', async () => {
-    //     const removeUserRoles = await acl.removeUserRoles(0, 'guest');
-    //     expect(removeUserRoles).toBeUndefined();
-    //   });
-    //
-    //   it('Remove role admin from harry', async () => {
-    //     const removeUserRoles = await acl.removeUserRoles('harry', 'admin');
-    //     expect(removeUserRoles).toBeUndefined();
-    //   });
-    //
-    //   it('Remove role admin from userId=2', async () => {
-    //     const removeUserRoles = await acl.removeUserRoles(2, 'admin');
-    //     expect(removeUserRoles).toBeUndefined();
-    //   });
-    // });
-    //
-    // describe('Were roles removed?', () => {
-    //   it('What permissions has harry over forums and blogs?', async () => {
-    //     const permissions = await acl.allowedPermissions('harry', ['forums', 'blogs']);
-    //     expect(permissions).toHaveProperty('forums', []);
-    //   });
-    //   it('What permissions has userId=2 over forums and blogs?', async () => {
-    //     const permissions = await acl.allowedPermissions(2, ['forums', 'blogs']);
-    //     expect(permissions).toHaveProperty('forums', []);
-    //   });
-    // });
-    //
-    // describe('removeAllow is removing all permissions.', () => {
-    //   it('Add roles/resources/permissions', async () => {
-    //     await acl.addUserRoles('jannette', 'member')
-    //     await acl.allow('member', 'blogs', ['view', 'update']);
-    //     const isAllowed1 = await acl.isAllowed('jannette', 'blogs', 'view');
-    //     expect(isAllowed1).toBeTruthy();
-    //
-    //     await acl.removeAllow('member', 'blogs', 'update');
-    //     const isAllowed2 = await acl.isAllowed('jannette', 'blogs', 'view');
-    //     expect(isAllowed2).toBeTruthy();
-    //
-    //     const isAllowed3 = await acl.isAllowed('jannette', 'blogs', 'update');
-    //     expect(isAllowed3).toBeFalsy();
-    //
-    //     await acl.removeAllow('member', 'blogs', 'view');
-    //     const allowed4 = await acl.isAllowed('jannette', 'blogs', 'view');
-    //     expect(allowed4).toBeFalsy();
-    //   });
-    // });
-    //
-    // describe('Removing a role removes the entire "allows" document.', () => {
-    //   it('Add roles/resources/permissions', async () => {
-    //     const allow = await acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3']);
-    //     expect(allow).toBeUndefined();
-    //   });
-    //
-    //   it('Add user roles and parent roles', async () => {
-    //     const addUserRoles = await acl.addUserRoles('user1', 'role1');
-    //     expect(addUserRoles).toBeUndefined();
-    //
-    //     const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
-    //     expect(addRoleParents).toBeUndefined();
-    //   });
-    //
-    //   it('Add user roles and parent roles', async () => {
-    //     const addUserRoles = await acl.addUserRoles(1, 'role1');
-    //     expect(addUserRoles).toBeUndefined();
-    //
-    //     const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
-    //     expect(addRoleParents).toBeUndefined();
-    //   });
-    //
-    //   it('Verify that roles have permissions as assigned', async () => {
-    //     const res1 = await acl.whatResources('role1');
-    //     expect(res1.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
-    //
-    //     const res2 = await acl.whatResources('role2');
-    //     expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
-    //   });
-    //
-    //   it('Remove role "role1"', async () => {
-    //     const removeRole = await acl.removeRole('role1');
-    //     expect(removeRole).toBeUndefined();
-    //   });
-    //
-    //   it('Verify that "role1" has no permissions and "role2" has permissions intact', async () => {
-    //     const removeRole = await acl.removeRole('role1');
-    //     expect(removeRole).toBeUndefined();
-    //
-    //     const res1 = await acl.whatResources('role1');
-    //     expect(Object.keys(res1)).toHaveLength(0);
-    //
-    //     const res2 = await acl.whatResources('role2');
-    //     expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
-    //   });
-    // });
+    describe('removeAllow', () => {
+      it('Remove get permissions from resources blogs and forums from role fumanchu', async () => {
+        const removeAllow = await acl.removeAllow('fumanchu', ['blogs', 'forums'], 'get');
+        expect(removeAllow).toBeUndefined();
+      });
+
+      it('Remove delete and put permissions from resource news from role fumanchu', async () => {
+        const removeAllow = await acl.removeAllow('fumanchu', 'news', 'delete');
+        expect(removeAllow).toBeUndefined();
+      });
+
+      it('Remove view permissions from resource blogs from role bar', async () => {
+        const removeAllow = await acl.removeAllow('bar', 'blogs', 'view');
+        expect(removeAllow).toBeUndefined();
+      });
+    });
+
+    describe('See if permissions were removed', () => {
+      it('What resources have "fumanchu" some rights on after removed some of them?', async () => {
+        interface IResult {
+          blogs: string[],
+          news: string[],
+          forums: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl.whatResources('fumanchu');
+        expect(resources).not.toHaveProperty('blogs');
+        expect(resources).toHaveProperty('news');
+        expect(resources).not.toHaveProperty('news', ['delete']);
+        expect(resources).toHaveProperty('forums');
+        expect(resources.news.sort()).toEqual(['get', 'put'].sort());
+        expect(resources.forums.sort()).toEqual(['put', 'delete'].sort());
+      });
+    });
+
+    describe('removeRole', () => {
+      it('Remove role fumanchu', async () => {
+        const remove = await acl.removeRole('fumanchu');
+        expect(remove).toBeUndefined();
+      });
+
+      it('Remove role member', async () => {
+        const remove = await acl.removeRole('member');
+        expect(remove).toBeUndefined();
+      });
+
+      it('Remove role foo', async () => {
+        const remove = await acl.removeRole('foo');
+        expect(remove).toBeUndefined();
+      });
+    });
+
+    describe('Was role removed?', () => {
+      it('What resources have "fumanchu" some rights on after removed?', async () => {
+        const resources = await acl.whatResources('fumanchu');
+        expect(Object.keys(resources)).toHaveLength(0);
+      });
+
+      it('What resources have "member" some rights on after removed?', async () => {
+        const resources = await acl.whatResources('member');
+        expect(Object.keys(resources)).toHaveLength(0);
+      });
+    });
+
+    describe('allowed permissions', () => {
+      it('What permissions has jsmith over blogs and forums?', async () => {
+        const permissions = await acl.allowedPermissions('jsmith', ['blogs', 'forums']);
+        expect(permissions).toHaveProperty('blogs');
+        expect(permissions.blogs).toHaveLength(0);
+        expect(permissions).toHaveProperty('forums');
+        expect(permissions.forums).toHaveLength(0);
+      });
+
+      it('What permissions has test@test.com over blogs and forums?', async () => {
+        const permissions = await acl.allowedPermissions('test@test.com', ['blogs', 'forums']);
+        expect(permissions).toHaveProperty('blogs');
+        expect(permissions.blogs).toHaveLength(0);
+        expect(permissions).toHaveProperty('forums');
+        expect(permissions.forums).toHaveLength(0);
+      });
+
+      it('What permissions has james over blogs?', async () => {
+        const permissions = await acl.allowedPermissions('james', 'blogs');
+        expect(permissions).toHaveProperty('blogs', ['delete']);
+      });
+    });
+
+    describe('RoleParentRemoval', () => {
+      const memoryStore2 = new MemoryStore();
+      const acl2 = new Acl(memoryStore2);
+
+      beforeAll(async () => {
+        await acl2.allow('parent1', 'x', 'read1');
+        await acl2.allow('parent2', 'x', 'read2');
+        await acl2.allow('parent3', 'x', 'read3');
+        await acl2.allow('parent4', 'x', 'read4');
+        await acl2.allow('parent5', 'x', 'read5');
+        await acl2.addRoleParents('child', ['parent1', 'parent2', 'parent3', 'parent4', 'parent5']);
+      });
+
+      it('Environment check', async () => {
+        interface IResult {
+          x: string[],
+        }
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
+        expect(resources).toHaveProperty('x');
+        expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
+      });
+
+      it('Operation uses a callback when removing a specific parent role', async () => {
+        const removeRoleParents = await acl2.removeRoleParents('child', 'parentX');
+        expect(removeRoleParents).toBeUndefined();
+      });
+
+      it('Operation uses a callback when removing multiple specific parent roles', async () => {
+        const removeRoleParents = await acl2.removeRoleParents('child', ['parentX', 'parentY']);
+        expect(removeRoleParents).toBeUndefined();
+      });
+
+      it('Remove parent role "parentX" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
+        await acl2.removeRoleParents('child', 'parentX');
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
+        expect(resources).toHaveProperty('x');
+        expect(resources.x).toHaveLength(5);
+        expect(resources.x.sort()).toEqual(['read1', 'read2', 'read3', 'read4', 'read5'].sort());
+      });
+
+      it('Remove parent role "parent1" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
+        await acl2.removeRoleParents('child', 'parent1');
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
+        expect(resources).toHaveProperty('x');
+        expect(resources.x).toHaveLength(4);
+        expect(resources.x.sort()).toEqual(['read2', 'read3', 'read4', 'read5'].sort());
+      });
+
+      it('Remove parent roles "parent2" & "parent3" from role "child"', async () => {
+        interface IResult {
+          x: string[],
+        }
+
+        await acl2.removeRoleParents('child', ['parent2', 'parent3']);
+
+        // @ts-ignore
+        const resources: IResult = await acl2.whatResources('child');
+        expect(resources).toHaveProperty('x', ['read4', 'read5']);
+        expect(resources.x).toHaveLength(2);
+        expect(resources.x.sort()).toEqual(['read4', 'read5'].sort());
+      });
+
+      it('Remove all parent roles from role "child"', async () => {
+        await acl2.removeRoleParents('child');
+        const resources = await acl2.whatResources('child');
+        expect(resources).not.toHaveProperty('x');
+      });
+
+      it('Remove all parent roles from role "child" with no parents', async () => {
+        await acl2.removeRoleParents('child');
+        const resources = await acl2.whatResources('child');
+        expect(resources).not.toHaveProperty('x');
+      });
+
+      it('Remove parent role "parent1" from role "child" with no parents', async () => {
+        await acl2.removeRoleParents('child', 'parent1');
+        const resources = await acl2.whatResources('child');
+        expect(resources).not.toHaveProperty('x');
+      });
+
+      it('Operation uses a callback when removing all parent roles', async () => {
+        const removeRoleParents = await acl2.removeRoleParents('child');
+        expect(removeRoleParents).toBeUndefined()
+      });
+    });
+
+    describe('removeResource', () => {
+      it('Remove resource blogs', async () => {
+        const removeResource = await acl.removeResource('blogs');
+        expect(removeResource).toBeUndefined();
+      });
+
+      it('Remove resource users', async () => {
+        const removeResource = await acl.removeResource('users');
+        expect(removeResource).toBeUndefined();
+      });
+    });
+
+    describe('allowedPermissions', () => {
+      it('What permissions has james over blogs?', async () => {
+        const permissions = await acl.allowedPermissions('james', 'blogs');
+        expect(permissions).toHaveProperty('blogs', []);
+      });
+      it('What permissions has userId=4 over blogs?', async () => {
+        const permissions = await acl.allowedPermissions(4, 'blogs');
+        expect(permissions).toHaveProperty('blogs', []);
+      });
+    });
+
+    describe('whatResources', () => {
+      it('What resources have "baz" some rights on after removed blogs?', async () => {
+        const resources = await acl.whatResources('baz');
+        expect(Object.keys(resources)).toHaveLength(0);
+      });
+
+      it('What resources have "admin" some rights on after removed users resource?', async () => {
+        const resources = await acl.whatResources('admin');
+        expect(resources).not.toHaveProperty('users');
+        expect(resources).not.toHaveProperty('blogs');
+      });
+    });
+
+    describe('Remove user roles', () => {
+      it('Remove role guest from joed', async () => {
+        const removeUserRoles = await acl.removeUserRoles('joed', 'guest');
+        expect(removeUserRoles).toBeUndefined();
+      });
+
+      it('Remove role guest from userId=0', async () => {
+        const removeUserRoles = await acl.removeUserRoles(0, 'guest');
+        expect(removeUserRoles).toBeUndefined();
+      });
+
+      it('Remove role admin from harry', async () => {
+        const removeUserRoles = await acl.removeUserRoles('harry', 'admin');
+        expect(removeUserRoles).toBeUndefined();
+      });
+
+      it('Remove role admin from userId=2', async () => {
+        const removeUserRoles = await acl.removeUserRoles(2, 'admin');
+        expect(removeUserRoles).toBeUndefined();
+      });
+    });
+
+    describe('Were roles removed?', () => {
+      it('What permissions has harry over forums and blogs?', async () => {
+        const permissions = await acl.allowedPermissions('harry', ['forums', 'blogs']);
+        expect(permissions).toHaveProperty('forums', []);
+      });
+      it('What permissions has userId=2 over forums and blogs?', async () => {
+        const permissions = await acl.allowedPermissions(2, ['forums', 'blogs']);
+        expect(permissions).toHaveProperty('forums', []);
+      });
+    });
+
+    describe('removeAllow is removing all permissions.', () => {
+      it('Add roles/resources/permissions', async () => {
+        await acl.addUserRoles('jannette', 'member')
+        await acl.allow('member', 'blogs', ['view', 'update']);
+        const isAllowed1 = await acl.isAllowed('jannette', 'blogs', 'view');
+        expect(isAllowed1).toBeTruthy();
+
+        await acl.removeAllow('member', 'blogs', 'update');
+        const isAllowed2 = await acl.isAllowed('jannette', 'blogs', 'view');
+        expect(isAllowed2).toBeTruthy();
+
+        const isAllowed3 = await acl.isAllowed('jannette', 'blogs', 'update');
+        expect(isAllowed3).toBeFalsy();
+
+        await acl.removeAllow('member', 'blogs', 'view');
+        const allowed4 = await acl.isAllowed('jannette', 'blogs', 'view');
+        expect(allowed4).toBeFalsy();
+      });
+    });
+
+    describe('Removing a role removes the entire "allows" document.', () => {
+      it('Add roles/resources/permissions', async () => {
+        const allow = await acl.allow(['role1', 'role2', 'role3'], ['res1', 'res2', 'res3'], ['perm1', 'perm2', 'perm3']);
+        expect(allow).toBeUndefined();
+      });
+
+      it('Add user roles and parent roles', async () => {
+        const addUserRoles = await acl.addUserRoles('user1', 'role1');
+        expect(addUserRoles).toBeUndefined();
+
+        const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
+        expect(addRoleParents).toBeUndefined();
+      });
+
+      it('Add user roles and parent roles', async () => {
+        const addUserRoles = await acl.addUserRoles(1, 'role1');
+        expect(addUserRoles).toBeUndefined();
+
+        const addRoleParents = await acl.addRoleParents('role1', 'parentRole1');
+        expect(addRoleParents).toBeUndefined();
+      });
+
+      it('Verify that roles have permissions as assigned', async () => {
+        const res1 = await acl.whatResources('role1');
+        expect(res1.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
+
+        const res2 = await acl.whatResources('role2');
+        expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
+      });
+
+      it('Remove role "role1"', async () => {
+        const removeRole = await acl.removeRole('role1');
+        expect(removeRole).toBeUndefined();
+      });
+
+      it('Verify that "role1" has no permissions and "role2" has permissions intact', async () => {
+        const removeRole = await acl.removeRole('role1');
+        expect(removeRole).toBeUndefined();
+
+        const res1 = await acl.whatResources('role1');
+        expect(Object.keys(res1)).toHaveLength(0);
+
+        const res2 = await acl.whatResources('role2');
+        expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
+      });
+    });
   });
 });
