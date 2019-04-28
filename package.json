@@ -35,7 +35,6 @@
     "bluebird": "^3.5.4",
     "jest": "^24.7.1",
     "mongodb": "^3.2.3",
-    "node-mocks-http": "^1.7.3",
     "prettier": "^1.17.0",
     "redis": "^2.8.0",
     "ts-jest": "^24.0.2",
