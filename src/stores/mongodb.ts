@@ -1,5 +1,5 @@
 import { isObject, keys as lodashKeys, union, without } from 'lodash';
-import { MongoClient } from 'mongodb';
+import { Db } from 'mongodb';
 import { IStore } from '..';
 
 const aclCollectionName = 'resources';
@@ -10,7 +10,7 @@ const aclCollectionName = 'resources';
  */
 export class MongoDBStore implements IStore {
   private transaction: (Function | Promise<void>)[];
-  private readonly db: MongoClient;
+  private readonly db: Db;
   private readonly prefix: string;
   private readonly useSingle: boolean;
   private readonly useRawCollectionNames: boolean;
@@ -19,10 +19,10 @@ export class MongoDBStore implements IStore {
    * @description Constructor.
    * @param db
    * @param prefix
-   * @param useSingle
-   * @param useRawCollectionNames
+   * @param useSingle?
+   * @param useRawCollectionNames?
    */
-  constructor(db: MongoClient, prefix: string, useSingle?: boolean, useRawCollectionNames?: boolean) {
+  constructor(db: Db, prefix: string, useSingle?: boolean, useRawCollectionNames?: boolean) {
     this.db = db;
     this.prefix = prefix !== undefined ? prefix : '';
     this.useSingle = useSingle !== undefined ? useSingle : false;
@@ -199,7 +199,7 @@ export class MongoDBStore implements IStore {
       valuesParam.forEach((value: string) => { document[value]=true; });
 
       // update document
-      await collection.update(updateParams,{$set:document},{safe:true,upsert:true}); // tslint:disable-line no-unsafe-any
+      await collection.update(updateParams,{ $set:document },{ safe: true, upsert: true }); // tslint:disable-line no-unsafe-any
     });
 
     this.transaction.push(async () => {
@@ -222,7 +222,7 @@ export class MongoDBStore implements IStore {
 
     this.transaction.push(async () => {
       const collection = await this.db.collection(this.prefix + this.removeUnsupportedChar(collName)); // tslint:disable-line no-unsafe-any
-      await collection.remove(updateParams,{safe:true}); // tslint:disable-line no-unsafe-any
+      await collection.remove(updateParams,{ safe: true }); // tslint:disable-line no-unsafe-any
     });
   }
 
@@ -249,14 +249,6 @@ export class MongoDBStore implements IStore {
       // update document
       await collection.update(updateParams,{ $unset: document },{ safe: true, upsert: true }); // tslint:disable-line no-unsafe-any
     });
-  }
-
-  /**
-   * @description Closes store connection.
-   * @return Promise<void>
-   */
-  public async close(): Promise<void> {
-    await this.db.close(); // tslint:disable-line no-unsafe-any
   }
 
   /**
