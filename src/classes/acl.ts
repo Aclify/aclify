@@ -1,7 +1,7 @@
-import { extend, intersection, isFunction, isObject, union } from "lodash";
-import { IStore } from "..";
-import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from "../types";
-import { Common } from "./common";
+import { extend, intersection, isFunction, isObject, union } from 'lodash';
+import { IStore } from '..';
+import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from '../types';
+import { Common } from './common';
 
 /**
  * {@inheritDoc}
@@ -27,7 +27,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Adds the given permissions to the given roles over the given resources.
    * @param roles
    * @param resources
    * @param permissions
@@ -54,7 +54,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Adds roles to a given user id.
    * @param userId
    * @param roles
    * @return Promise<void>
@@ -73,7 +73,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all the roles from a given user.
    * @param userId
    * @return Promise<IUserRoles>
    */
@@ -82,7 +82,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Return boolean whether user is in the role.
    * @param userId
    * @param role
    * @return Promise<boolean>
@@ -94,7 +94,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all users who has a given role.
    * @param role
    * @return Promise<IUserIds>
    */
@@ -103,7 +103,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Adds a parent or parent list to role.
    * @param role
    * @param parents
    * @return Promise<void>
@@ -117,7 +117,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Checks if the given user is allowed to access the resource for the given permissions (note: it must fulfill all the permissions).
    * @param userId
    * @param resource
    * @param permissions
@@ -134,7 +134,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns true if any of the given roles have the right permissions.
    * @param roles
    * @param resource
    * @param permissions
@@ -152,7 +152,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Checks role permissions.
    * @param roles
    * @param resource
    * @param permissions
@@ -177,7 +177,8 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all the allowable permissions a given user have to access the given resources.
+   * It returns an array of objects where every object maps a resource name to a list of permissions for that resource.
    * @param userId
    * @param resources
    * @return Promise<IDynamicObject>
@@ -200,7 +201,9 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all the allowable permissions a given user have to access the given resources.
+   * It returns a map of resource name to a list of permissions for that resource.
+   * This is the same as allowedPermissions, it just takes advantage of the unions function if available to reduce the number of backend queries.
    * @param userId
    * @param resources
    * @return Promise<IDynamicObject>
@@ -228,7 +231,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description Promise<IDynamicObject>
+   * @description Returns resources from role.
    * @param roles
    * @param permissions
    * @return Promise<IDynamicObject>
@@ -244,7 +247,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns permitted resources.
    * @param roles
    * @param permissions
    * @return Promise<IResources>
@@ -280,7 +283,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Removes allow.
    * @param role
    * @param resources
    * @param permissions
@@ -297,7 +300,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Remove permissions.
    * @param role
    * @param resources
    * @param permissions
@@ -334,7 +337,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Removes a role from the system.
    * @param role
    * @return Promise<void>
    */
@@ -357,7 +360,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Removes a parent or parent list from role. If `parents` is not specified, removes all parents.
    * @param role
    * @param parents
    * @return Promise<void>
@@ -375,7 +378,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Removes a resource from the system.
    * @param resource
    * @return Promise<void>
    */
@@ -391,7 +394,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Remove roles from a given user.
    * @param userId
    * @param roles
    * @return Promise<void>
@@ -410,7 +413,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all roles in the hierarchy of the given user.
    * @param userId
    * @return Promise<IRoles>
    */
@@ -425,7 +428,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns all roles in the hierarchy including the given roles.
    * @param roles
    * @return Promise<IRoles>
    */
@@ -442,7 +445,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns the parents of the given roles.
    * @param roles
    * @return Promise<IRolesParents>
    */
@@ -451,9 +454,9 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Same as allow but accepts a more compact input.
    * @param rolesArray
-   * @return
+   * @return Promise<void>
    */
   private async allowEx(rolesArray: IRolesObjects): Promise<void> {
     const rolesArrayParam = rolesArray;
@@ -476,7 +479,7 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns the permissions for the given resource and set of roles.
    * @param roles
    * @param resource
    * @return Promise<IPermissions>
@@ -501,9 +504,9 @@ export class Acl extends Common {
   }
 
   /**
-   * @description
+   * @description Returns an array with resources for the given roles.
    * @param roles
-   * @description Promise<IResources>
+   * @return Promise<IResources>
    */
   private async rolesResources(roles: IRole | IRoles): Promise<IResources> {
     const rolesTmp = Common.MAKE_ARRAY(roles);
