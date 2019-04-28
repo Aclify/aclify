@@ -62,7 +62,6 @@ Aclify offers several possibilities to store your data:
   - Memory
   - Redis
   - MongoDB
-  - Sequelize (mysql, mssql, sqlite or postgresql)
 
 
 ## Examples
@@ -72,7 +71,7 @@ Create your acl module by requiring it and instantiating it with a valid store i
 
 **From import**
 ```javascript
-import { Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore } from '@aclify/aclify'
+import { Acl, MemoryStore, RedisStore, MongoDBStore } from '@aclify/aclify';
 
 // Using Redis store
 const acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
@@ -82,26 +81,6 @@ const acl = new Acl(new MemoryStore());
 
 // Or Using the MongoDB store
 const acl = new Acl(new MongoDBStore(db, {prefix: 'acl_'}));
-
-// Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-const acl = new Acl(new SequelizeStore(db, {prefix: 'acl_'}));
-```
-
-**From require**
-```javascript
-const { Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore } = require('@aclify/aclify');
-
-// Using Redis store
-const acl = new Acl(new aclify.RedisStore(RedisClient, {prefix: 'acl_'}));
-
-// Or Using the Memory store
-const acl = new Acl(new aclify.MemoryStore());
-
-// Or Using the MongoDB store
-const acl = new Acl(new aclify.MongoDBStore(db, {prefix: 'acl_'}));
-
-// Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-const acl = new Acl(new aclify.SequelizeStore(db, {prefix: 'acl_'}));
 ```
 
 All the following functions return a promise or optionally take a callback with
