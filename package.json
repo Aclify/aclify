@@ -24,25 +24,25 @@
   },
   "homepage": "https://github.com/aclify/aclify#readme",
   "dependencies": {
-    "bluebird": "^3.5.4",
-    "lodash": "^4.17.11",
-    "mongodb": "^2.0.47",
-    "redis": "^2.2.5"
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.26",
     "@types/jest": "^24.0.11",
     "@types/lodash": "^4.14.123",
-    "@types/node": "^11.13.4",
+    "@types/node": "^11.13.8",
     "@types/redis": "^2.8.12",
+    "bluebird": "^3.5.4",
     "jest": "^24.7.1",
+    "mongodb": "^3.2.3",
     "node-mocks-http": "^1.7.3",
-    "prettier": "^1.16.4",
+    "prettier": "^1.17.0",
+    "redis": "^2.8.0",
     "ts-jest": "^24.0.2",
-    "tslint": "^5.15.0",
+    "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-microsoft-contrib": "^6.1.0",
-    "typescript": "^3.4.3"
+    "tslint-microsoft-contrib": "^6.1.1",
+    "typescript": "^3.4.5"
   },
   "scripts": {
     "clean": "rm -rf coverage dist",
@@ -56,7 +56,7 @@
     "docker:run:test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit"
   },
   "peerDependencies": {
-    "mongodb": "^2.0.47",
-    "redis": "^2.2.5"
+    "mongodb": "^3.2.3",
+    "redis": "^2.8.0"
   }
 }
