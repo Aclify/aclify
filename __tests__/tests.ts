@@ -1,4 +1,4 @@
-import * as bluebird from 'bluebird';
+import * as bluebird from 'bluebird'; // tslint:disable-line no-implicit-dependencies
 import { MongoClient } from 'mongodb';
 import * as Redis from 'redis';
 import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
@@ -25,11 +25,11 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
     });
 
     afterAll((done: Function) => {
-      setTimeout(() => {
+      setTimeout(async () => {
         if (store === 'Redis') {
           redis.quit();
         } else if (store === 'MongoDB') {
-          mongodb.close(); // tslint:disable-line no-unsafe-any
+          await mongodb.close(); // tslint:disable-line no-unsafe-any
         }
         done();
       }, 14000);
