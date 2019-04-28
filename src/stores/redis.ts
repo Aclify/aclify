@@ -1,7 +1,8 @@
+import { isFunction } from 'lodash';
 import { Multi, RedisClient } from 'redis';
 import { IStore } from '..';
 import { Common } from '../classes/common';
-import { IBucket } from "../types";
+import { IBucket } from '../types';
 
 /**
  * {@inheritDoc}
@@ -19,6 +20,12 @@ export class RedisStore extends Common implements IStore {
    */
   constructor(redis: RedisClient, prefix?: string) {
     super();
+
+    // @ts-ignore
+    if (!isFunction(redis.keysAsync) || !isFunction(redis.delAsync) || !isFunction(redis.smembersAsync) || !isFunction(redis.sunionAsync)) {
+      throw new Error('Redis client must be promisified.');
+    }
+
     this.redis = redis;
     this.prefix = prefix !== undefined ? prefix : 'acl';
   }
@@ -136,15 +143,6 @@ export class RedisStore extends Common implements IStore {
     } else {
       this.transaction.srem(keyParam as string, values as string);
     }
-  }
-
-  /**
-   * @description Closes connection.
-   * @return Promise<void>
-   */
-  public async close(): Promise<void> {
-    // @ts-ignore
-    await this.redis.quitAsync(); // tslint:disable-line no-unsafe-any
   }
 
   /**
