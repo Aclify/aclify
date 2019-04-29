@@ -46,15 +46,13 @@
     "typescript": "^3.4.5"
   },
   "scripts": {
-    "clean": "rm -rf coverage dist",
+    "clean": "rm -rf dist coverage jest_0",
     "build": "tsc -p tsconfig.release.json",
     "build:watch": "tsc -w -p tsconfig.release.json",
     "lint": "tslint -t stylish --project 'tsconfig.json'",
     "lint:fix": "tslint --fix -t stylish --project 'tsconfig.json'",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch",
-    "docker:run:test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit"
+    "test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit",
+    "test:coverage": "jest --coverage"
   },
   "peerDependencies": {
     "express": "^4.16.4",
