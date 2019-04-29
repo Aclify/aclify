@@ -28,13 +28,15 @@
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.26",
-    "@types/jest": "^24.0.11",
+    "@types/express": "^4.16.1",
+    "@types/jest": "^24.0.12",
     "@types/lodash": "^4.14.123",
     "@types/node": "^11.13.8",
     "@types/redis": "^2.8.12",
     "bluebird": "^3.5.4",
     "jest": "^24.7.1",
     "mongodb": "^3.2.3",
+    "node-mocks-http": "^1.7.3",
     "prettier": "^1.17.0",
     "redis": "^2.8.0",
     "ts-jest": "^24.0.2",
@@ -55,6 +57,7 @@
     "docker:run:test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit"
   },
   "peerDependencies": {
+    "express": "^4.16.4",
     "mongodb": "^3.2.3",
     "redis": "^2.8.0"
   }
