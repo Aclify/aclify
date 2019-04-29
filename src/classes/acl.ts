@@ -1,7 +1,9 @@
-import { extend, intersection, isFunction, isObject, union } from 'lodash';
+import * as express from 'express';
+import { extend, intersection, isFunction, isNil, isNumber, isObject, isString, isUndefined, union } from 'lodash';
 import { IStore } from '..';
 import { IBucket, IDemuxed, IDynamicObject, IOptions, IPermission, IPermissions, IResource, IResources, IRole, IRoles, IRolesObject, IRolesObjectAllows, IRolesObjects, IRolesParent, IRolesParents, IUserId, IUserIds, IUserRoles } from '../types';
 import { Common } from './common';
+import { HttpError } from './httpError';
 
 /**
  * {@inheritDoc}
@@ -410,6 +412,61 @@ export class Acl extends Common {
     }
 
     return this.store.end();
+  }
+
+  /**
+   * @description Express middleware.
+   * @param numPathComponents
+   * @param userId
+   * @param method
+   * @return void
+   */
+  public middleware(numPathComponents: number, userId: string | number | Function | null, method: string): (req: express.Request, res: express.Response, next: express.NextFunction) => void {
+    return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      let userIdTmp = userId;
+      let actionsTmp = method;
+
+      // Call function to fetch userId
+      if (isFunction(userId)) {
+        userIdTmp = userId(req, res); // tslint:disable-line  no-unsafe-any
+      }
+
+      if (isNil(userId)) {
+        // @ts-ignore
+        if (isObject(req.session) && (isString(req.session.userId) || isNumber(req.session.userId))) { // tslint:disable-line  no-unsafe-any
+          // @ts-ignore
+          userIdTmp = req.session.userId; // tslint:disable-line  no-unsafe-any
+          // @ts-ignore
+        } else if (isObject(req.user) && (isString(req.user.id) || isNumber(req.user.id))) { // tslint:disable-line  no-unsafe-any
+          // @ts-ignore
+          userIdTmp = req.user.id; // tslint:disable-line  no-unsafe-any
+        } else {
+          return next(new HttpError(401, 'User not authenticated'));
+        }
+      }
+
+      if (isUndefined(userIdTmp)) {
+        return next(new HttpError(401, 'User not authenticated'));
+      }
+
+      const url = req.originalUrl.split('?')[0];
+      const resource = numPathComponents === 0 ? url : url.split('/').slice(0, numPathComponents + 1).join('/');
+
+      if (!isUndefined(actionsTmp)) {
+        actionsTmp = req.method.toLowerCase();
+      }
+
+      // @ts-ignore
+      this.isAllowed(userIdTmp, resource, actionsTmp)
+        .then((allowed: boolean) => {//}, (err, allowed) => {
+          if (!allowed) {
+            return next(new HttpError(403, 'Insufficient permissions to access resource'));
+          }
+
+          return next();
+        })
+        .catch(() => next(new Error('Error checking permissions to access resource')));
+    };
   }
 
   /**
