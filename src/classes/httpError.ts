@@ -3,19 +3,16 @@
  * @description HttpError class.
  */
 export class HttpError {
-  // @ts-ignore
-  private name: string;
-  // @ts-ignore
-  private message: string;
-  // @ts-ignore
-  private errorCode: number;
+  public readonly name: string;
+  public readonly message: string;
+  public readonly errorCode: number;
 
   /**
    * @description Constructor.
    * @param code
    * @param message
    */
-  constructor(code:number, message: string) {
+  constructor(code: number, message: string) {
     this.errorCode = code;
     this.message = message;
     this.name = this.constructor.name;
