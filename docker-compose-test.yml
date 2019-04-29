@@ -11,7 +11,7 @@ services:
       - aclify-network
     volumes:
       - .:/opt/app/:rw
-    command: sh -c 'cd /opt/app && yarn && yarn test:coverage'
+    command: sh -c 'cd /opt/app && yarn && yarn lint && yarn test:coverage'
 
   aclify-redis:
     image: redis:4
