@@ -1,7 +1,8 @@
 import * as bluebird from 'bluebird'; // tslint:disable-line no-implicit-dependencies
 import { MongoClient } from 'mongodb';
+import * as httpMocks from 'node-mocks-http'; // tslint:disable-line no-implicit-dependencies
 import * as Redis from 'redis';
-import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
+import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
 
 ['Memory', 'Redis', 'MongoDB'].forEach((store: string) => {
   let acl: Acl;
@@ -79,6 +80,47 @@ import { Acl, MemoryStore, MongoDBStore, RedisStore } from '../src';
       it('member to view/edit/delete blogs', async () => {
         const member = await acl.allow('member', 'blogs', ['edit', 'view', 'delete']);
         expect(member).toBeUndefined();
+      });
+    });
+
+    describe('Middleware', () => {
+      it('Should return 403', (done: Function) => {
+        const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
+        const response = httpMocks.createResponse();
+        acl.middleware(0, 'joed', 'GET')(request, response, (err: HttpError) => {
+          expect(err.name).toEqual('HttpError');
+          expect(err.errorCode).toEqual(403);
+          expect(err.message).toEqual('Insufficient permissions to access resource');
+          done();
+        });
+      });
+
+      it('Should return 401', (done: Function) => {
+        const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
+        const response = httpMocks.createResponse();
+        acl.middleware(0, undefined, 'GET')(request, response, (err: HttpError) => {
+          expect(err.name).toEqual('HttpError');
+          expect(err.errorCode).toEqual(401);
+          expect(err.message).toEqual('User not authenticated');
+          done();
+        });
+      });
+
+      it('Should return 200', async (done: Function) => {
+        const request = httpMocks.createRequest({method: 'POST', url: '/blogs'});
+        const response = httpMocks.createResponse();
+        await acl.addUserRoles('joed', 'member');
+        await acl.allow('member', '/blogs', ['POST']);
+        await acl.isAllowed('joed', '/blogs', 'POST');
+        acl.middleware(0, 'joed', 'POST')(request, response, (err: HttpError) => {
+          setTimeout(() => {
+            expect(err).toBeInstanceOf(Error);
+            expect(err.name).toEqual('HttpError');
+            expect(response.statusCode).toEqual(200);
+            expect(response.statusMessage).toEqual('OK');
+            done();
+          }, 1000);
+        });
       });
     });
 
