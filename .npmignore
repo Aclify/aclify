@@ -1,10 +1,6 @@
 .idea
-.babelrc
 .codeclimate.yml
 .editorconfig
-.eslintignore
-.eslintrc
-.flowconfig
 .travis.yml
 *.log
 *.pid
@@ -15,8 +11,8 @@ coverage
 build/Release
 node_modules
 jest_0
-media/header.png
+media
 Dockerfile
 docker-compose.yml
 LICENSE
-__tests__/tests.js
+__tests__

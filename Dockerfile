@@ -1,8 +1,6 @@
-FROM node:lts
+FROM node:10-alpine
 
 MAINTAINER Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>
-
-RUN apt-get update -y
 
 WORKDIR /opt/app
 

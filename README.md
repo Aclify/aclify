@@ -62,7 +62,6 @@ Aclify offers several possibilities to store your data:
   - Memory
   - Redis
   - MongoDB
-  - Sequelize (mysql, mssql, sqlite or postgresql)
 
 
 ## Examples
@@ -72,36 +71,16 @@ Create your acl module by requiring it and instantiating it with a valid store i
 
 **From import**
 ```javascript
-import {Acl, RedisStore, MemoryStore, MongoDBStore, SequelizeStore} from '@aclify/aclify'
+import { Acl, MemoryStore, RedisStore, MongoDBStore } from '@aclify/aclify';
 
 // Using Redis store
-acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
+const acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
 
 // Or Using the Memory store
-acl = new Acl(new MemoryStore());
+const acl = new Acl(new MemoryStore());
 
 // Or Using the MongoDB store
-acl = new Acl(new MongoDBStore(db, {prefix: 'acl_'}));
-
-// Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-acl = new Acl(new SequelizeStore(db, {prefix: 'acl_'}));
-```
-
-**From require**
-```javascript
-const aclify = require('@aclify/aclify');
-
-// Using Redis store
-acl = new aclify.Acl(new aclify.RedisStore(RedisClient, {prefix: 'acl_'}));
-
-// Or Using the Memory store
-acl = new aclify.Acl(new aclify.MemoryStore());
-
-// Or Using the MongoDB store
-acl = new aclify.Acl(new aclify.MongoDBStore(db, {prefix: 'acl_'}));
-
-// Or Using a Sequelize store (mysql, mssql, sqlite or postgresql)
-acl = new aclify.Acl(new aclify.SequelizeStore(db, {prefix: 'acl_'}));
+const acl = new Acl(new MongoDBStore(db, {prefix: 'acl_'}));
 ```
 
 All the following functions return a promise or optionally take a callback with
@@ -111,34 +90,34 @@ Create roles implicitly by giving them permissions:
 
 ```javascript
 // guest is allowed to view blogs
-acl.allow('guest', 'blogs', 'view')
+acl.allow('guest', 'blogs', 'view');
 
 // allow function accepts arrays as any parameter
-acl.allow('member', 'blogs', ['edit', 'view', 'delete'])
+acl.allow('member', 'blogs', ['edit', 'view', 'delete']);
 ```
 
 Users are likewise created implicitly by assigning them roles:
 
 ```javascript
-acl.addUserRoles('joed', 'guest')
+acl.addUserRoles('joed', 'guest');
 ```
 
 Hierarchies of roles can be created by assigning parents to roles:
 
 ```javascript
-acl.addRoleParents('baz', ['foo', 'bar'])
+acl.addRoleParents('baz', ['foo', 'bar']);
 ```
 
 Note that the order in which you call all the functions is irrelevant (you can add parents first and assign permissions to roles later)
 
 ```javascript
-acl.allow('foo', ['blogs', 'forums', 'news'], ['view', 'delete'])
+acl.allow('foo', ['blogs', 'forums', 'news'], ['view', 'delete']);
 ```
 
 Use the wildcard to give all permissions:
 
 ```javascript
-acl.allow('admin', ['blogs', 'forums'], '*')
+acl.allow('admin', ['blogs', 'forums'], '*');
 ```
 
 Sometimes is necessary to set permissions on many different roles and resources. This would
@@ -160,17 +139,17 @@ acl.allow([
             {resources:['account', 'deposit'], permissions:['put', 'delete']}
         ]
     }
-])
+]);
 ```
 
 You can check if a user has permissions to access a given resource with *isAllowed*:
 
 ```javascript
-acl.isAllowed('joed', 'blogs', 'view', function(err, res){
-    if(res){
-        console.log("User Joed is allowed to view blogs")
-    }
-})
+const isAllowed = await acl.isAllowed('joed', 'blogs', 'view');
+
+if (isAllowed) {
+    console.log("User Joed is allowed to view blogs");
+}
 ```
 
 
@@ -186,7 +165,7 @@ Note that all permissions must be fulfilled in order to get *true*.
 Sometimes is necessary to know what permissions a given user has over certain resources:
 
 ```javascript
-acl.allowedPermissions('james', ['blogs', 'forums'], function(err, permissions){
+acl.allowedPermissions('james', ['blogs', 'forums'], function(err, permissions) {
     console.log(permissions)
 })
 ```
@@ -208,7 +187,7 @@ acl.middleware()
 We can protect a resource like this:
 
 ```javascript
-app.put('/blogs/:id', acl.middleware(), function(req, res, next){…}
+app.put('/blogs/:id', acl.middleware(), function(req, res, next) {…}
 ```
 
 The middleware will protect the resource named by *req.url*, pick the user from *req.session.userId* and check the permission for *req.method*, so the above would be equivalent to something like this:
@@ -221,7 +200,7 @@ The middleware accepts 3 optional arguments, that are useful in some situations.
 cannot consider the whole url as the resource:
 
 ```javascript
-app.put('/blogs/:id/comments/:commentId', acl.middleware(3), function(req, res, next){…}
+app.put('/blogs/:id/comments/:commentId', acl.middleware(3), function(req, res, next) {…}
 ```
 
 In this case the resource will be just the three first components of the url (without the ending slash).
@@ -229,7 +208,7 @@ In this case the resource will be just the three first components of the url (wi
 It is also possible to add a custom userId or check for other permissions than the method:
 
 ```javascript
-app.put('/blogs/:id/comments/:commentId', acl.middleware(3, 'joed', 'post'), function(req, res, next){…}
+app.put('/blogs/:id/comments/:commentId', acl.middleware(3, 'joed', 'post'), function(req, res, next) {…}
 ```
 
 ## Methods

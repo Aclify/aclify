@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-  - 6.11.4
+  - node
+  - lts/*
 env:
   - DOCKER_COMPOSE_VERSION=1.16.1
 before_install:
@@ -8,8 +9,8 @@ before_install:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
-  - npm install --global npm@^5.3.0 codecov
+  - yarn add codecov -g
   - sudo /etc/init.d/mysql stop
 script:
-  - docker-compose up --build --force-recreate --abort-on-container-exit
+  - docker-compose -f docker-compose-test.yml up --build --force-recreate --abort-on-container-exit
 after_success: codecov

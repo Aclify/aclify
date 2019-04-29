@@ -1,25 +1,12 @@
-# Logs
+logs
 *.log
 npm-debug.log*
-yarn-error.log
-
-# Dependencies
-node_modules/
-
-# Coverage
-coverage/
-jest_0/
-
-# Transpiled files
-dist/
-
-# VS Code
+node_modules
+coverage
 .vscode
-jsconfig.json
-
-# Misc
+!.vscode/tasks.js
+.idea
+.npm
 .DS_Store
-tmp/
-
-# Intellij
-.idea/
+jest_0
+dist

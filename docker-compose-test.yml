@@ -1,0 +1,37 @@
+version: '3.3'
+
+services:
+  aclify:
+    container_name: aclify
+    build: .
+    depends_on:
+      - aclify-redis
+      - aclify-mongodb
+    networks:
+      - aclify-network
+    volumes:
+      - .:/opt/app/:rw
+    command: sh -c 'cd /opt/app && yarn && yarn test:coverage'
+
+  aclify-redis:
+    image: redis:4
+    container_name: aclify-redis
+    ports:
+      - 6379:6379
+    networks:
+      - aclify-network
+
+  aclify-mongodb:
+    image: mongo:3.6
+    container_name: aclify-mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    networks:
+      - aclify-network
+
+networks:
+  aclify-network:
+    driver: bridge
