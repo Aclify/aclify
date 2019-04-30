@@ -1,8 +1,8 @@
-import { isFunction } from 'lodash';
-import { Multi, RedisClient } from 'redis';
+import * as Bluebird from 'bluebird';
+import { Multi } from 'redis';
 import { IStore } from '..';
 import { Common } from '../classes/common';
-import { IBucket } from '../types';
+import { IBucket, IRedisClientAsync } from '../types';
 
 /**
  * {@inheritDoc}
@@ -10,7 +10,7 @@ import { IBucket } from '../types';
  */
 export class RedisStore extends Common implements IStore {
   public buckets: {};
-  private readonly redis: RedisClient;
+  private readonly redis: IRedisClientAsync;
   private transaction: Multi;
 
   /**
@@ -18,15 +18,15 @@ export class RedisStore extends Common implements IStore {
    * @param redis
    * @param prefix
    */
-  constructor(redis: RedisClient, prefix?: string) {
+  constructor(redis: IRedisClientAsync, prefix?: string) {
     super();
-
-    // @ts-ignore
-    if (!isFunction(redis.keysAsync) || !isFunction(redis.delAsync) || !isFunction(redis.smembersAsync) || !isFunction(redis.sunionAsync)) {
-      throw new Error('Redis client must be promisified.');
-    }
-
     this.redis = redis;
+    this.redis.endAsync = Bluebird.promisify(this.redis.end);
+    this.redis.getAsync = Bluebird.promisify(this.redis.get);
+    this.redis.sunionAsync = Bluebird.promisify(this.redis.sunion);
+    this.redis.keysAsync = Bluebird.promisify(this.redis.keys);
+    this.redis.delAsync = Bluebird.promisify(this.redis.del);
+    this.redis.smembersAsync = Bluebird.promisify(this.redis.smembers);
     this.prefix = prefix !== undefined ? prefix : 'acl';
   }
 
