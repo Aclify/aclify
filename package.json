@@ -1,6 +1,6 @@
 {
   "name": "@aclify/aclify",
-  "version": "2.0.0-1",
+  "version": "2.0.0-2",
   "description": "Node Access Control List (ACL)",
   "author": "Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>",
   "license": "ISC",
