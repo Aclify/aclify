@@ -4,7 +4,7 @@
   "description": "Node Access Control List (ACL)",
   "author": "Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>",
   "license": "ISC",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aclify/aclify.git"
@@ -13,10 +13,6 @@
     "acl",
     "redis",
     "mongodb",
-    "mysql",
-    "sqlite",
-    "postgresql",
-    "mssql",
     "memory"
   ],
   "bugs": {
