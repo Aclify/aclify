@@ -1,3 +1,5 @@
+import { RedisClient } from 'redis';
+
 export interface IOptions {
   buckets: {
     meta: string;
@@ -7,6 +9,19 @@ export interface IOptions {
     roles: string;
     users: string;
   };
+}
+
+export interface IDynamicObject {
+  [key: string]: any // tslint:disable-line no-any
+}
+
+export interface IRedisClientAsync extends RedisClient {
+  endAsync: any; // tslint:disable-line no-any
+  getAsync: any; // tslint:disable-line no-any
+  sunionAsync: any; // tslint:disable-line no-any
+  keysAsync: any; // tslint:disable-line no-any
+  delAsync: any; // tslint:disable-line no-any
+  smembersAsync: any; // tslint:disable-line no-any
 }
 
 export type IRolesParent = string;
@@ -33,7 +48,3 @@ export type IRolesObjects = IRolesObject[];
 export type IBucket = string
 
 export type IDemuxed = { roles: IRole | IRoles, resources: IResource | IResources, permissions: IPermission | IPermissions };
-
-export interface IDynamicObject {
-  [key: string]: any // tslint:disable-line no-any
-}
