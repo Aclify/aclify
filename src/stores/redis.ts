@@ -1,5 +1,5 @@
 import * as Bluebird from 'bluebird';
-import { Multi } from 'redis';
+import { Multi, RedisClient } from 'redis';
 import { IStore } from '..';
 import { Common } from '../classes/common';
 import { IBucket, IRedisClientAsync } from '../types';
@@ -18,15 +18,15 @@ export class RedisStore extends Common implements IStore {
    * @param redis
    * @param prefix
    */
-  constructor(redis: IRedisClientAsync, prefix?: string) {
+  constructor(redis: RedisClient, prefix?: string) {
     super();
-    this.redis = redis;
     this.redis.endAsync = Bluebird.promisify(this.redis.end);
     this.redis.getAsync = Bluebird.promisify(this.redis.get);
     this.redis.sunionAsync = Bluebird.promisify(this.redis.sunion);
     this.redis.keysAsync = Bluebird.promisify(this.redis.keys);
     this.redis.delAsync = Bluebird.promisify(this.redis.del);
     this.redis.smembersAsync = Bluebird.promisify(this.redis.smembers);
+    this.redis = redis as IRedisClientAsync;
     this.prefix = prefix !== undefined ? prefix : 'acl';
   }
 
