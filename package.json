@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/aclify/aclify#readme",
   "dependencies": {
+    "bluebird": "^3.5.4",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
@@ -29,7 +30,6 @@
     "@types/lodash": "^4.14.123",
     "@types/node": "^11.13.8",
     "@types/redis": "^2.8.12",
-    "bluebird": "^3.5.4",
     "jest": "^24.7.1",
     "mongodb": "^3.2.3",
     "node-mocks-http": "^1.7.3",
