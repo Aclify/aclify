@@ -3,7 +3,7 @@
   "version": "2.0.0-4",
   "description": "Node Access Control List (ACL)",
   "author": "Dimitri DO BAIRRO <dimitri.dobairro@dimsolution.com>",
-  "license": "ISC",
+  "license": "MIT",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
   "homepage": "https://github.com/aclify/aclify#readme",
   "dependencies": {
     "bluebird": "^3.5.4",
+    "ioredis": "^4.9.0",
     "lodash": "^4.17.11"
   },
   "devDependencies": {
