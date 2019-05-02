@@ -205,7 +205,7 @@ export class MongoDBStore implements IStore {
     this.transaction.push(async () => {
       const collection = await this.db.collection(this.prefix + this.removeUnsupportedChar(collName)); // tslint:disable-line no-unsafe-any
       // Create index
-      await collection.ensureIndex({_bucketname: 1, key: 1}); // tslint:disable-line no-unsafe-any
+      await collection.ensureIndex({ _bucketname: 1, key: 1 }); // tslint:disable-line no-unsafe-any
     })
   }
 
@@ -217,8 +217,8 @@ export class MongoDBStore implements IStore {
    */
   public async del(bucket: string, keys: string | string[]): Promise<void> {
     const keysParam = MongoDBStore.makeArray(keys);
-    const updateParams = (this.useSingle? {_bucketname: bucket, key:{$in:keysParam}} : {key:{$in:keysParam}});
-    const collName = (this.useSingle? aclCollectionName : bucket);
+    const updateParams = this.useSingle ? { _bucketname: bucket, key: { $in: keysParam } } : { key: { $in: keysParam } };
+    const collName = this.useSingle ? aclCollectionName : bucket;
 
     this.transaction.push(async () => {
       const collection = await this.db.collection(this.prefix + this.removeUnsupportedChar(collName)); // tslint:disable-line no-unsafe-any
@@ -239,14 +239,18 @@ export class MongoDBStore implements IStore {
     const collName = (this.useSingle? aclCollectionName : bucket);
 
     const valuesParam = MongoDBStore.makeArray(values);
+    if (valuesParam.length === 0) {
+      return;
+    }
+
     this.transaction.push(async () => {
       const collection = await this.db.collection(this.prefix + this.removeUnsupportedChar(collName)); // tslint:disable-line no-unsafe-any
-      // build doc from array values
+      // Build doc from array values
       const document = {};
       // @ts-ignore
       valuesParam.forEach((value: Object) => { document[value]=true; });
 
-      // update document
+      // Update document
       await collection.update(updateParams,{ $unset: document },{ safe: true, upsert: true }); // tslint:disable-line no-unsafe-any
     });
   }
