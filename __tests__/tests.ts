@@ -821,16 +821,19 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
 
     describe('Removing a user', () => {
       it('Remove a user', async () => {
-        const guest = await acl.allow('dimitri', 'blogs', 'view');
+        const guest = await acl.allow('member', 'panel', 'edit');
         expect(guest).toBeUndefined();
 
-        const isAllowed = await acl.isAllowed('dimitri', 'blogs', 'view');
+        const addUserRoles = await acl.addUserRoles('dimitri', 'member');
+        expect(addUserRoles).toBeUndefined();
+
+        const isAllowed = await acl.isAllowed('dimitri', 'panel', 'edit');
         expect(isAllowed).toBeTruthy();
 
         const removeUser = await acl.removeUser('dimitri');
         expect(removeUser).toBeUndefined();
 
-        const isAllowedAfterRemoveUser = await acl.isAllowed('dimitri', 'blogs', 'view');
+        const isAllowedAfterRemoveUser = await acl.isAllowed('dimitri', 'panel', 'edit');
         expect(isAllowedAfterRemoveUser).toBeFalsy();
       });
     });
