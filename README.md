@@ -1,6 +1,7 @@
 # @aclify/aclify
 
 [![Aclify](media/header.png)](https://github.com/Aclify)
+
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Coverage][coverage-badge]][coverage]
 [![Build Status][travis-badge]][travis-ci]
@@ -20,6 +21,7 @@ to get the finest granularity possible, while in other situations you will give 
 for admin kind of functionality.
 
 ## Install
+
 ```
 $ yarn add @aclify/aclify
 ```
@@ -32,6 +34,7 @@ $ yarn add @aclify/aclify
 - Resources
 - Express middleware for protecting resources.
 - Robust implementation with good unit test coverage.
+- Strict typing
 
 ## Documentation
 
@@ -67,8 +70,8 @@ Aclify offers several possibilities to store your data:
 
 Create your acl module by requiring it and instantiating it with a valid store instance:
 
-
 **From import**
+
 ```javascript
 import * as Aclify from '@aclify/aclify';
 
@@ -150,7 +153,6 @@ if (isAllowed) {
 }
 ```
 
-
 Of course arrays are also accepted in this function:
 
 ```javascript
@@ -158,7 +160,6 @@ await acl.isAllowed('jsmith', 'blogs', ['edit', 'view', 'delete'])
 ```
 
 Note that all permissions must be fulfilled in order to get *true*.
-
 
 Sometimes is necessary to know what permissions a given user has over certain resources:
 
@@ -178,7 +179,6 @@ It will return an array of resource:[permissions] like this:
   }
  ]
 ```
-
 
 Finally, we provide a middleware for Express for easy protection of resources.
 
