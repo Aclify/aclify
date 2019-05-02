@@ -403,9 +403,11 @@ export class Acl extends Common {
   public async removeUser(userId: string | number): Promise<void> {
     const userRoles = await this.userRoles(userId);
     await this.removeUserRoles(userId, userRoles);
+
     this.store.begin();
     await this.store.del(this.options.buckets.users, userId);
-    await this.store.end();
+
+    return this.store.end();
   }
 
   /**
