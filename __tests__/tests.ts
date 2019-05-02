@@ -1,26 +1,23 @@
-import * as bluebird from 'bluebird'; // tslint:disable-line no-implicit-dependencies
 import { MongoClient } from 'mongodb';
 import * as httpMocks from 'node-mocks-http'; // tslint:disable-line no-implicit-dependencies
 import * as Redis from 'redis';
-import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
+import * as Aclify from '../src';
 
 ['Memory', 'Redis', 'MongoDB'].forEach((store: string) => {
-  let acl: Acl;
+  let acl: Aclify.Acl;
   let redis: Redis.RedisClient;
   let mongodb: MongoClient;
 
   describe(`${store} store`, () => {
     beforeAll(async (done: Function) => {
       if (store === 'Memory') {
-        acl = new Acl(new MemoryStore());
+        acl = new Aclify.Acl(new Aclify.MemoryStore());
       } else if (store === 'Redis') {
-        bluebird.promisifyAll(Redis.RedisClient.prototype);
-        bluebird.promisifyAll(Redis.Multi.prototype);
         redis = Redis.createClient({host: 'aclify-redis'});
-        acl = new Acl(new RedisStore(redis));
+        acl = new Aclify.Acl(new Aclify.RedisStore(redis));
       } else if (store === 'MongoDB') {
         mongodb = await MongoClient.connect('mongodb://aclify-mongodb'); // tslint:disable-line no-unsafe-any
-        acl = new Acl(new MongoDBStore(mongodb.db('aclify'), 'acl_')); // tslint:disable-line no-unsafe-any
+        acl = new Aclify.Acl(new Aclify.MongoDBStore(mongodb.db('aclify'), 'acl_')); // tslint:disable-line no-unsafe-any
       }
       done();
     });
@@ -47,7 +44,7 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
       });
 
       it('Should use given `buckets` names', () => {
-        const aclCustomized = new Acl(acl.store, {
+        const aclCustomized = new Aclify.Acl(acl.store, {
           buckets: {
             meta: 'Meta',
             parents: 'Parents',
@@ -87,7 +84,7 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
       it('Should return 403', (done: Function) => {
         const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
-        acl.middleware(0, 'joed', 'GET')(request, response, (err: HttpError) => {
+        acl.middleware(0, 'joed', 'GET')(request, response, (err: Aclify.HttpError) => {
           expect(err.name).toEqual('HttpError');
           expect(err.errorCode).toEqual(403);
           expect(err.message).toEqual('Insufficient permissions to access resource');
@@ -98,7 +95,7 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
       it('Should return 401', (done: Function) => {
         const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
-        acl.middleware(0, undefined, 'GET')(request, response, (err: HttpError) => {
+        acl.middleware(0, undefined, 'GET')(request, response, (err: Aclify.HttpError) => {
           expect(err.name).toEqual('HttpError');
           expect(err.errorCode).toEqual(401);
           expect(err.message).toEqual('User not authenticated');
@@ -112,7 +109,7 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
         await acl.addUserRoles('joed', 'member');
         await acl.allow('member', '/blogs', ['POST']);
         await acl.isAllowed('joed', '/blogs', 'POST');
-        acl.middleware(0, 'joed', 'POST')(request, response, (err: HttpError) => {
+        acl.middleware(0, 'joed', 'POST')(request, response, (err: Aclify.HttpError) => {
           setTimeout(() => {
             expect(err).toBeInstanceOf(Error);
             expect(err.name).toEqual('HttpError');
@@ -139,7 +136,6 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
 
         const test = await acl.addUserRoles('test@test.com', 'member');
         expect(test).toBeUndefined();
-
       });
 
       it('0 => guest, 1 => member, 2 => admin', async () => {
@@ -584,8 +580,8 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
     });
 
     describe('RoleParentRemoval', () => {
-      const memoryStore2 = new MemoryStore();
-      const acl2 = new Acl(memoryStore2);
+      const memoryStore2 = new Aclify.MemoryStore();
+      const acl2 = new Aclify.Acl(memoryStore2);
 
       beforeAll(async () => {
         await acl2.allow('parent1', 'x', 'read1');
