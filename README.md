@@ -1,7 +1,6 @@
 # @aclify/aclify
 
-[![Aclify](media/header.png)](https://github.com/Aclify) 
-
+[![Aclify](media/header.png)](https://github.com/Aclify)
 [![Dependencies][prod-dependencies-badge]][prod-dependencies]
 [![Coverage][coverage-badge]][coverage]
 [![Build Status][travis-badge]][travis-ci]
@@ -71,16 +70,16 @@ Create your acl module by requiring it and instantiating it with a valid store i
 
 **From import**
 ```javascript
-import { Acl, MemoryStore, RedisStore, MongoDBStore } from '@aclify/aclify';
+import * as Aclify from '@aclify/aclify';
 
 // Using Redis store
-const acl = new Acl(new RedisStore(RedisClient, {prefix: 'acl_'}));
+const acl = new Aclify.Acl(new Aclify.RedisStore(RedisClient, {prefix: 'acl_'}));
 
 // Or Using the Memory store
-const acl = new Acl(new MemoryStore());
+const acl = new Aclify.Acl(new Aclify.MemoryStore());
 
 // Or Using the MongoDB store
-const acl = new Acl(new MongoDBStore(db, {prefix: 'acl_'}));
+const acl = new Aclify.Acl(new Aclify.MongoDBStore(db, {prefix: 'acl_'}));
 ```
 
 All the following functions return a Promise.
