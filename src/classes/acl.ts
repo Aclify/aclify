@@ -396,6 +396,19 @@ export class Acl extends Common {
   }
 
   /**
+   * @description Removes user with his associated roles.
+   * @param userId
+   * @return Promise<void>
+   */
+  public async removeUser(userId: string | number): Promise<void> {
+    const userRoles = await this.userRoles(userId);
+    await this.removeUserRoles(userId, userRoles);
+    this.store.begin();
+    await this.store.del(this.options.buckets.users, userId);
+    await this.store.end();
+  }
+
+  /**
    * @description Remove roles from a given user.
    * @param userId
    * @param roles

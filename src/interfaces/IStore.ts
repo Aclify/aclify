@@ -56,7 +56,7 @@ export interface IStore {
    * @param keys
    * @return Promise<void>
    */
-  del(bucket: string, keys: string | string[]): Promise<void>;
+  del(bucket: string, keys: number | string | string[]): Promise<void>;
 
   /**
    * @description Removes values from a given key inside a bucket.

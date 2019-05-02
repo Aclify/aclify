@@ -818,5 +818,24 @@ import { Acl, HttpError, MemoryStore, MongoDBStore, RedisStore } from '../src';
         expect(res2.res1.sort()).toEqual(['perm1', 'perm2', 'perm3'].sort()); // tslint:disable-line no-unsafe-any
       });
     });
+
+    describe('Removing a user', () => {
+      it('Remove a user', async () => {
+        const guest = await acl.allow('member', 'panel', 'edit');
+        expect(guest).toBeUndefined();
+
+        const addUserRoles = await acl.addUserRoles('dimitri', 'member');
+        expect(addUserRoles).toBeUndefined();
+
+        const isAllowed = await acl.isAllowed('dimitri', 'panel', 'edit');
+        expect(isAllowed).toBeTruthy();
+
+        const removeUser = await acl.removeUser('dimitri');
+        expect(removeUser).toBeUndefined();
+
+        const isAllowedAfterRemoveUser = await acl.isAllowed('dimitri', 'panel', 'edit');
+        expect(isAllowedAfterRemoveUser).toBeFalsy();
+      });
+    });
   });
 });
