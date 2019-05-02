@@ -832,6 +832,11 @@ import * as Aclify from '../src';
         const isAllowedAfterRemoveUser = await acl.isAllowed('dimitri', 'panel', 'edit');
         expect(isAllowedAfterRemoveUser).toBeFalsy();
       });
+
+      it('Remove a not existing user', async () => {
+        const removeUser = await acl.removeUser('notExisting');
+        expect(removeUser).toBeUndefined();
+      });
     });
   });
 });
