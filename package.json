@@ -48,7 +48,8 @@
     "lint": "tslint -t stylish --project 'tsconfig.json'",
     "lint:fix": "tslint --fix -t stylish --project 'tsconfig.json'",
     "test": "docker-compose -f docker-compose-test.yml up --abort-on-container-exit",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "prepublish": "yarn build"
   },
   "peerDependencies": {
     "express": "^4.16.4",
