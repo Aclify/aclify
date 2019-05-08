@@ -390,7 +390,7 @@ export class Acl extends Common {
     this.store.begin();
     await this.store.del(this.allowsBucket(resource), roles);
 
-    await Promise.all(roles.map((role: IRole) => this.store.remove(this.options.buckets.resources, role, resource), this));
+    await Promise.all(roles.map(async (role: IRole) => this.store.remove(this.options.buckets.resources, role, resource), this));
 
     return this.store.end();
   }
@@ -421,7 +421,7 @@ export class Acl extends Common {
     await this.store.remove(this.options.buckets.users, userId, roles);
 
     if (Array.isArray(roles)) {
-      await Promise.all(roles.map((role: IRole) => this.store.remove(this.options.buckets.roles, role, userId)));
+      await Promise.all(roles.map(async (role: IRole) => this.store.remove(this.options.buckets.roles, role, userId)));
     } else {
       await this.store.remove(this.options.buckets.roles, roles, userId);
     }
