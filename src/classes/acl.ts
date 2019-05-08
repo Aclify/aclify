@@ -69,7 +69,7 @@ export class Acl extends Common {
     this.store.add(this.options.buckets.meta, 'users', userId);
     this.store.add(this.options.buckets.users, userId, roles);
 
-    rolesParams.map((role: IRole) => this.store.add(this.options.buckets.roles, role, userId));
+    rolesParams.forEach((role: IRole) => this.store.add(this.options.buckets.roles, role, userId));
 
     return this.store.end();
   }
