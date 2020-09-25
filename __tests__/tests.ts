@@ -84,6 +84,7 @@ import * as Aclify from '../src';
       it('Should return 403', (done: Function) => {
         const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
+        // @ts-ignore
         acl.middleware(0, 'joed', 'GET')(request, response, (err: Aclify.HttpError) => {
           expect(err.name).toEqual('HttpError');
           expect(err.errorCode).toEqual(403);
@@ -95,6 +96,7 @@ import * as Aclify from '../src';
       it('Should return 401', (done: Function) => {
         const request = httpMocks.createRequest({method: 'GET', url: '/blogs'});
         const response = httpMocks.createResponse();
+        // @ts-ignore
         acl.middleware(0, undefined, 'GET')(request, response, (err: Aclify.HttpError) => {
           expect(err.name).toEqual('HttpError');
           expect(err.errorCode).toEqual(401);
@@ -109,6 +111,7 @@ import * as Aclify from '../src';
         await acl.addUserRoles('joed', 'member');
         await acl.allow('member', '/blogs', ['POST']);
         await acl.isAllowed('joed', '/blogs', 'POST');
+        // @ts-ignore
         acl.middleware(0, 'joed', 'POST')(request, response, (err: Aclify.HttpError) => {
           setTimeout(() => {
             expect(err).toBeInstanceOf(Error);
